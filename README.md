@@ -12,25 +12,27 @@ this replaced.
 
 ### No JSON
 
-Protobuf binary is the only encoding on the wire. Every rpc is:
+Protobuf is the only payload encoding, in both directions, on every route. Ordinary HTTP
+endpoints carry it:
 
 ```
-POST /differentrequests.v1.RequestsService/<Method>
-Content-Type: application/proto
+GET  /requests?sort=top&cursor=…     Accept: application/x-protobuf
+POST /requests                       Content-Type: application/x-protobuf
 ```
 
-The request message is the body. The response message is the body. Errors are an
-`ApiError` message in the body, encoded identically. The HTTP status is transport and
-is not part of the contract.
+Every response body is a serialized message, a failure included — a failure is an
+`DRApiError`, encoded exactly as a success would be. The HTTP status says only whether
+the body is the answer or the error; *which* error is `DRApiError.code`, because a status
+cannot distinguish "upgrade to Pro" from "not your request".
 
-There are no path parameters and no query strings — not as a style preference, but
-because `GET /requests?sort=top&cursor=…` encodes `ListRequestsRequest` a second time,
-in a second syntax, hand-parsed on arrival. One encoding means one definition of what
-a request is.
+Proto is the payload, not the addressing. A path segment names a thing and a query
+parameter scopes a read; both make a response cacheable and a request legible in a log.
+`BacklogServer` and `backlog-admin-cms` speak exactly this, down to the content type.
 
-The accepted cost: the API cannot be explored with curl, and no caller can be written
-without the generated types. The audience is developers dropping in the SPM package,
-for whom the SDK is the only intended client. `protoc --decode` reads a captured body.
+What that leaves is the risk of a query key or an enum spelling being typed twice — once
+in the client, once in the server. Neither is: `fields-gen` emits each message's field
+names and `tokens-gen` emits each value's URL spelling, so both sides read one
+declaration.
 
 ### No shadow objects
 
@@ -38,9 +40,10 @@ The generated types **are** the types. A consumer does not wrap them, mirror the
 map them onto a parallel set of its own.
 
 Concretely, none of these may exist: an `openapi.yaml` describing the same shapes, a
-hand-written `FeatureRequest` struct in the SDK that a generated one is copied into,
-a separate entity layer in the server that the messages are mapped through, or a
-`RequestStatus` written anywhere but `differentrequests_domain.proto`.
+hand-written `DRFeatureRequest` struct in the SDK that a generated one is copied into,
+a separate entity layer in the server that the messages are mapped through, a
+`DRRequestStatus` written anywhere but `differentrequests_domain.proto`, or a path,
+query key, or enum spelling typed into a consumer.
 
 Storage is the one thing this package does not describe. Keys, indexes, and item
 layout answer to access patterns, not to the wire, and the storage model is free to
@@ -79,7 +82,7 @@ file in this one that a generator has to be trusted not to read.
 
 | Consumer | Depends on | Uses |
 | --- | --- | --- |
-| `DifferentRequests-Server` | `DifferentRequestsProtos`, exact tag | serves `RequestsService`; renders the console from the same messages |
+| `DifferentRequests-Server` | `DifferentRequestsProtos`, exact tag | serves `RequestsService`, routing from the generated table |
 | `DifferentRequestsSDK` | `DifferentRequestsProtos`, exact tag | speaks `RequestsService`; exposes these types as its API |
 
 The live TypeScript stack is deliberately **not** a consumer. It serves the previous
@@ -90,7 +93,7 @@ implementation of the thing replacing it.
 ## Adding to a consumer
 
 ```swift
-.package(url: "https://github.com/Different-Productions/differentrequests-proto.git", exact: "0.1.0"),
+.package(url: "https://github.com/Different-Productions/differentrequests-proto.git", exact: "0.8.0"),
 ```
 
 Pin `exact:`. A range lets `swift package update` move the contract out from under a
@@ -105,12 +108,23 @@ The package identity is `differentrequests-proto`, so the product reference is
 ./Scripts/generate.sh        # rewrites Sources/DifferentRequestsProtos/
 ```
 
-Two generators run. `protoc-gen-swift` emits the message types. `endpoint-gen`
-(`Tools/protoc-plugin`) emits `ServiceEndpoints.generated.swift` — one case per rpc,
-carrying the path it is called at and the audience it declared — so that neither the
-client nor the server ever hand-writes a path string. A path typed into a client is a
-copy of the service definition that nothing checks; an rpc that forgets its audience is
-a build failure rather than an open route.
+Four generators run, all of them in `Tools/protoc-plugin`, and each emits something
+`protoc-gen-swift` does not.
+
+- `protoc-gen-swift` — the message types.
+- `endpoint-gen` — the endpoint table. One CaseIterable enum a server builds its router
+  from, carrying each rpc's verb, path template, and audience; and one enum whose cases
+  carry the path parameters, so a client cannot construct a call without the ids its path
+  needs. An rpc declaring no audience is a build failure rather than an open route.
+- `tokens-gen` — how an enum value is spelled in a URL, and an initializer that reads one
+  back. A value with no declared spelling cannot be sent.
+- `fields-gen` — each message's field names as the schema spells them, so a query key is
+  referenced rather than typed.
+
+Types carry a `DR` prefix. The domain's nouns are the most generic words available — App,
+Comment, Plan — and `Notification` shadows Foundation's outright, so a consumer would
+otherwise have to rename its own types to accommodate the contract. `igdb.proto` keeps its
+package prefix for the same reason, arriving as `Proto_Game`.
 
 Requires `protoc` (`brew install protobuf`). `protoc-gen-swift` is **not** taken from
 `PATH` — it is built from the swift-protobuf version pinned in
