@@ -1,21 +1,40 @@
 import Foundation
 
-// Emits the endpoint table for every service in a .proto file: the path an rpc is
-// called at, and the audience it declared.
+// Emits the endpoint table for every service in a .proto file: the verb, the path, and the
+// audience each rpc declared.
 //
-// It exists so no consumer hand-writes a path. A string like
-// "/differentrequests.v1.RequestsService/ListRequests" typed into a client is a copy
-// of the service definition that nothing checks, and the server matching on its own
-// hand-typed copy is a second one. Both come from here instead.
+// Two types come out of it, because the two consumers need different halves of the same fact.
+// A server registers route *templates* and dispatches on which rpc matched, so it gets a
+// CaseIterable enum carrying `template`. A client builds a *concrete* path and needs the
+// compiler to demand the ids that go in it, so it gets an enum whose cases carry the path
+// parameters as associated values.
 //
-// A pure parser over the proto text, taking no dependency on protoc or
-// swift-protobuf: swift-protobuf generates no service code at all, so there is no
-// descriptor to read at this stage of the build. Same shape as backlog-proto's
-// generators.
+// Neither side writes a path. A string like "/requests/{requestId}/comments" typed into a
+// router and typed again into a client is one fact in two places, and the day they disagree
+// the client gets a 404 that looks like a server bug.
+//
+// A pure parser over the proto text, taking no dependency on protoc or swift-protobuf:
+// swift-protobuf generates no service code at all, so there is no descriptor to read.
 
 struct Method {
   let name: String
+  let verb: String
+  let pathTemplate: String
   let audience: String
+
+  /// The `{brace}` parameters in the template, in the order they appear — which is the order
+  /// the generated case takes them, so a caller reading the path reads the arguments.
+  var pathParameters: [String] {
+    var parameters: [String] = []
+    var remaining = Substring(pathTemplate)
+    while let open = remaining.firstIndex(of: "{") {
+      guard let close = remaining[open...].firstIndex(of: "}") else { break }
+      let name = remaining[remaining.index(after: open)..<close]
+      parameters.append(String(name))
+      remaining = remaining[remaining.index(after: close)...]
+    }
+    return parameters
+  }
 }
 
 struct Service {
@@ -27,7 +46,7 @@ enum GeneratorError: Error, CustomStringConvertible {
   case usage
   case unreadable(String)
   case noPackage(String)
-  case methodWithoutAudience(service: String, method: String)
+  case incompleteRoute(service: String, method: String)
 
   var description: String {
     switch self {
@@ -36,11 +55,11 @@ enum GeneratorError: Error, CustomStringConvertible {
     case .unreadable(let path):
       return "cannot read \(path)"
     case .noPackage(let path):
-      return "\(path) declares no package; the rpc path is built from it"
-    case .methodWithoutAudience(let service, let method):
-      // The whole point of the audience option is that forgetting it cannot leave a
-      // route silently open, so this is fatal rather than defaulted.
-      return "\(service).\(method) declares no (audience) option"
+      return "\(path) declares no package"
+    case .incompleteRoute(let service, let method):
+      // Fatal rather than defaulted: an rpc with no audience would otherwise be served to
+      // anyone holding an app key, and an rpc with no path would be served nowhere.
+      return "\(service).\(method) has no complete (route) option — needs method, path, audience"
     }
   }
 }
@@ -51,11 +70,14 @@ func parse(_ text: String, path: String) throws -> (package: String, services: [
 
   var currentService: String?
   var currentMethods: [Method] = []
-  var pendingMethod: String?
+  var pendingName: String?
+  var pendingVerb: String?
+  var pendingPath: String?
+  var pendingAudience: String?
 
-  // Depth relative to the enclosing `service` block: 1 inside the service, 2 inside an
-  // rpc's own braces. Tracked rather than matching a bare `}`, because every rpc that
-  // carries an option closes with one and that is not the end of the service.
+  // Depth relative to the enclosing `service` block. Tracked rather than matching a bare
+  // closing brace, because every rpc carrying an option closes with one and that is not the
+  // end of the service.
   var depth = 0
 
   for rawLine in text.split(separator: "\n", omittingEmptySubsequences: false) {
@@ -81,29 +103,36 @@ func parse(_ text: String, path: String) throws -> (package: String, services: [
     if line.hasPrefix("rpc ") {
       let afterKeyword = line.dropFirst("rpc ".count)
       if let parenIndex = afterKeyword.firstIndex(of: "(") {
-        pendingMethod = afterKeyword[..<parenIndex].trimmingCharacters(in: .whitespaces)
+        pendingName = afterKeyword[..<parenIndex].trimmingCharacters(in: .whitespaces)
+        pendingVerb = nil
+        pendingPath = nil
+        pendingAudience = nil
       }
-    } else if line.hasPrefix("option (audience)"), let method = pendingMethod {
-      if let equalsIndex = line.firstIndex(of: "=") {
-        let audience = line[line.index(after: equalsIndex)...]
-          .trimmingCharacters(in: CharacterSet(charactersIn: " ;"))
-        currentMethods.append(Method(name: method, audience: audience))
-        pendingMethod = nil
-      }
+    } else if line.hasPrefix("method:") {
+      pendingVerb = value(after: "method:", in: line)
+    } else if line.hasPrefix("path:") {
+      pendingPath = value(after: "path:", in: line).trimmingCharacters(in: CharacterSet(charactersIn: "\""))
+    } else if line.hasPrefix("audience:") {
+      pendingAudience = value(after: "audience:", in: line)
     }
 
     let depthBefore = depth
     depth += line.filter { $0 == "{" }.count
     depth -= line.filter { $0 == "}" }.count
 
-    // An rpc block just closed. If it never declared an audience, that is fatal: the
-    // option exists so a forgotten one cannot leave a route open.
-    if depthBefore == 2, depth == 1, let method = pendingMethod {
-      throw GeneratorError.methodWithoutAudience(service: service, method: method)
+    // An rpc block just closed.
+    if depthBefore > depth, depth == 1, let name = pendingName {
+      guard let verb = pendingVerb, let template = pendingPath, let audience = pendingAudience else {
+        throw GeneratorError.incompleteRoute(service: service, method: name)
+      }
+      currentMethods.append(
+        Method(name: name, verb: verb, pathTemplate: template, audience: audience)
+      )
+      pendingName = nil
     }
 
     if depth == 0 {
-      if !currentMethods.isEmpty {
+      if currentMethods.isEmpty == false {
         services.append(Service(name: service, methods: currentMethods))
       }
       currentService = nil
@@ -118,9 +147,25 @@ func parse(_ text: String, path: String) throws -> (package: String, services: [
   return (package, services)
 }
 
-func swiftCase(_ methodName: String) -> String {
-  guard let first = methodName.first else { return methodName }
-  return first.lowercased() + methodName.dropFirst()
+func value(after prefix: String, in line: String) -> String {
+  line
+    .dropFirst(prefix.count)
+    .trimmingCharacters(in: CharacterSet(charactersIn: " ;"))
+}
+
+/// `HTTP_METHOD_GET` -> `get`, `AUDIENCE_END_USER` -> `endUser`: the case names
+/// protoc-gen-swift generates for those values. Derived rather than mapped, so a new value
+/// needs no change here.
+func swiftEnumCase(_ protoValue: String, strippingPrefix prefix: String) -> String {
+  let withoutPrefix = protoValue.hasPrefix(prefix) ? String(protoValue.dropFirst(prefix.count)) : protoValue
+  let words = withoutPrefix.split(separator: "_").map { $0.lowercased() }
+  guard let first = words.first else { return withoutPrefix.lowercased() }
+  return first + words.dropFirst().map { $0.capitalized }.joined()
+}
+
+func lowerCamel(_ name: String) -> String {
+  guard let first = name.first else { return name }
+  return first.lowercased() + name.dropFirst()
 }
 
 func render(package: String, services: [Service], sourceFile: String) -> String {
@@ -132,59 +177,143 @@ func render(package: String, services: [Service], sourceFile: String) -> String 
     """
 
   for service in services {
-    out += """
-
-      /// Every rpc on `\(package).\(service.name)`, with the path it is called at and the
-      /// credential it requires.
-      ///
-      /// The path is not a choice and is not written anywhere by hand: every rpc is a POST
-      /// to `/<package>.<Service>/<Method>` carrying its request message as a protobuf
-      /// binary body.
-      public enum \(service.name)Method: String, Sendable, CaseIterable {
-
-      """
-
-    for method in service.methods {
-      out += "  case \(swiftCase(method.name)) = \"/\(package).\(service.name)/\(method.name)\"\n"
-    }
-
-    out += """
-
-        /// The minimum credential a caller must present. A server rejects anything weaker;
-        /// a client that has not authenticated knows before calling.
-        public var audience: Audience {
-          switch self {
-
-      """
-
-    for method in service.methods {
-      out += "    case .\(swiftCase(method.name)): return .\(swiftEnumCase(method.audience))\n"
-    }
-
-    out += """
-          }
-        }
-
-        /// The path this rpc is called at, relative to the API base URL.
-        public var path: String { rawValue }
-      }
-
-      """
+    out += renderRPCEnum(service)
+    out += renderEndpointEnum(service)
   }
 
   return out
 }
 
-// AUDIENCE_END_USER -> endUser, matching how protoc-gen-swift names the case it
-// generates for that value. Derived rather than mapped, so a new audience value needs
-// no change here.
-func swiftEnumCase(_ protoValue: String) -> String {
-  let withoutPrefix = protoValue.hasPrefix("AUDIENCE_")
-    ? String(protoValue.dropFirst("AUDIENCE_".count))
-    : protoValue
-  let words = withoutPrefix.split(separator: "_").map { $0.lowercased() }
-  guard let first = words.first else { return withoutPrefix.lowercased() }
-  return first + words.dropFirst().map { $0.capitalized }.joined()
+/// What a server routes on: every rpc, its template, and what it demands of a caller.
+func renderRPCEnum(_ service: Service) -> String {
+  var out = """
+
+    /// Every rpc on `\(service.name)`: the verb it answers, the path template it is registered
+    /// at, and the credential it requires.
+    ///
+    /// A server builds its router from `allCases` and dispatches on the matched case, so an rpc
+    /// added to the contract breaks an exhaustive switch until it is handled.
+    public enum \(service.name)RPC: String, Sendable, CaseIterable {
+
+    """
+
+  for method in service.methods {
+    out += "  case \(lowerCamel(method.name)) = \"\(method.name)\"\n"
+  }
+
+  out += renderSwitch(
+    service: service,
+    signature: "  /// The verb this rpc answers.\n  public var method: HttpMethod",
+    body: { ".\(swiftEnumCase($0.verb, strippingPrefix: "HTTP_METHOD_"))" }
+  )
+
+  out += renderSwitch(
+    service: service,
+    signature: """
+        /// The path template, `{brace}` parameters included, as a router wants it.
+        public var template: String
+      """,
+    body: { "\"\($0.pathTemplate)\"" }
+  )
+
+  out += renderSwitch(
+    service: service,
+    signature: """
+        /// The minimum credential a caller must present. A server rejects anything weaker.
+        public var audience: Audience
+      """,
+    body: { ".\(swiftEnumCase($0.audience, strippingPrefix: "AUDIENCE_"))" }
+  )
+
+  out += "}\n"
+  return out
+}
+
+/// What a client calls: a concrete path, with the compiler demanding every id in it.
+func renderEndpointEnum(_ service: Service) -> String {
+  var out = """
+
+    /// One call to `\(service.name)`, with the ids its path needs.
+    ///
+    /// A client builds this and reads `path`. Nothing spells a path itself, and an rpc whose
+    /// path takes an id cannot be constructed without one.
+    ///
+    /// Ids are interpolated raw. Percent-encoding belongs to whoever assembles the URL —
+    /// `URLComponents.path` does it correctly, and doing it here as well would double-encode.
+    public enum \(service.name)Endpoint: Sendable {
+
+    """
+
+  for method in service.methods {
+    let parameters = method.pathParameters
+    if parameters.isEmpty {
+      out += "  case \(lowerCamel(method.name))\n"
+    } else {
+      let labels = parameters.map { "\($0): String" }.joined(separator: ", ")
+      out += "  case \(lowerCamel(method.name))(\(labels))\n"
+    }
+  }
+
+  out += "\n  /// The path to call, relative to the API base URL.\n  public var path: String {\n    switch self {\n"
+
+  for method in service.methods {
+    let parameters = method.pathParameters
+    let caseName = lowerCamel(method.name)
+    if parameters.isEmpty {
+      out += "    case .\(caseName): return \"\(method.pathTemplate)\"\n"
+    } else {
+      let bindings = parameters.map { "let \($0)" }.joined(separator: ", ")
+      var interpolated = method.pathTemplate
+      for parameter in parameters {
+          interpolated = interpolated.replacingOccurrences(
+          of: "{\(parameter)}",
+          with: "\\(\(parameter))"
+        )
+      }
+      out += "    case .\(caseName)(\(bindings)): return \"\(interpolated)\"\n"
+    }
+  }
+
+  out += """
+        }
+      }
+
+      /// Which rpc this is, for anything that needs the verb or the audience.
+      public var rpc: \(service.name)RPC {
+        switch self {
+
+    """
+
+  for method in service.methods {
+    let parameters = method.pathParameters
+    let caseName = lowerCamel(method.name)
+    if parameters.isEmpty {
+      out += "    case .\(caseName): return .\(caseName)\n"
+    } else {
+      // Every associated value is bound and used, so nothing is discarded.
+      let bindings = parameters.map { "let \($0)" }.joined(separator: ", ")
+      let used = parameters.map { "_ = \($0)" }.joined(separator: "; ")
+      out += "    case .\(caseName)(\(bindings)): \(used); return .\(caseName)\n"
+    }
+  }
+
+  out += """
+        }
+      }
+    }
+
+    """
+
+  return out
+}
+
+func renderSwitch(service: Service, signature: String, body: (Method) -> String) -> String {
+  var out = "\n\(signature) {\n    switch self {\n"
+  for method in service.methods {
+    out += "    case .\(lowerCamel(method.name)): return \(body(method))\n"
+  }
+  out += "    }\n  }\n"
+  return out
 }
 
 let arguments = CommandLine.arguments

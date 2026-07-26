@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package differentrequests.v1;
 
+import "differentrequests_options.proto";
 import "google/protobuf/timestamp.proto";
 
 option swift_prefix = "";
@@ -111,26 +112,26 @@ enum RequestStatus {
 
   // Submitted, not yet triaged. What every request starts as, and the queue a
   // triager works through.
-  REQUEST_STATUS_OPEN = 1;
+  REQUEST_STATUS_OPEN = 1 [(url_token) = "open"];
 
   // Accepted, not started.
-  REQUEST_STATUS_PLANNED = 2;
+  REQUEST_STATUS_PLANNED = 2 [(url_token) = "planned"];
 
-  REQUEST_STATUS_IN_PROGRESS = 3;
+  REQUEST_STATUS_IN_PROGRESS = 3 [(url_token) = "in-progress"];
 
   // Built and released. Terminal.
-  REQUEST_STATUS_SHIPPED = 4;
+  REQUEST_STATUS_SHIPPED = 4 [(url_token) = "shipped"];
 
   // Refused, with a reason the author can read. Terminal. A decline with no
   // reason reads as being ignored, so `decline` below is required in this state.
-  REQUEST_STATUS_DECLINED = 5;
+  REQUEST_STATUS_DECLINED = 5 [(url_token) = "declined"];
 
   // Folded into another request, which now carries this one's votes.
   // `merged_into_request_id` is required in this state and meaningless in every
   // other. A merged request leaves the board but keeps answering on its own
   // detail route, because someone holding a link to it should be told where
   // their vote went rather than shown a 404.
-  REQUEST_STATUS_MERGED = 6;
+  REQUEST_STATUS_MERGED = 6 [(url_token) = "merged"];
 }
 
 // A reusable reason a tenant declines things, defined once in the console.

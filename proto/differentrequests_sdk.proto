@@ -10,26 +10,24 @@ option swift_prefix = "";
 
 // The SDK-facing surface: everything a third-party iOS app can reach.
 //
-// Transport, stated once and applying to every rpc below without exception:
+// Ordinary HTTP endpoints carrying protobuf payloads. A verb and a path per rpc,
+// identifiers in the path, filters and pagination in the query, and a body only
+// where a write has one:
 //
-//   POST /differentrequests.v1.RequestsService/<Method>
-//   Content-Type: application/proto
+//   GET /requests?sort=top&cursor=…        Accept: application/x-protobuf
+//   POST /requests                         Content-Type: application/x-protobuf
 //
-// The request message is the body, serialized as protobuf binary. The response
-// message is the body, serialized as protobuf binary. Nothing travels any other
-// way — no path parameters, no query strings, no form fields, and no JSON on any
-// route, in any direction, including errors.
+// Every response body is a serialized message, including a failure, which is an
+// ApiError. No JSON travels in either direction on any route.
 //
-// That is why every rpc is POST and why no path appears in this file. A `GET
-// /requests?sort=top&cursor=…` would encode ListRequestsRequest a second time, in
-// a second syntax, hand-parsed on arrival — a shadow of the message right next to
-// the message. One encoding means one definition of what a request is, and it is
-// this one.
+// Proto is the payload, not the addressing. A path segment and a query parameter
+// are how HTTP names a thing and scopes a read, and they are what make a response
+// cacheable and a request legible in a log; replacing them with one POST per rpc
+// would buy nothing and lose all of it.
 //
-// The cost, accepted deliberately: the API cannot be explored with curl, and no
-// caller can be written without the generated types. The audience is developers
-// dropping in the SPM package, and for them the SDK is the only intended client.
-// `protoc --decode` reads a captured body when something needs debugging.
+// endpoint-gen turns the annotations below into one endpoint table that both the
+// server's router and the SDK's client are built from, so neither side writes a
+// path and neither can spell one the other does not serve.
 //
 // Field numbers are the compatibility contract under a binary encoding. A number
 // may never be reused or renumbered; a removed field is `reserved`.
@@ -161,11 +159,11 @@ enum RequestSort {
 
   // Most-voted first. The default, because demand is the thing the board exists
   // to measure.
-  REQUEST_SORT_TOP = 1;
+  REQUEST_SORT_TOP = 1 [(url_token) = "top"];
 
   // Newest first. What a triager's queue reads, and what makes an empty-looking
   // board show that it is alive.
-  REQUEST_SORT_NEW = 2;
+  REQUEST_SORT_NEW = 2 [(url_token) = "new"];
 }
 
 message ListRequestsRequest {
@@ -182,28 +180,22 @@ message ListRequestsRequest {
   // moment of writing rather than in triage afterwards.
   string query = 3;
 
-  // Opaque continuation from a previous page. Empty for the first page.
+  // Opaque continuation from a previous page, carried in the query. Empty for the
+  // first page.
   //
-  // Bytes, not a string: it carries a serialized message the server owns, and a
-  // string field would need base64 to hold it — a second encoding for something
-  // that is already proto. Field 4 held the base64 form.
-  reserved 4;
-  bytes cursor = 6;
-
-  // The server decides the page size, so a caller does not send one. Asking for a
-  // window the server clamps is how a pager steps past results that were never
-  // delivered. Reserved rather than removed: under a binary encoding a field
-  // number is never reused.
-  reserved 5;
+  // A client may only echo it back, so what it encodes is the server's business.
+  //
+  // There is no page size: the server decides, because asking for a window the
+  // server clamps is how a pager steps past results that were never delivered.
+  string cursor = 4;
 }
 
 message ListRequestsResponse {
   repeated FeatureRequest requests = 1;
 
   // Empty when this is the last page. Presence, not a bool, so "is there more?"
-  // cannot disagree with "what do I pass next?". Field 2 held the base64 form.
-  reserved 2;
-  bytes next_cursor = 3;
+  // cannot disagree with "what do I pass next?".
+  string next_cursor = 2;
 }
 
 message GetRequestRequest {
@@ -280,17 +272,12 @@ message ListCommentsRequest {
 
   // Oldest first, always — a discussion read newest-first is unreadable. No sort
   // parameter for that reason.
-  //
-  // Field 2 held the base64 form; field 3 held a page size.
-  reserved 2, 3;
-  bytes cursor = 4;
+  string cursor = 2;
 }
 
 message ListCommentsResponse {
   repeated Comment comments = 1;
-
-  reserved 2;
-  bytes next_cursor = 3;
+  string next_cursor = 2;
 }
 
 message CreateCommentRequest {
@@ -307,16 +294,12 @@ message CreateCommentResponse {
 // ---------------------------------------------------------------------------
 
 message ListNotificationsRequest {
-  // Field 1 held the base64 form; field 2 held a page size.
-  reserved 1, 2;
-  bytes cursor = 3;
+  string cursor = 1;
 }
 
 message ListNotificationsResponse {
   repeated Notification notifications = 1;
-
-  reserved 2;
-  bytes next_cursor = 3;
+  string next_cursor = 2;
 }
 
 message GetUnreadCountRequest {}
@@ -369,103 +352,177 @@ message GetRoadmapResponse {
 }
 
 message ListChangelogRequest {
-  // Field 1 held the base64 form; field 2 held a page size.
-  reserved 1, 2;
-  bytes cursor = 3;
+  string cursor = 1;
 }
 
 message ListChangelogResponse {
   // Published entries only, newest first. A draft is never on the wire.
   repeated ChangelogEntry entries = 1;
-
-  reserved 2;
-  bytes next_cursor = 3;
+  string next_cursor = 2;
 }
 
 // ---------------------------------------------------------------------------
 // The surface
 // ---------------------------------------------------------------------------
 
-// Every rpc a third-party app can call.
+// Every rpc a third-party app can call, with the verb and path it is served at.
 //
-// No verb and no path appear here: both are derived, as the transport note at the
-// top of this file states. What an rpc must declare is its audience, because that
-// is the one thing HTTP cannot express and the one thing that leaks a tenant's
-// board if it is wrong.
+// endpoint-gen emits one table from these, which the server's router and the SDK's
+// client are both built from — so a path exists in exactly one place.
 service RequestsService {
+
   rpc GetConfig(GetConfigRequest) returns (GetConfigResponse) {
-    option (audience) = AUDIENCE_APP_KEY;
+    option (route) = {
+      method: HTTP_METHOD_GET
+      path: "/config"
+      audience: AUDIENCE_APP_KEY
+    };
   }
 
   rpc CreateSession(CreateSessionRequest) returns (CreateSessionResponse) {
-    option (audience) = AUDIENCE_APP_KEY;
+    option (route) = {
+      method: HTTP_METHOD_POST
+      path: "/sessions"
+      audience: AUDIENCE_APP_KEY
+    };
   }
 
   rpc ListRequests(ListRequestsRequest) returns (ListRequestsResponse) {
-    option (audience) = AUDIENCE_APP_KEY;
-  }
-
-  rpc GetRequest(GetRequestRequest) returns (GetRequestResponse) {
-    option (audience) = AUDIENCE_APP_KEY;
+    option (route) = {
+      method: HTTP_METHOD_GET
+      path: "/requests"
+      audience: AUDIENCE_APP_KEY
+    };
   }
 
   rpc CreateRequest(CreateRequestRequest) returns (CreateRequestResponse) {
-    option (audience) = AUDIENCE_END_USER;
+    option (route) = {
+      method: HTTP_METHOD_POST
+      path: "/requests"
+      audience: AUDIENCE_END_USER
+    };
+  }
+
+  rpc GetRequest(GetRequestRequest) returns (GetRequestResponse) {
+    option (route) = {
+      method: HTTP_METHOD_GET
+      path: "/requests/{requestId}"
+      audience: AUDIENCE_APP_KEY
+    };
   }
 
   rpc Vote(VoteRequest) returns (VoteResponse) {
-    option (audience) = AUDIENCE_END_USER;
+    option (route) = {
+      method: HTTP_METHOD_PUT
+      path: "/requests/{requestId}/vote"
+      audience: AUDIENCE_END_USER
+    };
   }
 
   rpc ClearVote(ClearVoteRequest) returns (ClearVoteResponse) {
-    option (audience) = AUDIENCE_END_USER;
+    option (route) = {
+      method: HTTP_METHOD_DELETE
+      path: "/requests/{requestId}/vote"
+      audience: AUDIENCE_END_USER
+    };
   }
 
   rpc Follow(FollowRequest) returns (FollowResponse) {
-    option (audience) = AUDIENCE_END_USER;
+    option (route) = {
+      method: HTTP_METHOD_PUT
+      path: "/requests/{requestId}/follow"
+      audience: AUDIENCE_END_USER
+    };
   }
 
   rpc Unfollow(UnfollowRequest) returns (UnfollowResponse) {
-    option (audience) = AUDIENCE_END_USER;
+    option (route) = {
+      method: HTTP_METHOD_DELETE
+      path: "/requests/{requestId}/follow"
+      audience: AUDIENCE_END_USER
+    };
   }
 
   rpc ListComments(ListCommentsRequest) returns (ListCommentsResponse) {
-    option (audience) = AUDIENCE_APP_KEY;
+    option (route) = {
+      method: HTTP_METHOD_GET
+      path: "/requests/{requestId}/comments"
+      audience: AUDIENCE_APP_KEY
+    };
   }
 
   rpc CreateComment(CreateCommentRequest) returns (CreateCommentResponse) {
-    option (audience) = AUDIENCE_END_USER;
+    option (route) = {
+      method: HTTP_METHOD_POST
+      path: "/requests/{requestId}/comments"
+      audience: AUDIENCE_END_USER
+    };
   }
 
   rpc ListNotifications(ListNotificationsRequest) returns (ListNotificationsResponse) {
-    option (audience) = AUDIENCE_END_USER;
+    option (route) = {
+      method: HTTP_METHOD_GET
+      path: "/notifications"
+      audience: AUDIENCE_END_USER
+    };
   }
 
+  // The literal segment is declared before the `{notificationId}` template below it. A
+  // router matching in declaration order must keep it there, or the badge count becomes
+  // a lookup for a notification called "unread-count".
   rpc GetUnreadCount(GetUnreadCountRequest) returns (GetUnreadCountResponse) {
-    option (audience) = AUDIENCE_END_USER;
-  }
-
-  rpc MarkNotificationRead(MarkNotificationReadRequest) returns (MarkNotificationReadResponse) {
-    option (audience) = AUDIENCE_END_USER;
+    option (route) = {
+      method: HTTP_METHOD_GET
+      path: "/notifications/unread-count"
+      audience: AUDIENCE_END_USER
+    };
   }
 
   rpc MarkAllNotificationsRead(MarkAllNotificationsReadRequest) returns (MarkAllNotificationsReadResponse) {
-    option (audience) = AUDIENCE_END_USER;
+    option (route) = {
+      method: HTTP_METHOD_PUT
+      path: "/notifications/read-all"
+      audience: AUDIENCE_END_USER
+    };
+  }
+
+  rpc MarkNotificationRead(MarkNotificationReadRequest) returns (MarkNotificationReadResponse) {
+    option (route) = {
+      method: HTTP_METHOD_PUT
+      path: "/notifications/{notificationId}/read"
+      audience: AUDIENCE_END_USER
+    };
   }
 
   rpc RegisterDevice(RegisterDeviceRequest) returns (RegisterDeviceResponse) {
-    option (audience) = AUDIENCE_END_USER;
+    option (route) = {
+      method: HTTP_METHOD_PUT
+      path: "/devices"
+      audience: AUDIENCE_END_USER
+    };
   }
 
   rpc UnregisterDevice(UnregisterDeviceRequest) returns (UnregisterDeviceResponse) {
-    option (audience) = AUDIENCE_END_USER;
+    option (route) = {
+      method: HTTP_METHOD_DELETE
+      path: "/devices/{deviceId}"
+      audience: AUDIENCE_END_USER
+    };
   }
 
   rpc GetRoadmap(GetRoadmapRequest) returns (GetRoadmapResponse) {
-    option (audience) = AUDIENCE_APP_KEY;
+    option (route) = {
+      method: HTTP_METHOD_GET
+      path: "/roadmap"
+      audience: AUDIENCE_APP_KEY
+    };
   }
 
   rpc ListChangelog(ListChangelogRequest) returns (ListChangelogResponse) {
-    option (audience) = AUDIENCE_APP_KEY;
+    option (route) = {
+      method: HTTP_METHOD_GET
+      path: "/changelog"
+      audience: AUDIENCE_APP_KEY
+    };
   }
 }

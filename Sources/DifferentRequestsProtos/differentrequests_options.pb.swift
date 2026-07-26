@@ -31,8 +31,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 ///
 /// There are deliberately no console or platform-admin values. Those surfaces are
 /// server-rendered HTML in a private repository and have no rpcs to mark, so a
-/// value for them would name a caller that does not exist. Add one when there is
-/// something to attach it to.
+/// value for them would name a caller that does not exist.
 public enum Audience: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
@@ -81,6 +80,72 @@ public enum Audience: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 }
 
+public enum HttpMethod: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+  case unspecified // = 0
+  case get // = 1
+  case post // = 2
+  case put // = 3
+  case delete // = 4
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .unspecified
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .unspecified
+    case 1: self = .get
+    case 2: self = .post
+    case 3: self = .put
+    case 4: self = .delete
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .unspecified: return 0
+    case .get: return 1
+    case .post: return 2
+    case .put: return 3
+    case .delete: return 4
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [HttpMethod] = [
+    .unspecified,
+    .get,
+    .post,
+    .put,
+    .delete,
+  ]
+
+}
+
+public struct Route: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var method: HttpMethod = .unspecified
+
+  /// Path template relative to the API root, with `{brace}` parameters —
+  /// `/requests/{requestId}/comments`. A parameter name matches the field in the
+  /// rpc's request message that supplies it, which is what lets the generator bind
+  /// it without a second mapping to keep in sync.
+  public var path: String = String()
+
+  public var audience: Audience = .unspecified
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
 // MARK: - Extension support defined in differentrequests_options.proto.
 
 // MARK: - Extension Properties
@@ -90,21 +155,39 @@ public enum Audience: SwiftProtobuf.Enum, Swift.CaseIterable {
 // declaration. To avoid naming collisions, the names are prefixed with the name of
 // the scope where the extend directive occurs.
 
+extension SwiftProtobuf.Google_Protobuf_EnumValueOptions {
+
+  public var urlToken: String {
+    get {return getExtensionValue(ext: Extensions_url_token) ?? String()}
+    set {setExtensionValue(ext: Extensions_url_token, value: newValue)}
+  }
+  /// Returns true if extension `Extensions_url_token`
+  /// has been explicitly set.
+  public var hasURLToken: Bool {
+    return hasExtensionValue(ext: Extensions_url_token)
+  }
+  /// Clears the value of extension `Extensions_url_token`.
+  /// Subsequent reads from it will return its default value.
+  public mutating func clearURLToken() {
+    clearExtensionValue(ext: Extensions_url_token)
+  }
+}
+
 extension SwiftProtobuf.Google_Protobuf_MethodOptions {
 
-  public var audience: Audience {
-    get {return getExtensionValue(ext: Extensions_audience) ?? .unspecified}
-    set {setExtensionValue(ext: Extensions_audience, value: newValue)}
+  public var route: Route {
+    get {return getExtensionValue(ext: Extensions_route) ?? Route()}
+    set {setExtensionValue(ext: Extensions_route, value: newValue)}
   }
-  /// Returns true if extension `Extensions_audience`
+  /// Returns true if extension `Extensions_route`
   /// has been explicitly set.
-  public var hasAudience: Bool {
-    return hasExtensionValue(ext: Extensions_audience)
+  public var hasRoute: Bool {
+    return hasExtensionValue(ext: Extensions_route)
   }
-  /// Clears the value of extension `Extensions_audience`.
+  /// Clears the value of extension `Extensions_route`.
   /// Subsequent reads from it will return its default value.
-  public mutating func clearAudience() {
-    clearExtensionValue(ext: Extensions_audience)
+  public mutating func clearRoute() {
+    clearExtensionValue(ext: Extensions_route)
   }
 
 }
@@ -116,20 +199,72 @@ extension SwiftProtobuf.Google_Protobuf_MethodOptions {
 /// in parsing, or it can be combined with other `SwiftProtobuf.SimpleExtensionMap`s to create
 /// a larger `SwiftProtobuf.SimpleExtensionMap`.
 public let DifferentrequestsOptions_Extensions: SwiftProtobuf.SimpleExtensionMap = [
-  Extensions_audience
+  Extensions_route,
+  Extensions_url_token
 ]
 
 // Extension Objects - The only reason these might be needed is when manually
 // constructing a `SimpleExtensionMap`, otherwise, use the above _Extension Properties_
 // accessors for the extension fields on the messages directly.
 
-public let Extensions_audience = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalEnumExtensionField<Audience>, SwiftProtobuf.Google_Protobuf_MethodOptions>(
+public let Extensions_route = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalMessageExtensionField<Route>, SwiftProtobuf.Google_Protobuf_MethodOptions>(
   _protobuf_fieldNumber: 51240,
-  fieldName: "differentrequests.v1.audience"
+  fieldName: "differentrequests.v1.route"
+)
+
+public let Extensions_url_token = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalExtensionField<SwiftProtobuf.ProtobufString>, SwiftProtobuf.Google_Protobuf_EnumValueOptions>(
+  _protobuf_fieldNumber: 51241,
+  fieldName: "differentrequests.v1.url_token"
 )
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
+fileprivate let _protobuf_package = "differentrequests.v1"
+
 extension Audience: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0AUDIENCE_UNSPECIFIED\0\u{1}AUDIENCE_APP_KEY\0\u{1}AUDIENCE_END_USER\0")
+}
+
+extension HttpMethod: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0HTTP_METHOD_UNSPECIFIED\0\u{1}HTTP_METHOD_GET\0\u{1}HTTP_METHOD_POST\0\u{1}HTTP_METHOD_PUT\0\u{1}HTTP_METHOD_DELETE\0")
+}
+
+extension Route: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".Route"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}method\0\u{1}path\0\u{1}audience\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.method) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.path) }()
+      case 3: try { try decoder.decodeSingularEnumField(value: &self.audience) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.method != .unspecified {
+      try visitor.visitSingularEnumField(value: self.method, fieldNumber: 1)
+    }
+    if !self.path.isEmpty {
+      try visitor.visitSingularStringField(value: self.path, fieldNumber: 2)
+    }
+    if self.audience != .unspecified {
+      try visitor.visitSingularEnumField(value: self.audience, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Route, rhs: Route) -> Bool {
+    if lhs.method != rhs.method {return false}
+    if lhs.path != rhs.path {return false}
+    if lhs.audience != rhs.audience {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
 }
