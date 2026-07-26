@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package differentrequests.v1;
+
+import "google/protobuf/descriptor.proto";
+
+option swift_prefix = "";
+
+// Who may call an rpc, attached to the rpc itself, so the credential it accepts
+// lives in the contract rather than in a middleware someone remembers to attach.
+//
+// This is the only route metadata the schema carries. Verb and path are not
+// stated because they are not choices: every rpc is POST to
+// `/differentrequests.v1.<Service>/<Method>`, derived by the generator. An option
+// restating a derivable fact is one more thing that can disagree with the code.
+extend google.protobuf.MethodOptions {
+  Audience audience = 51240;
+}
+
+// The *minimum* credential a caller must present. Every rpc names exactly one;
+// there is no "any" and no default, so an rpc that forgets to say is a generator
+// error rather than an open endpoint.
+//
+// Minimum, not exact: an end-user session is always accompanied by an app key, so
+// an rpc marked APP_KEY also serves a session caller — and populates the
+// viewer-relative fields it would otherwise omit. The reverse never holds. An rpc
+// marked END_USER rejects a bare app key.
+//
+// There are deliberately no console or platform-admin values. Those surfaces are
+// server-rendered HTML in a private repository and have no rpcs to mark, so a
+// value for them would name a caller that does not exist. Add one when there is
+// something to attach it to.
+enum Audience {
+  // Never valid on an rpc. Present because proto3 requires a zero value, and an
+  // unset audience must fail loudly rather than resolve to the weakest one.
+  AUDIENCE_UNSPECIFIED = 0;
+
+  // `X-App-Key: dr_<hex>` alone. Identifies the tenant's app but nobody within
+  // it, so these rpcs may not read or write anything user-scoped.
+  AUDIENCE_APP_KEY = 1;
+
+  // App key plus an end-user session token issued by CreateSession. Everything an
+  // SDK caller does on behalf of a person: submit, vote, follow, comment, read
+  // their inbox.
+  AUDIENCE_END_USER = 2;
+}

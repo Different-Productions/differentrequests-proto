@@ -1,0 +1,452 @@
+syntax = "proto3";
+
+package differentrequests.v1;
+
+import "differentrequests_domain.proto";
+import "differentrequests_options.proto";
+import "google/protobuf/timestamp.proto";
+
+option swift_prefix = "";
+
+// The SDK-facing surface: everything a third-party iOS app can reach.
+//
+// Transport, stated once and applying to every rpc below without exception:
+//
+//   POST /differentrequests.v1.RequestsService/<Method>
+//   Content-Type: application/proto
+//
+// The request message is the body, serialized as protobuf binary. The response
+// message is the body, serialized as protobuf binary. Nothing travels any other
+// way — no path parameters, no query strings, no form fields, and no JSON on any
+// route, in any direction, including errors.
+//
+// That is why every rpc is POST and why no path appears in this file. A `GET
+// /requests?sort=top&cursor=…` would encode ListRequestsRequest a second time, in
+// a second syntax, hand-parsed on arrival — a shadow of the message right next to
+// the message. One encoding means one definition of what a request is, and it is
+// this one.
+//
+// The cost, accepted deliberately: the API cannot be explored with curl, and no
+// caller can be written without the generated types. The audience is developers
+// dropping in the SPM package, and for them the SDK is the only intended client.
+// `protoc --decode` reads a captured body when something needs debugging.
+//
+// Field numbers are the compatibility contract under a binary encoding. A number
+// may never be reused or renumbered; a removed field is `reserved`.
+
+// ---------------------------------------------------------------------------
+// Errors
+// ---------------------------------------------------------------------------
+
+// Why a call failed.
+//
+// A failed call returns an ApiError in the body, encoded exactly like a successful
+// response. This enum is the whole of what a client branches on: the HTTP status is
+// transport, is not part of this contract, and must not be interpreted.
+//
+// Stated that way because a status code cannot carry the distinctions that matter —
+// a 403 meaning "upgrade to Pro" and a 403 meaning "not your request" need
+// different UI — and a client branching on the status while the reason sits in the
+// body is reading a shadow of the error instead of the error.
+enum ErrorCode {
+  ERROR_CODE_UNSPECIFIED = 0;
+
+  // Malformed or failing validation — a blank title, a body over the limit.
+  ERROR_CODE_INVALID_ARGUMENT = 1;
+
+  // Missing, expired, or unparseable credential. An expired end-user session is
+  // this, and the SDK's response is to re-identify rather than to log anyone out.
+  ERROR_CODE_UNAUTHENTICATED = 2;
+
+  // Authenticated, but not permitted — someone else's request, another tenant's
+  // app.
+  ERROR_CODE_PERMISSION_DENIED = 3;
+
+  ERROR_CODE_NOT_FOUND = 4;
+
+  // The feature exists but the tenant's plan does not include it. Distinct from
+  // PERMISSION_DENIED because the remedy is a purchase, not a different account,
+  // and only the host developer can act on it — never surfaced to an end user.
+  ERROR_CODE_PLAN_REQUIRED = 5;
+
+  // Too many writes. Always accompanied by `retry_after_seconds`.
+  ERROR_CODE_RATE_LIMITED = 6;
+
+  ERROR_CODE_INTERNAL = 7;
+}
+
+message ApiError {
+  ErrorCode code = 1;
+
+  // Human-readable, English, for a developer reading a log. Not copy: a client
+  // must not render this to an end user, because it is written for whoever is
+  // debugging and may name internals.
+  string message = 2;
+
+  // Which field failed, for INVALID_ARGUMENT. Names a field in the request
+  // message as the schema spells it.
+  string field = 3;
+
+  // Set only for RATE_LIMITED. The single statement of how long to wait — there is
+  // no Retry-After header to disagree with it.
+  int32 retry_after_seconds = 4;
+}
+
+// ---------------------------------------------------------------------------
+// Configuration and identity
+// ---------------------------------------------------------------------------
+
+// What the SDK needs before it has a user: which surfaces to offer, and how to
+// present itself.
+//
+// Fetched once per launch. Everything here is a property of the tenant's plan
+// and settings, so a client that hides a tab on its own guess will show the
+// wrong thing the moment a tenant upgrades.
+message AppConfig {
+  App app = 1;
+
+  // Whether the roadmap and changelog surfaces are enabled for this app. Both
+  // are Pro anchors, so both are absent on Free — and the SDK hides the tab
+  // rather than showing one that returns PLAN_REQUIRED.
+  bool roadmap_enabled = 2;
+  bool changelog_enabled = 3;
+
+  // Whether comments are accepted on this app's requests. Free on every plan;
+  // off when the tenant has chosen not to moderate a discussion.
+  bool comments_enabled = 4;
+
+  // Whether the SDK renders "Powered by DifferentRequests". True on Free.
+  bool show_badge = 5;
+}
+
+message GetConfigRequest {}
+
+message GetConfigResponse {
+  AppConfig config = 1;
+}
+
+// Exchange the host app's identifier for a session.
+//
+// Upsert semantics: the same external_id returns the same user, with email,
+// display name, and traits refreshed from whatever the host app now knows. That
+// is what lets someone reinstall and still hold their votes.
+message CreateSessionRequest {
+  // Required. See EndUser.external_id — the host app's own stable id.
+  string external_id = 1;
+
+  // Optional, all three. Supplied by the host app, refreshed on every call.
+  string email = 2;
+  string display_name = 3;
+  map<string, string> traits = 4;
+}
+
+message CreateSessionResponse {
+  EndUser user = 1;
+
+  // Bearer token for every END_USER route. Opaque to the client: its format is
+  // the server's business and clients must not parse it to find the expiry —
+  // that is what expires_at is for.
+  string session_token = 2;
+
+  google.protobuf.Timestamp expires_at = 3;
+}
+
+// ---------------------------------------------------------------------------
+// The board
+// ---------------------------------------------------------------------------
+
+// How a board page is ordered.
+enum RequestSort {
+  REQUEST_SORT_UNSPECIFIED = 0;
+
+  // Most-voted first. The default, because demand is the thing the board exists
+  // to measure.
+  REQUEST_SORT_TOP = 1;
+
+  // Newest first. What a triager's queue reads, and what makes an empty-looking
+  // board show that it is alive.
+  REQUEST_SORT_NEW = 2;
+}
+
+message ListRequestsRequest {
+  // Empty means every status except MERGED — a merged request is not a board
+  // item. Passing MERGED explicitly is an INVALID_ARGUMENT rather than an empty
+  // page, because a caller asking for it has misunderstood the model.
+  repeated RequestStatus statuses = 1;
+
+  RequestSort sort = 2;
+
+  // Free-text search over title and body. This is also the search-before-submit
+  // path: the same ranking and the same page shape, so a client does not
+  // maintain two board renderers, and duplicate suppression happens at the
+  // moment of writing rather than in triage afterwards.
+  string query = 3;
+
+  // Opaque continuation from a previous page. Empty for the first page.
+  string cursor = 4;
+
+  // Server-clamped. Zero means the server's default.
+  int32 limit = 5;
+}
+
+message ListRequestsResponse {
+  repeated FeatureRequest requests = 1;
+
+  // Empty when this is the last page. Presence, not a bool, so "is there more?"
+  // cannot disagree with "what do I pass next?".
+  string next_cursor = 2;
+}
+
+message GetRequestRequest {
+  string request_id = 1;
+}
+
+message GetRequestResponse {
+  FeatureRequest request = 1;
+}
+
+message CreateRequestRequest {
+  string title = 1;
+  string body = 2;
+}
+
+message CreateRequestResponse {
+  // Returned with the author's own vote already counted. Submitting is voting —
+  // asking for something and then having to vote for it separately reads as a
+  // bug, and it makes first-day vote counts lie.
+  FeatureRequest request = 1;
+}
+
+// ---------------------------------------------------------------------------
+// Votes and follows
+// ---------------------------------------------------------------------------
+
+// Both vote routes are idempotent: voting twice is one vote, and clearing a vote
+// nobody cast succeeds. A client retrying on a flaky network must not be able to
+// double-count demand.
+message VoteRequest {
+  string request_id = 1;
+}
+
+message VoteResponse {
+  // The updated request, so a client renders the new count without refetching
+  // the page it is already showing.
+  FeatureRequest request = 1;
+}
+
+message ClearVoteRequest {
+  string request_id = 1;
+}
+
+message ClearVoteResponse {
+  FeatureRequest request = 1;
+}
+
+// Following is what makes a status change reach someone. Voting follows
+// implicitly — a separate opt-in that nobody finds means the loop never closes —
+// so these routes exist for the reader who wants updates without adding demand,
+// and for the voter who wants the vote but not the notifications.
+message FollowRequest {
+  string request_id = 1;
+}
+
+message FollowResponse {
+  FeatureRequest request = 1;
+}
+
+message UnfollowRequest {
+  string request_id = 1;
+}
+
+message UnfollowResponse {
+  FeatureRequest request = 1;
+}
+
+// ---------------------------------------------------------------------------
+// Comments
+// ---------------------------------------------------------------------------
+
+message ListCommentsRequest {
+  string request_id = 1;
+
+  // Oldest first, always — a discussion read newest-first is unreadable. No sort
+  // parameter for that reason.
+  string cursor = 2;
+  int32 limit = 3;
+}
+
+message ListCommentsResponse {
+  repeated Comment comments = 1;
+  string next_cursor = 2;
+}
+
+message CreateCommentRequest {
+  string request_id = 1;
+  string body = 2;
+}
+
+message CreateCommentResponse {
+  Comment comment = 1;
+}
+
+// ---------------------------------------------------------------------------
+// Notifications and devices
+// ---------------------------------------------------------------------------
+
+message ListNotificationsRequest {
+  string cursor = 1;
+  int32 limit = 2;
+}
+
+message ListNotificationsResponse {
+  repeated Notification notifications = 1;
+  string next_cursor = 2;
+}
+
+message GetUnreadCountRequest {}
+
+message GetUnreadCountResponse {
+  int32 unread_count = 1;
+}
+
+message MarkNotificationReadRequest {
+  string notification_id = 1;
+}
+
+message MarkNotificationReadResponse {
+  Notification notification = 1;
+}
+
+message MarkAllNotificationsReadRequest {}
+
+message MarkAllNotificationsReadResponse {
+  int32 marked_count = 1;
+}
+
+// Upsert, called on every launch. See DeviceRegistration.token.
+message RegisterDeviceRequest {
+  string token = 1;
+  PushEnvironment environment = 2;
+}
+
+message RegisterDeviceResponse {
+  DeviceRegistration device = 1;
+}
+
+message UnregisterDeviceRequest {
+  string device_id = 1;
+}
+
+message UnregisterDeviceResponse {}
+
+// ---------------------------------------------------------------------------
+// Public surfaces
+// ---------------------------------------------------------------------------
+
+message GetRoadmapRequest {}
+
+message GetRoadmapResponse {
+  // Ordered as they should be displayed, left to right: PLANNED, IN_PROGRESS,
+  // SHIPPED. Order is the server's to decide so every client's roadmap reads the
+  // same way.
+  repeated RoadmapColumn columns = 1;
+}
+
+message ListChangelogRequest {
+  string cursor = 1;
+  int32 limit = 2;
+}
+
+message ListChangelogResponse {
+  // Published entries only, newest first. A draft is never on the wire.
+  repeated ChangelogEntry entries = 1;
+  string next_cursor = 2;
+}
+
+// ---------------------------------------------------------------------------
+// The surface
+// ---------------------------------------------------------------------------
+
+// Every rpc a third-party app can call.
+//
+// No verb and no path appear here: both are derived, as the transport note at the
+// top of this file states. What an rpc must declare is its audience, because that
+// is the one thing HTTP cannot express and the one thing that leaks a tenant's
+// board if it is wrong.
+service RequestsService {
+  rpc GetConfig(GetConfigRequest) returns (GetConfigResponse) {
+    option (audience) = AUDIENCE_APP_KEY;
+  }
+
+  rpc CreateSession(CreateSessionRequest) returns (CreateSessionResponse) {
+    option (audience) = AUDIENCE_APP_KEY;
+  }
+
+  rpc ListRequests(ListRequestsRequest) returns (ListRequestsResponse) {
+    option (audience) = AUDIENCE_APP_KEY;
+  }
+
+  rpc GetRequest(GetRequestRequest) returns (GetRequestResponse) {
+    option (audience) = AUDIENCE_APP_KEY;
+  }
+
+  rpc CreateRequest(CreateRequestRequest) returns (CreateRequestResponse) {
+    option (audience) = AUDIENCE_END_USER;
+  }
+
+  rpc Vote(VoteRequest) returns (VoteResponse) {
+    option (audience) = AUDIENCE_END_USER;
+  }
+
+  rpc ClearVote(ClearVoteRequest) returns (ClearVoteResponse) {
+    option (audience) = AUDIENCE_END_USER;
+  }
+
+  rpc Follow(FollowRequest) returns (FollowResponse) {
+    option (audience) = AUDIENCE_END_USER;
+  }
+
+  rpc Unfollow(UnfollowRequest) returns (UnfollowResponse) {
+    option (audience) = AUDIENCE_END_USER;
+  }
+
+  rpc ListComments(ListCommentsRequest) returns (ListCommentsResponse) {
+    option (audience) = AUDIENCE_APP_KEY;
+  }
+
+  rpc CreateComment(CreateCommentRequest) returns (CreateCommentResponse) {
+    option (audience) = AUDIENCE_END_USER;
+  }
+
+  rpc ListNotifications(ListNotificationsRequest) returns (ListNotificationsResponse) {
+    option (audience) = AUDIENCE_END_USER;
+  }
+
+  rpc GetUnreadCount(GetUnreadCountRequest) returns (GetUnreadCountResponse) {
+    option (audience) = AUDIENCE_END_USER;
+  }
+
+  rpc MarkNotificationRead(MarkNotificationReadRequest) returns (MarkNotificationReadResponse) {
+    option (audience) = AUDIENCE_END_USER;
+  }
+
+  rpc MarkAllNotificationsRead(MarkAllNotificationsReadRequest) returns (MarkAllNotificationsReadResponse) {
+    option (audience) = AUDIENCE_END_USER;
+  }
+
+  rpc RegisterDevice(RegisterDeviceRequest) returns (RegisterDeviceResponse) {
+    option (audience) = AUDIENCE_END_USER;
+  }
+
+  rpc UnregisterDevice(UnregisterDeviceRequest) returns (UnregisterDeviceResponse) {
+    option (audience) = AUDIENCE_END_USER;
+  }
+
+  rpc GetRoadmap(GetRoadmapRequest) returns (GetRoadmapResponse) {
+    option (audience) = AUDIENCE_APP_KEY;
+  }
+
+  rpc ListChangelog(ListChangelogRequest) returns (ListChangelogResponse) {
+    option (audience) = AUDIENCE_APP_KEY;
+  }
+}

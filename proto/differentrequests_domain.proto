@@ -1,0 +1,351 @@
+syntax = "proto3";
+
+package differentrequests.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option swift_prefix = "";
+
+// The DifferentRequests domain: what a feature-request board is made of.
+//
+// These messages are both the domain vocabulary and the payloads the API
+// returns. There is deliberately no separate "entity" layer mirroring them —
+// two shapes for one concept is how a status enum ends up written three times.
+//
+// What is NOT here: storage layout. No partition keys, no sort keys, no GSI
+// projections, no table names. The storage model is designed against different
+// constraints (access patterns, tenant isolation, hot-partition avoidance) and
+// is free to look nothing like this.
+//
+// A consequence worth stating: there are no Vote or Follow messages, even
+// though storage certainly holds vote and follow rows. Nobody on the wire ever
+// asks for a list of votes — a caller needs the count and whether *they*
+// voted, which is what FeatureRequest.viewer carries. The absence is the
+// contract doing its job, not an omission.
+//
+// Ids are opaque strings. Their internal shape belongs to storage; a consumer
+// may only compare them for equality and echo them back.
+
+// A billing and team boundary — one developer, or one company, who may own
+// several apps.
+//
+// The plan lives here rather than on App because the customer relationship is
+// with the developer: someone who ships three apps buys Pro once, and metering
+// per app would make shipping a second app a pricing event.
+message Tenant {
+  string id = 1;
+  string name = 2;
+  Plan plan = 3;
+  google.protobuf.Timestamp created_at = 4;
+}
+
+// What a tenant is entitled to. Two tiers, deliberately: the intermediate tiers
+// tracked previously described a product with no buyers.
+enum Plan {
+  PLAN_UNSPECIFIED = 0;
+  PLAN_FREE = 1;
+  PLAN_PRO = 2;
+}
+
+// One board, belonging to one tenant, embedded in one iOS app.
+//
+// The unit of isolation. Every request, user, vote, and comment below is scoped
+// to an app, and an app key grants access to exactly one — so "which app is
+// this?" is answered by the credential, never by a caller-supplied id. Where an
+// app_id appears on a message below it is describing what the server resolved,
+// not accepting what the client claimed.
+message App {
+  string id = 1;
+  string tenant_id = 2;
+  string name = 3;
+  google.protobuf.Timestamp created_at = 4;
+}
+
+// A person inside a host app, identified without ever signing up.
+//
+// The host app already knows who its users are; making them create a second
+// account to ask for a feature is how boards end up empty. So the host app
+// hands us its own stable identifier and we mint a session against it.
+message EndUser {
+  string id = 1;
+
+  // The host app's own identifier for this person, unique within the app. The
+  // dedupe key: the same external_id on a new device is the same person, which
+  // is what lets someone keep their vote history after a reinstall.
+  //
+  // Chosen by the host developer, so it must be treated as untrusted input and
+  // never rendered without escaping.
+  string external_id = 2;
+
+  // Both optional, and both only ever supplied by the host app. Absent when the
+  // developer chooses not to share them — the board works without either, and a
+  // request from someone with no name renders as anonymous rather than failing.
+  string email = 3;
+  string display_name = 4;
+
+  // Arbitrary host-app attributes (plan, cohort, install date) carried so a
+  // triager can see who is asking. Untrusted, unindexed, and never used for
+  // authorization.
+  map<string, string> traits = 5;
+
+  google.protobuf.Timestamp created_at = 6;
+}
+
+// The author of a request or comment, denormalized onto what embeds it.
+//
+// A board renders 25 requests; resolving each author separately would be 25
+// extra reads to render a name. Carrying the name here is not a cache — the
+// display name at write time is what the reader should see.
+message UserRef {
+  string id = 1;
+  string display_name = 2;
+}
+
+// Where a request sits in the tenant's process.
+//
+// Five states, each with an action attached. A state nobody acts on is a state
+// that fills up: "under review" is what an untriaged board looks like, and OPEN
+// already says that honestly.
+enum RequestStatus {
+  REQUEST_STATUS_UNSPECIFIED = 0;
+
+  // Submitted, not yet triaged. What every request starts as, and the queue a
+  // triager works through.
+  REQUEST_STATUS_OPEN = 1;
+
+  // Accepted, not started.
+  REQUEST_STATUS_PLANNED = 2;
+
+  REQUEST_STATUS_IN_PROGRESS = 3;
+
+  // Built and released. Terminal.
+  REQUEST_STATUS_SHIPPED = 4;
+
+  // Refused, with a reason the author can read. Terminal. A decline with no
+  // reason reads as being ignored, so `decline` below is required in this state.
+  REQUEST_STATUS_DECLINED = 5;
+
+  // Folded into another request, which now carries this one's votes.
+  // `merged_into_request_id` is required in this state and meaningless in every
+  // other. A merged request leaves the board but keeps answering on its own
+  // detail route, because someone holding a link to it should be told where
+  // their vote went rather than shown a 404.
+  REQUEST_STATUS_MERGED = 6;
+}
+
+// A reusable reason a tenant declines things, defined once in the console.
+//
+// An entity rather than an enum because the honest reasons are per-product
+// ("outside our platform's capabilities", "conflicts with our roadmap") and a
+// closed set here would force every tenant into ours. Reusable because a
+// triager clearing twenty requests will not write twenty explanations, and
+// declining silently is worse than declining bluntly.
+message DeclineReason {
+  string id = 1;
+  string app_id = 2;
+
+  // Shown to end users on every request declined for this reason.
+  string label = 3;
+
+  // Optional longer explanation, shown on the request detail.
+  string description = 4;
+}
+
+// Why one specific request was declined.
+message RequestDecline {
+  DeclineReason reason = 1;
+
+  // Optional free text for this request specifically, in addition to the
+  // reason's own copy. Author-visible: written by an operator for the person who
+  // asked.
+  string note = 2;
+
+  google.protobuf.Timestamp declined_at = 3;
+}
+
+// The calling end user's own relationship to a request.
+//
+// Separate from the counts because these two fields are the entire difference
+// between a board that feels like a form and one that feels like a room: the
+// vote button has to already know it has been pressed.
+message ViewerState {
+  bool has_voted = 1;
+  bool is_following = 2;
+
+  // Whether the caller wrote it, so a client can offer to withdraw it.
+  bool is_author = 3;
+}
+
+message FeatureRequest {
+  string id = 1;
+  string app_id = 2;
+
+  // Absent when the author has been deleted, or when the request was created in
+  // the console rather than by a user. A request with no author is normal.
+  UserRef author = 3;
+
+  string title = 4;
+  string body = 5;
+
+  RequestStatus status = 6;
+
+  // Set only when status is DECLINED. See RequestStatus.
+  RequestDecline decline = 7;
+
+  // Set only when status is MERGED. See RequestStatus.
+  string merged_into_request_id = 8;
+
+  // Demand. Counted, not summed from a returned list — the list is paginated and
+  // the count is not.
+  int32 vote_count = 9;
+  int32 comment_count = 10;
+
+  // Absent for an app-key caller, who is nobody in particular.
+  ViewerState viewer = 11;
+
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp updated_at = 13;
+
+  // When the status last changed, which is what "recently triaged" sorts on and
+  // what the changelog reads. Distinct from updated_at, which also moves when a
+  // vote lands.
+  google.protobuf.Timestamp status_changed_at = 14;
+}
+
+// Who wrote a comment, in the sense that decides how it is presented.
+//
+// An official reply has to be visibly official. Rendering the developer's answer
+// identically to another user's guess is how a board loses its authority.
+enum CommentAuthorRole {
+  COMMENT_AUTHOR_ROLE_UNSPECIFIED = 0;
+
+  // An end user of the host app.
+  COMMENT_AUTHOR_ROLE_USER = 1;
+
+  // A console operator for this tenant, speaking for the product.
+  COMMENT_AUTHOR_ROLE_TEAM = 2;
+}
+
+message Comment {
+  string id = 1;
+  string request_id = 2;
+
+  // Absent for a deleted author, as on FeatureRequest.
+  UserRef author = 3;
+  CommentAuthorRole author_role = 4;
+
+  string body = 5;
+
+  // Set when an operator has hidden this comment. The body is emptied on the
+  // way out when this is true, so hidden text cannot be recovered from the
+  // wire; the row survives so the same abuse is not re-reported forever.
+  bool is_hidden = 6;
+
+  google.protobuf.Timestamp created_at = 7;
+}
+
+// Why someone is being told something. The kinds are the events worth
+// interrupting a person for — nothing here fires on a vote, because a request
+// gaining its fortieth vote is not news to its author.
+enum NotificationKind {
+  NOTIFICATION_KIND_UNSPECIFIED = 0;
+
+  // A request you authored, voted for, or follow changed status.
+  NOTIFICATION_KIND_STATUS_CHANGED = 1;
+
+  // Someone commented on a request you follow.
+  NOTIFICATION_KIND_COMMENT_ADDED = 2;
+
+  // A request you followed was folded into another. Carries the target so a tap
+  // lands on the request that now holds your vote.
+  NOTIFICATION_KIND_REQUEST_MERGED = 3;
+}
+
+// One item in an end user's inbox.
+//
+// Carries the request title rather than only its id, so an inbox renders in one
+// read and a push notification body can be built without a second lookup.
+message Notification {
+  string id = 1;
+  string user_id = 2;
+  NotificationKind kind = 3;
+
+  string request_id = 4;
+  string request_title = 5;
+
+  // The status the request moved to, for STATUS_CHANGED.
+  RequestStatus new_status = 6;
+
+  // Where the vote went, for REQUEST_MERGED.
+  string merged_into_request_id = 7;
+
+  // Absent while unread. A timestamp rather than a bool so "mark all read"
+  // records when, and so an unread badge is a count of absences.
+  google.protobuf.Timestamp read_at = 8;
+
+  google.protobuf.Timestamp created_at = 9;
+}
+
+// Which APNs environment a device token was minted in. A sandbox token pushed to
+// production fails per-token with no useful error, so the client states it.
+enum PushEnvironment {
+  PUSH_ENVIRONMENT_UNSPECIFIED = 0;
+  PUSH_ENVIRONMENT_SANDBOX = 1;
+  PUSH_ENVIRONMENT_PRODUCTION = 2;
+}
+
+message DeviceRegistration {
+  string id = 1;
+
+  // The APNs device token, hex. Rotates on reinstall and can be silently
+  // invalidated by Apple, so registration is an upsert the client repeats on
+  // every launch rather than a one-time write.
+  string token = 2;
+
+  PushEnvironment environment = 3;
+
+  google.protobuf.Timestamp registered_at = 4;
+}
+
+// A published note about something that shipped.
+//
+// Separate from a SHIPPED request rather than derived from one: a release is
+// usually several requests plus work nobody asked for, and it needs prose the
+// requests do not have.
+message ChangelogEntry {
+  string id = 1;
+  string app_id = 2;
+
+  string title = 3;
+  string body = 4;
+
+  // Optional version string as the host app spells it — "2.4.0". Free text
+  // because it has to match what the developer shipped, not a scheme of ours.
+  string version = 5;
+
+  // Requests this release answers, so the people who asked can be told and the
+  // entry can link back to what they filed.
+  repeated string request_ids = 6;
+
+  // Absent while a draft. Presence is what makes an entry public, so an
+  // unpublished entry is never a filter a caller can spell wrong.
+  google.protobuf.Timestamp published_at = 7;
+}
+
+// One column of the public roadmap.
+//
+// Grouped by status rather than by a tenant-defined column set: the roadmap and
+// the triage queue must show the same truth, and a second grouping to keep in
+// sync with status would drift from it.
+message RoadmapColumn {
+  RequestStatus status = 1;
+
+  // The column's requests, ranked by demand. Deliberately a bounded page — a
+  // roadmap is a summary, and a column with 400 planned items is answered by
+  // the board, not the roadmap.
+  repeated FeatureRequest requests = 2;
+
+  // How many the column holds in total, which is usually more than were
+  // returned.
+  int32 total_count = 3;
+}
