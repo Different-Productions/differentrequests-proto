@@ -52,4 +52,16 @@ swift build --package-path "$PLUGIN_PKG" --product endpoint-gen -c release
 ENDPOINT_GEN_BIN="$(swift build --package-path "$PLUGIN_PKG" --product endpoint-gen -c release --show-bin-path)/endpoint-gen"
 "$ENDPOINT_GEN_BIN" "$PACKAGE_ROOT/proto/differentrequests_sdk.proto" "$OUTPUT_PATH"
 
+# How an enum value is spelled in a URL, so the client that sends `?sort=top` and the
+# server that matches on it read one fact rather than two copies of it.
+swift build --package-path "$PLUGIN_PKG" --product tokens-gen -c release
+TOKENS_GEN_BIN="$(swift build --package-path "$PLUGIN_PKG" --product tokens-gen -c release --show-bin-path)/tokens-gen"
+"$TOKENS_GEN_BIN" "$PACKAGE_ROOT/proto/differentrequests_sdk.proto" "$OUTPUT_PATH"
+"$TOKENS_GEN_BIN" "$PACKAGE_ROOT/proto/differentrequests_domain.proto" "$OUTPUT_PATH"
+
+# Field names as the schema spells them, so a query key is never a literal typed twice.
+swift build --package-path "$PLUGIN_PKG" --product fields-gen -c release
+FIELDS_GEN_BIN="$(swift build --package-path "$PLUGIN_PKG" --product fields-gen -c release --show-bin-path)/fields-gen"
+"$FIELDS_GEN_BIN" "$PACKAGE_ROOT/proto/differentrequests_sdk.proto" "$OUTPUT_PATH"
+
 echo "Generated message types to $OUTPUT_PATH"
