@@ -64,8 +64,9 @@ enum GeneratorError: Error, CustomStringConvertible {
   }
 }
 
-func parse(_ text: String, path: String) throws -> (package: String, services: [Service]) {
+func parse(_ text: String, path: String) throws -> (package: String, prefix: String, services: [Service]) {
   var package = ""
+  var prefix = ""
   var services: [Service] = []
 
   var currentService: String?
@@ -84,7 +85,11 @@ func parse(_ text: String, path: String) throws -> (package: String, services: [
     let line = rawLine.trimmingCharacters(in: .whitespaces)
 
     if depth == 0 {
-      if line.hasPrefix("package ") {
+      if line.hasPrefix("option swift_prefix") {
+        if let first = line.firstIndex(of: "\""), let last = line.lastIndex(of: "\""), first < last {
+          prefix = String(line[line.index(after: first)..<last])
+        }
+      } else if line.hasPrefix("package ") {
         package = line
           .dropFirst("package ".count)
           .trimmingCharacters(in: CharacterSet(charactersIn: " ;"))
@@ -144,7 +149,7 @@ func parse(_ text: String, path: String) throws -> (package: String, services: [
     throw GeneratorError.noPackage(path)
   }
 
-  return (package, services)
+  return (package, prefix, services)
 }
 
 func value(after prefix: String, in line: String) -> String {
@@ -168,7 +173,7 @@ func lowerCamel(_ name: String) -> String {
   return first.lowercased() + name.dropFirst()
 }
 
-func render(package: String, services: [Service], sourceFile: String) -> String {
+func render(package: String, prefix: String, services: [Service], sourceFile: String) -> String {
   var out = """
     // DO NOT EDIT.
     //
@@ -177,15 +182,15 @@ func render(package: String, services: [Service], sourceFile: String) -> String 
     """
 
   for service in services {
-    out += renderRPCEnum(service)
-    out += renderEndpointEnum(service)
+    out += renderRPCEnum(service, prefix: prefix)
+    out += renderEndpointEnum(service, prefix: prefix)
   }
 
   return out
 }
 
 /// What a server routes on: every rpc, its template, and what it demands of a caller.
-func renderRPCEnum(_ service: Service) -> String {
+func renderRPCEnum(_ service: Service, prefix: String) -> String {
   var out = """
 
     /// Every rpc on `\(service.name)`: the verb it answers, the path template it is registered
@@ -193,7 +198,7 @@ func renderRPCEnum(_ service: Service) -> String {
     ///
     /// A server builds its router from `allCases` and dispatches on the matched case, so an rpc
     /// added to the contract breaks an exhaustive switch until it is handled.
-    public enum \(service.name)RPC: String, Sendable, CaseIterable {
+    public enum \(prefix)\(service.name)RPC: String, Sendable, CaseIterable {
 
     """
 
@@ -203,7 +208,7 @@ func renderRPCEnum(_ service: Service) -> String {
 
   out += renderSwitch(
     service: service,
-    signature: "  /// The verb this rpc answers.\n  public var method: HttpMethod",
+    signature: "  /// The verb this rpc answers.\n  public var method: \(prefix)HttpMethod",
     body: { ".\(swiftEnumCase($0.verb, strippingPrefix: "HTTP_METHOD_"))" }
   )
 
@@ -220,7 +225,7 @@ func renderRPCEnum(_ service: Service) -> String {
     service: service,
     signature: """
         /// The minimum credential a caller must present. A server rejects anything weaker.
-        public var audience: Audience
+        public var audience: \(prefix)Audience
       """,
     body: { ".\(swiftEnumCase($0.audience, strippingPrefix: "AUDIENCE_"))" }
   )
@@ -230,7 +235,7 @@ func renderRPCEnum(_ service: Service) -> String {
 }
 
 /// What a client calls: a concrete path, with the compiler demanding every id in it.
-func renderEndpointEnum(_ service: Service) -> String {
+func renderEndpointEnum(_ service: Service, prefix: String) -> String {
   var out = """
 
     /// One call to `\(service.name)`, with the ids its path needs.
@@ -240,7 +245,7 @@ func renderEndpointEnum(_ service: Service) -> String {
     ///
     /// Ids are interpolated raw. Percent-encoding belongs to whoever assembles the URL —
     /// `URLComponents.path` does it correctly, and doing it here as well would double-encode.
-    public enum \(service.name)Endpoint: Sendable {
+    public enum \(prefix)\(service.name)Endpoint: Sendable {
 
     """
 
@@ -279,7 +284,7 @@ func renderEndpointEnum(_ service: Service) -> String {
       }
 
       /// Which rpc this is, for anything that needs the verb or the audience.
-      public var rpc: \(service.name)RPC {
+      public var rpc: \(prefix)\(service.name)RPC {
         switch self {
 
     """
@@ -334,6 +339,7 @@ do {
   let parsed = try parse(text, path: inputPath)
   let rendered = render(
     package: parsed.package,
+    prefix: parsed.prefix,
     services: parsed.services,
     sourceFile: sourceFile
   )

@@ -7,7 +7,7 @@
 ///
 /// A server builds its router from `allCases` and dispatches on the matched case, so an rpc
 /// added to the contract breaks an exhaustive switch until it is handled.
-public enum RequestsServiceRPC: String, Sendable, CaseIterable {
+public enum DRRequestsServiceRPC: String, Sendable, CaseIterable {
   case getConfig = "GetConfig"
   case createSession = "CreateSession"
   case listRequests = "ListRequests"
@@ -29,7 +29,7 @@ public enum RequestsServiceRPC: String, Sendable, CaseIterable {
   case listChangelog = "ListChangelog"
 
   /// The verb this rpc answers.
-  public var method: HttpMethod {
+  public var method: DRHttpMethod {
     switch self {
     case .getConfig: return .get
     case .createSession: return .post
@@ -79,7 +79,7 @@ public enum RequestsServiceRPC: String, Sendable, CaseIterable {
   }
 
   /// The minimum credential a caller must present. A server rejects anything weaker.
-  public var audience: Audience {
+  public var audience: DRAudience {
     switch self {
     case .getConfig: return .appKey
     case .createSession: return .appKey
@@ -111,7 +111,7 @@ public enum RequestsServiceRPC: String, Sendable, CaseIterable {
 ///
 /// Ids are interpolated raw. Percent-encoding belongs to whoever assembles the URL —
 /// `URLComponents.path` does it correctly, and doing it here as well would double-encode.
-public enum RequestsServiceEndpoint: Sendable {
+public enum DRRequestsServiceEndpoint: Sendable {
   case getConfig
   case createSession
   case listRequests
@@ -158,7 +158,7 @@ public enum RequestsServiceEndpoint: Sendable {
   }
 
   /// Which rpc this is, for anything that needs the verb or the audience.
-  public var rpc: RequestsServiceRPC {
+  public var rpc: DRRequestsServiceRPC {
     switch self {
     case .getConfig: return .getConfig
     case .createSession: return .createSession

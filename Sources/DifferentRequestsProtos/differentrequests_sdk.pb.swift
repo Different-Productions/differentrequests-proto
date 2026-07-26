@@ -30,7 +30,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 /// a 403 meaning "upgrade to Pro" and a 403 meaning "not your request" need
 /// different UI — and a client branching on the status while the reason sits in the
 /// body is reading a shadow of the error instead of the error.
-public enum ErrorCode: SwiftProtobuf.Enum, Swift.CaseIterable {
+public enum DRErrorCode: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
   case unspecified // = 0
 
@@ -89,7 +89,7 @@ public enum ErrorCode: SwiftProtobuf.Enum, Swift.CaseIterable {
   }
 
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  public static let allCases: [ErrorCode] = [
+  public static let allCases: [DRErrorCode] = [
     .unspecified,
     .invalidArgument,
     .unauthenticated,
@@ -103,7 +103,7 @@ public enum ErrorCode: SwiftProtobuf.Enum, Swift.CaseIterable {
 }
 
 /// How a board page is ordered.
-public enum RequestSort: SwiftProtobuf.Enum, Swift.CaseIterable {
+public enum DRRequestSort: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
   case unspecified // = 0
 
@@ -139,7 +139,7 @@ public enum RequestSort: SwiftProtobuf.Enum, Swift.CaseIterable {
   }
 
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  public static let allCases: [RequestSort] = [
+  public static let allCases: [DRRequestSort] = [
     .unspecified,
     .top,
     .new,
@@ -147,12 +147,12 @@ public enum RequestSort: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 }
 
-public struct ApiError: Sendable {
+public struct DRApiError: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var code: ErrorCode = .unspecified
+  public var code: DRErrorCode = .unspecified
 
   /// Human-readable, English, for a developer reading a log. Not copy: a client
   /// must not render this to an end user, because it is written for whoever is
@@ -178,13 +178,13 @@ public struct ApiError: Sendable {
 /// Fetched once per launch. Everything here is a property of the tenant's plan
 /// and settings, so a client that hides a tab on its own guess will show the
 /// wrong thing the moment a tenant upgrades.
-public struct AppConfig: Sendable {
+public struct DRAppConfig: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var app: App {
-    get {return _app ?? App()}
+  public var app: DRApp {
+    get {return _app ?? DRApp()}
     set {_app = newValue}
   }
   /// Returns true if `app` has been explicitly set.
@@ -210,10 +210,10 @@ public struct AppConfig: Sendable {
 
   public init() {}
 
-  fileprivate var _app: App? = nil
+  fileprivate var _app: DRApp? = nil
 }
 
-public struct GetConfigRequest: Sendable {
+public struct DRGetConfigRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -223,13 +223,13 @@ public struct GetConfigRequest: Sendable {
   public init() {}
 }
 
-public struct GetConfigResponse: Sendable {
+public struct DRGetConfigResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var config: AppConfig {
-    get {return _config ?? AppConfig()}
+  public var config: DRAppConfig {
+    get {return _config ?? DRAppConfig()}
     set {_config = newValue}
   }
   /// Returns true if `config` has been explicitly set.
@@ -241,7 +241,7 @@ public struct GetConfigResponse: Sendable {
 
   public init() {}
 
-  fileprivate var _config: AppConfig? = nil
+  fileprivate var _config: DRAppConfig? = nil
 }
 
 /// Exchange the host app's identifier for a session.
@@ -249,7 +249,7 @@ public struct GetConfigResponse: Sendable {
 /// Upsert semantics: the same external_id returns the same user, with email,
 /// display name, and traits refreshed from whatever the host app now knows. That
 /// is what lets someone reinstall and still hold their votes.
-public struct CreateSessionRequest: Sendable {
+public struct DRCreateSessionRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -269,13 +269,13 @@ public struct CreateSessionRequest: Sendable {
   public init() {}
 }
 
-public struct CreateSessionResponse: Sendable {
+public struct DRCreateSessionResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var user: EndUser {
-    get {return _user ?? EndUser()}
+  public var user: DREndUser {
+    get {return _user ?? DREndUser()}
     set {_user = newValue}
   }
   /// Returns true if `user` has been explicitly set.
@@ -301,11 +301,11 @@ public struct CreateSessionResponse: Sendable {
 
   public init() {}
 
-  fileprivate var _user: EndUser? = nil
+  fileprivate var _user: DREndUser? = nil
   fileprivate var _expiresAt: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
 }
 
-public struct ListRequestsRequest: Sendable {
+public struct DRListRequestsRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -313,9 +313,9 @@ public struct ListRequestsRequest: Sendable {
   /// Empty means every status except MERGED — a merged request is not a board
   /// item. Passing MERGED explicitly is an INVALID_ARGUMENT rather than an empty
   /// page, because a caller asking for it has misunderstood the model.
-  public var statuses: [RequestStatus] = []
+  public var statuses: [DRRequestStatus] = []
 
-  public var sort: RequestSort = .unspecified
+  public var sort: DRRequestSort = .unspecified
 
   /// Free-text search over title and body. This is also the search-before-submit
   /// path: the same ranking and the same page shape, so a client does not
@@ -337,12 +337,12 @@ public struct ListRequestsRequest: Sendable {
   public init() {}
 }
 
-public struct ListRequestsResponse: Sendable {
+public struct DRListRequestsResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var requests: [FeatureRequest] = []
+  public var requests: [DRFeatureRequest] = []
 
   /// Empty when this is the last page. Presence, not a bool, so "is there more?"
   /// cannot disagree with "what do I pass next?".
@@ -353,7 +353,7 @@ public struct ListRequestsResponse: Sendable {
   public init() {}
 }
 
-public struct GetRequestRequest: Sendable {
+public struct DRGetRequestRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -365,13 +365,13 @@ public struct GetRequestRequest: Sendable {
   public init() {}
 }
 
-public struct GetRequestResponse: Sendable {
+public struct DRGetRequestResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var request: FeatureRequest {
-    get {return _request ?? FeatureRequest()}
+  public var request: DRFeatureRequest {
+    get {return _request ?? DRFeatureRequest()}
     set {_request = newValue}
   }
   /// Returns true if `request` has been explicitly set.
@@ -383,10 +383,10 @@ public struct GetRequestResponse: Sendable {
 
   public init() {}
 
-  fileprivate var _request: FeatureRequest? = nil
+  fileprivate var _request: DRFeatureRequest? = nil
 }
 
-public struct CreateRequestRequest: Sendable {
+public struct DRCreateRequestRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -400,7 +400,7 @@ public struct CreateRequestRequest: Sendable {
   public init() {}
 }
 
-public struct CreateRequestResponse: Sendable {
+public struct DRCreateRequestResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -408,8 +408,8 @@ public struct CreateRequestResponse: Sendable {
   /// Returned with the author's own vote already counted. Submitting is voting —
   /// asking for something and then having to vote for it separately reads as a
   /// bug, and it makes first-day vote counts lie.
-  public var request: FeatureRequest {
-    get {return _request ?? FeatureRequest()}
+  public var request: DRFeatureRequest {
+    get {return _request ?? DRFeatureRequest()}
     set {_request = newValue}
   }
   /// Returns true if `request` has been explicitly set.
@@ -421,13 +421,13 @@ public struct CreateRequestResponse: Sendable {
 
   public init() {}
 
-  fileprivate var _request: FeatureRequest? = nil
+  fileprivate var _request: DRFeatureRequest? = nil
 }
 
 /// Both vote routes are idempotent: voting twice is one vote, and clearing a vote
 /// nobody cast succeeds. A client retrying on a flaky network must not be able to
 /// double-count demand.
-public struct VoteRequest: Sendable {
+public struct DRVoteRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -439,15 +439,15 @@ public struct VoteRequest: Sendable {
   public init() {}
 }
 
-public struct VoteResponse: Sendable {
+public struct DRVoteResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   /// The updated request, so a client renders the new count without refetching
   /// the page it is already showing.
-  public var request: FeatureRequest {
-    get {return _request ?? FeatureRequest()}
+  public var request: DRFeatureRequest {
+    get {return _request ?? DRFeatureRequest()}
     set {_request = newValue}
   }
   /// Returns true if `request` has been explicitly set.
@@ -459,10 +459,10 @@ public struct VoteResponse: Sendable {
 
   public init() {}
 
-  fileprivate var _request: FeatureRequest? = nil
+  fileprivate var _request: DRFeatureRequest? = nil
 }
 
-public struct ClearVoteRequest: Sendable {
+public struct DRClearVoteRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -474,13 +474,13 @@ public struct ClearVoteRequest: Sendable {
   public init() {}
 }
 
-public struct ClearVoteResponse: Sendable {
+public struct DRClearVoteResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var request: FeatureRequest {
-    get {return _request ?? FeatureRequest()}
+  public var request: DRFeatureRequest {
+    get {return _request ?? DRFeatureRequest()}
     set {_request = newValue}
   }
   /// Returns true if `request` has been explicitly set.
@@ -492,14 +492,14 @@ public struct ClearVoteResponse: Sendable {
 
   public init() {}
 
-  fileprivate var _request: FeatureRequest? = nil
+  fileprivate var _request: DRFeatureRequest? = nil
 }
 
 /// Following is what makes a status change reach someone. Voting follows
 /// implicitly — a separate opt-in that nobody finds means the loop never closes —
 /// so these routes exist for the reader who wants updates without adding demand,
 /// and for the voter who wants the vote but not the notifications.
-public struct FollowRequest: Sendable {
+public struct DRFollowRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -511,13 +511,13 @@ public struct FollowRequest: Sendable {
   public init() {}
 }
 
-public struct FollowResponse: Sendable {
+public struct DRFollowResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var request: FeatureRequest {
-    get {return _request ?? FeatureRequest()}
+  public var request: DRFeatureRequest {
+    get {return _request ?? DRFeatureRequest()}
     set {_request = newValue}
   }
   /// Returns true if `request` has been explicitly set.
@@ -529,10 +529,10 @@ public struct FollowResponse: Sendable {
 
   public init() {}
 
-  fileprivate var _request: FeatureRequest? = nil
+  fileprivate var _request: DRFeatureRequest? = nil
 }
 
-public struct UnfollowRequest: Sendable {
+public struct DRUnfollowRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -544,13 +544,13 @@ public struct UnfollowRequest: Sendable {
   public init() {}
 }
 
-public struct UnfollowResponse: Sendable {
+public struct DRUnfollowResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var request: FeatureRequest {
-    get {return _request ?? FeatureRequest()}
+  public var request: DRFeatureRequest {
+    get {return _request ?? DRFeatureRequest()}
     set {_request = newValue}
   }
   /// Returns true if `request` has been explicitly set.
@@ -562,10 +562,10 @@ public struct UnfollowResponse: Sendable {
 
   public init() {}
 
-  fileprivate var _request: FeatureRequest? = nil
+  fileprivate var _request: DRFeatureRequest? = nil
 }
 
-public struct ListCommentsRequest: Sendable {
+public struct DRListCommentsRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -581,12 +581,12 @@ public struct ListCommentsRequest: Sendable {
   public init() {}
 }
 
-public struct ListCommentsResponse: Sendable {
+public struct DRListCommentsResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var comments: [Comment] = []
+  public var comments: [DRComment] = []
 
   public var nextCursor: String = String()
 
@@ -595,7 +595,7 @@ public struct ListCommentsResponse: Sendable {
   public init() {}
 }
 
-public struct CreateCommentRequest: Sendable {
+public struct DRCreateCommentRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -609,13 +609,13 @@ public struct CreateCommentRequest: Sendable {
   public init() {}
 }
 
-public struct CreateCommentResponse: Sendable {
+public struct DRCreateCommentResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var comment: Comment {
-    get {return _comment ?? Comment()}
+  public var comment: DRComment {
+    get {return _comment ?? DRComment()}
     set {_comment = newValue}
   }
   /// Returns true if `comment` has been explicitly set.
@@ -627,10 +627,10 @@ public struct CreateCommentResponse: Sendable {
 
   public init() {}
 
-  fileprivate var _comment: Comment? = nil
+  fileprivate var _comment: DRComment? = nil
 }
 
-public struct ListNotificationsRequest: Sendable {
+public struct DRListNotificationsRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -642,12 +642,12 @@ public struct ListNotificationsRequest: Sendable {
   public init() {}
 }
 
-public struct ListNotificationsResponse: Sendable {
+public struct DRListNotificationsResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var notifications: [Notification] = []
+  public var notifications: [DRNotification] = []
 
   public var nextCursor: String = String()
 
@@ -656,7 +656,7 @@ public struct ListNotificationsResponse: Sendable {
   public init() {}
 }
 
-public struct GetUnreadCountRequest: Sendable {
+public struct DRGetUnreadCountRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -666,7 +666,7 @@ public struct GetUnreadCountRequest: Sendable {
   public init() {}
 }
 
-public struct GetUnreadCountResponse: Sendable {
+public struct DRGetUnreadCountResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -678,7 +678,7 @@ public struct GetUnreadCountResponse: Sendable {
   public init() {}
 }
 
-public struct MarkNotificationReadRequest: Sendable {
+public struct DRMarkNotificationReadRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -690,13 +690,13 @@ public struct MarkNotificationReadRequest: Sendable {
   public init() {}
 }
 
-public struct MarkNotificationReadResponse: Sendable {
+public struct DRMarkNotificationReadResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var notification: Notification {
-    get {return _notification ?? Notification()}
+  public var notification: DRNotification {
+    get {return _notification ?? DRNotification()}
     set {_notification = newValue}
   }
   /// Returns true if `notification` has been explicitly set.
@@ -708,10 +708,10 @@ public struct MarkNotificationReadResponse: Sendable {
 
   public init() {}
 
-  fileprivate var _notification: Notification? = nil
+  fileprivate var _notification: DRNotification? = nil
 }
 
-public struct MarkAllNotificationsReadRequest: Sendable {
+public struct DRMarkAllNotificationsReadRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -721,7 +721,7 @@ public struct MarkAllNotificationsReadRequest: Sendable {
   public init() {}
 }
 
-public struct MarkAllNotificationsReadResponse: Sendable {
+public struct DRMarkAllNotificationsReadResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -734,27 +734,27 @@ public struct MarkAllNotificationsReadResponse: Sendable {
 }
 
 /// Upsert, called on every launch. See DeviceRegistration.token.
-public struct RegisterDeviceRequest: Sendable {
+public struct DRRegisterDeviceRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   public var token: String = String()
 
-  public var environment: PushEnvironment = .unspecified
+  public var environment: DRPushEnvironment = .unspecified
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 }
 
-public struct RegisterDeviceResponse: Sendable {
+public struct DRRegisterDeviceResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var device: DeviceRegistration {
-    get {return _device ?? DeviceRegistration()}
+  public var device: DRDeviceRegistration {
+    get {return _device ?? DRDeviceRegistration()}
     set {_device = newValue}
   }
   /// Returns true if `device` has been explicitly set.
@@ -766,10 +766,10 @@ public struct RegisterDeviceResponse: Sendable {
 
   public init() {}
 
-  fileprivate var _device: DeviceRegistration? = nil
+  fileprivate var _device: DRDeviceRegistration? = nil
 }
 
-public struct UnregisterDeviceRequest: Sendable {
+public struct DRUnregisterDeviceRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -781,7 +781,7 @@ public struct UnregisterDeviceRequest: Sendable {
   public init() {}
 }
 
-public struct UnregisterDeviceResponse: Sendable {
+public struct DRUnregisterDeviceResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -791,7 +791,7 @@ public struct UnregisterDeviceResponse: Sendable {
   public init() {}
 }
 
-public struct GetRoadmapRequest: Sendable {
+public struct DRGetRoadmapRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -801,7 +801,7 @@ public struct GetRoadmapRequest: Sendable {
   public init() {}
 }
 
-public struct GetRoadmapResponse: Sendable {
+public struct DRGetRoadmapResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -809,14 +809,14 @@ public struct GetRoadmapResponse: Sendable {
   /// Ordered as they should be displayed, left to right: PLANNED, IN_PROGRESS,
   /// SHIPPED. Order is the server's to decide so every client's roadmap reads the
   /// same way.
-  public var columns: [RoadmapColumn] = []
+  public var columns: [DRRoadmapColumn] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 }
 
-public struct ListChangelogRequest: Sendable {
+public struct DRListChangelogRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -828,13 +828,13 @@ public struct ListChangelogRequest: Sendable {
   public init() {}
 }
 
-public struct ListChangelogResponse: Sendable {
+public struct DRListChangelogResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   /// Published entries only, newest first. A draft is never on the wire.
-  public var entries: [ChangelogEntry] = []
+  public var entries: [DRChangelogEntry] = []
 
   public var nextCursor: String = String()
 
@@ -847,15 +847,15 @@ public struct ListChangelogResponse: Sendable {
 
 fileprivate let _protobuf_package = "differentrequests.v1"
 
-extension ErrorCode: SwiftProtobuf._ProtoNameProviding {
+extension DRErrorCode: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0ERROR_CODE_UNSPECIFIED\0\u{1}ERROR_CODE_INVALID_ARGUMENT\0\u{1}ERROR_CODE_UNAUTHENTICATED\0\u{1}ERROR_CODE_PERMISSION_DENIED\0\u{1}ERROR_CODE_NOT_FOUND\0\u{1}ERROR_CODE_PLAN_REQUIRED\0\u{1}ERROR_CODE_RATE_LIMITED\0\u{1}ERROR_CODE_INTERNAL\0")
 }
 
-extension RequestSort: SwiftProtobuf._ProtoNameProviding {
+extension DRRequestSort: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0REQUEST_SORT_UNSPECIFIED\0\u{1}REQUEST_SORT_TOP\0\u{1}REQUEST_SORT_NEW\0")
 }
 
-extension ApiError: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRApiError: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ApiError"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}code\0\u{1}message\0\u{1}field\0\u{3}retry_after_seconds\0")
 
@@ -890,7 +890,7 @@ extension ApiError: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: ApiError, rhs: ApiError) -> Bool {
+  public static func ==(lhs: DRApiError, rhs: DRApiError) -> Bool {
     if lhs.code != rhs.code {return false}
     if lhs.message != rhs.message {return false}
     if lhs.field != rhs.field {return false}
@@ -900,7 +900,7 @@ extension ApiError: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
   }
 }
 
-extension AppConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRAppConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".AppConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}app\0\u{3}roadmap_enabled\0\u{3}changelog_enabled\0\u{3}comments_enabled\0\u{3}show_badge\0")
 
@@ -943,7 +943,7 @@ extension AppConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: AppConfig, rhs: AppConfig) -> Bool {
+  public static func ==(lhs: DRAppConfig, rhs: DRAppConfig) -> Bool {
     if lhs._app != rhs._app {return false}
     if lhs.roadmapEnabled != rhs.roadmapEnabled {return false}
     if lhs.changelogEnabled != rhs.changelogEnabled {return false}
@@ -954,7 +954,7 @@ extension AppConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
   }
 }
 
-extension GetConfigRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRGetConfigRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetConfigRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -967,13 +967,13 @@ extension GetConfigRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: GetConfigRequest, rhs: GetConfigRequest) -> Bool {
+  public static func ==(lhs: DRGetConfigRequest, rhs: DRGetConfigRequest) -> Bool {
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension GetConfigResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRGetConfigResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetConfigResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}config\0")
 
@@ -1000,14 +1000,14 @@ extension GetConfigResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: GetConfigResponse, rhs: GetConfigResponse) -> Bool {
+  public static func ==(lhs: DRGetConfigResponse, rhs: DRGetConfigResponse) -> Bool {
     if lhs._config != rhs._config {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension CreateSessionRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRCreateSessionRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".CreateSessionRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}external_id\0\u{1}email\0\u{3}display_name\0\u{1}traits\0")
 
@@ -1042,7 +1042,7 @@ extension CreateSessionRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: CreateSessionRequest, rhs: CreateSessionRequest) -> Bool {
+  public static func ==(lhs: DRCreateSessionRequest, rhs: DRCreateSessionRequest) -> Bool {
     if lhs.externalID != rhs.externalID {return false}
     if lhs.email != rhs.email {return false}
     if lhs.displayName != rhs.displayName {return false}
@@ -1052,7 +1052,7 @@ extension CreateSessionRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
   }
 }
 
-extension CreateSessionResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRCreateSessionResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".CreateSessionResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}user\0\u{3}session_token\0\u{3}expires_at\0")
 
@@ -1087,7 +1087,7 @@ extension CreateSessionResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: CreateSessionResponse, rhs: CreateSessionResponse) -> Bool {
+  public static func ==(lhs: DRCreateSessionResponse, rhs: DRCreateSessionResponse) -> Bool {
     if lhs._user != rhs._user {return false}
     if lhs.sessionToken != rhs.sessionToken {return false}
     if lhs._expiresAt != rhs._expiresAt {return false}
@@ -1096,7 +1096,7 @@ extension CreateSessionResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
   }
 }
 
-extension ListRequestsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRListRequestsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListRequestsRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}statuses\0\u{1}sort\0\u{1}query\0\u{1}cursor\0")
 
@@ -1131,7 +1131,7 @@ extension ListRequestsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: ListRequestsRequest, rhs: ListRequestsRequest) -> Bool {
+  public static func ==(lhs: DRListRequestsRequest, rhs: DRListRequestsRequest) -> Bool {
     if lhs.statuses != rhs.statuses {return false}
     if lhs.sort != rhs.sort {return false}
     if lhs.query != rhs.query {return false}
@@ -1141,7 +1141,7 @@ extension ListRequestsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
   }
 }
 
-extension ListRequestsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRListRequestsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListRequestsResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}requests\0\u{3}next_cursor\0")
 
@@ -1168,7 +1168,7 @@ extension ListRequestsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: ListRequestsResponse, rhs: ListRequestsResponse) -> Bool {
+  public static func ==(lhs: DRListRequestsResponse, rhs: DRListRequestsResponse) -> Bool {
     if lhs.requests != rhs.requests {return false}
     if lhs.nextCursor != rhs.nextCursor {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
@@ -1176,7 +1176,7 @@ extension ListRequestsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
   }
 }
 
-extension GetRequestRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRGetRequestRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetRequestRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}request_id\0")
 
@@ -1199,14 +1199,14 @@ extension GetRequestRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: GetRequestRequest, rhs: GetRequestRequest) -> Bool {
+  public static func ==(lhs: DRGetRequestRequest, rhs: DRGetRequestRequest) -> Bool {
     if lhs.requestID != rhs.requestID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension GetRequestResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRGetRequestResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetRequestResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}request\0")
 
@@ -1233,14 +1233,14 @@ extension GetRequestResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: GetRequestResponse, rhs: GetRequestResponse) -> Bool {
+  public static func ==(lhs: DRGetRequestResponse, rhs: DRGetRequestResponse) -> Bool {
     if lhs._request != rhs._request {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension CreateRequestRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRCreateRequestRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".CreateRequestRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}title\0\u{1}body\0")
 
@@ -1267,7 +1267,7 @@ extension CreateRequestRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: CreateRequestRequest, rhs: CreateRequestRequest) -> Bool {
+  public static func ==(lhs: DRCreateRequestRequest, rhs: DRCreateRequestRequest) -> Bool {
     if lhs.title != rhs.title {return false}
     if lhs.body != rhs.body {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
@@ -1275,7 +1275,7 @@ extension CreateRequestRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
   }
 }
 
-extension CreateRequestResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRCreateRequestResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".CreateRequestResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}request\0")
 
@@ -1302,14 +1302,14 @@ extension CreateRequestResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: CreateRequestResponse, rhs: CreateRequestResponse) -> Bool {
+  public static func ==(lhs: DRCreateRequestResponse, rhs: DRCreateRequestResponse) -> Bool {
     if lhs._request != rhs._request {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension VoteRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRVoteRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".VoteRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}request_id\0")
 
@@ -1332,14 +1332,14 @@ extension VoteRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: VoteRequest, rhs: VoteRequest) -> Bool {
+  public static func ==(lhs: DRVoteRequest, rhs: DRVoteRequest) -> Bool {
     if lhs.requestID != rhs.requestID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension VoteResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRVoteResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".VoteResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}request\0")
 
@@ -1366,14 +1366,14 @@ extension VoteResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: VoteResponse, rhs: VoteResponse) -> Bool {
+  public static func ==(lhs: DRVoteResponse, rhs: DRVoteResponse) -> Bool {
     if lhs._request != rhs._request {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension ClearVoteRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRClearVoteRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ClearVoteRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}request_id\0")
 
@@ -1396,14 +1396,14 @@ extension ClearVoteRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: ClearVoteRequest, rhs: ClearVoteRequest) -> Bool {
+  public static func ==(lhs: DRClearVoteRequest, rhs: DRClearVoteRequest) -> Bool {
     if lhs.requestID != rhs.requestID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension ClearVoteResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRClearVoteResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ClearVoteResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}request\0")
 
@@ -1430,14 +1430,14 @@ extension ClearVoteResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: ClearVoteResponse, rhs: ClearVoteResponse) -> Bool {
+  public static func ==(lhs: DRClearVoteResponse, rhs: DRClearVoteResponse) -> Bool {
     if lhs._request != rhs._request {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension FollowRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRFollowRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".FollowRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}request_id\0")
 
@@ -1460,14 +1460,14 @@ extension FollowRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: FollowRequest, rhs: FollowRequest) -> Bool {
+  public static func ==(lhs: DRFollowRequest, rhs: DRFollowRequest) -> Bool {
     if lhs.requestID != rhs.requestID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension FollowResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRFollowResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".FollowResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}request\0")
 
@@ -1494,14 +1494,14 @@ extension FollowResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: FollowResponse, rhs: FollowResponse) -> Bool {
+  public static func ==(lhs: DRFollowResponse, rhs: DRFollowResponse) -> Bool {
     if lhs._request != rhs._request {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension UnfollowRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRUnfollowRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".UnfollowRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}request_id\0")
 
@@ -1524,14 +1524,14 @@ extension UnfollowRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: UnfollowRequest, rhs: UnfollowRequest) -> Bool {
+  public static func ==(lhs: DRUnfollowRequest, rhs: DRUnfollowRequest) -> Bool {
     if lhs.requestID != rhs.requestID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension UnfollowResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRUnfollowResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".UnfollowResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}request\0")
 
@@ -1558,14 +1558,14 @@ extension UnfollowResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: UnfollowResponse, rhs: UnfollowResponse) -> Bool {
+  public static func ==(lhs: DRUnfollowResponse, rhs: DRUnfollowResponse) -> Bool {
     if lhs._request != rhs._request {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension ListCommentsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRListCommentsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListCommentsRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}request_id\0\u{1}cursor\0")
 
@@ -1592,7 +1592,7 @@ extension ListCommentsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: ListCommentsRequest, rhs: ListCommentsRequest) -> Bool {
+  public static func ==(lhs: DRListCommentsRequest, rhs: DRListCommentsRequest) -> Bool {
     if lhs.requestID != rhs.requestID {return false}
     if lhs.cursor != rhs.cursor {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
@@ -1600,7 +1600,7 @@ extension ListCommentsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
   }
 }
 
-extension ListCommentsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRListCommentsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListCommentsResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}comments\0\u{3}next_cursor\0")
 
@@ -1627,7 +1627,7 @@ extension ListCommentsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: ListCommentsResponse, rhs: ListCommentsResponse) -> Bool {
+  public static func ==(lhs: DRListCommentsResponse, rhs: DRListCommentsResponse) -> Bool {
     if lhs.comments != rhs.comments {return false}
     if lhs.nextCursor != rhs.nextCursor {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
@@ -1635,7 +1635,7 @@ extension ListCommentsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
   }
 }
 
-extension CreateCommentRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRCreateCommentRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".CreateCommentRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}request_id\0\u{1}body\0")
 
@@ -1662,7 +1662,7 @@ extension CreateCommentRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: CreateCommentRequest, rhs: CreateCommentRequest) -> Bool {
+  public static func ==(lhs: DRCreateCommentRequest, rhs: DRCreateCommentRequest) -> Bool {
     if lhs.requestID != rhs.requestID {return false}
     if lhs.body != rhs.body {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
@@ -1670,7 +1670,7 @@ extension CreateCommentRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
   }
 }
 
-extension CreateCommentResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRCreateCommentResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".CreateCommentResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}comment\0")
 
@@ -1697,14 +1697,14 @@ extension CreateCommentResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: CreateCommentResponse, rhs: CreateCommentResponse) -> Bool {
+  public static func ==(lhs: DRCreateCommentResponse, rhs: DRCreateCommentResponse) -> Bool {
     if lhs._comment != rhs._comment {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension ListNotificationsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRListNotificationsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListNotificationsRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}cursor\0")
 
@@ -1727,14 +1727,14 @@ extension ListNotificationsRequest: SwiftProtobuf.Message, SwiftProtobuf._Messag
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: ListNotificationsRequest, rhs: ListNotificationsRequest) -> Bool {
+  public static func ==(lhs: DRListNotificationsRequest, rhs: DRListNotificationsRequest) -> Bool {
     if lhs.cursor != rhs.cursor {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension ListNotificationsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRListNotificationsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListNotificationsResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}notifications\0\u{3}next_cursor\0")
 
@@ -1761,7 +1761,7 @@ extension ListNotificationsResponse: SwiftProtobuf.Message, SwiftProtobuf._Messa
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: ListNotificationsResponse, rhs: ListNotificationsResponse) -> Bool {
+  public static func ==(lhs: DRListNotificationsResponse, rhs: DRListNotificationsResponse) -> Bool {
     if lhs.notifications != rhs.notifications {return false}
     if lhs.nextCursor != rhs.nextCursor {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
@@ -1769,7 +1769,7 @@ extension ListNotificationsResponse: SwiftProtobuf.Message, SwiftProtobuf._Messa
   }
 }
 
-extension GetUnreadCountRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRGetUnreadCountRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetUnreadCountRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -1782,13 +1782,13 @@ extension GetUnreadCountRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: GetUnreadCountRequest, rhs: GetUnreadCountRequest) -> Bool {
+  public static func ==(lhs: DRGetUnreadCountRequest, rhs: DRGetUnreadCountRequest) -> Bool {
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension GetUnreadCountResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRGetUnreadCountResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetUnreadCountResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}unread_count\0")
 
@@ -1811,14 +1811,14 @@ extension GetUnreadCountResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageI
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: GetUnreadCountResponse, rhs: GetUnreadCountResponse) -> Bool {
+  public static func ==(lhs: DRGetUnreadCountResponse, rhs: DRGetUnreadCountResponse) -> Bool {
     if lhs.unreadCount != rhs.unreadCount {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension MarkNotificationReadRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRMarkNotificationReadRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".MarkNotificationReadRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}notification_id\0")
 
@@ -1841,14 +1841,14 @@ extension MarkNotificationReadRequest: SwiftProtobuf.Message, SwiftProtobuf._Mes
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: MarkNotificationReadRequest, rhs: MarkNotificationReadRequest) -> Bool {
+  public static func ==(lhs: DRMarkNotificationReadRequest, rhs: DRMarkNotificationReadRequest) -> Bool {
     if lhs.notificationID != rhs.notificationID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension MarkNotificationReadResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRMarkNotificationReadResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".MarkNotificationReadResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}notification\0")
 
@@ -1875,14 +1875,14 @@ extension MarkNotificationReadResponse: SwiftProtobuf.Message, SwiftProtobuf._Me
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: MarkNotificationReadResponse, rhs: MarkNotificationReadResponse) -> Bool {
+  public static func ==(lhs: DRMarkNotificationReadResponse, rhs: DRMarkNotificationReadResponse) -> Bool {
     if lhs._notification != rhs._notification {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension MarkAllNotificationsReadRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRMarkAllNotificationsReadRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".MarkAllNotificationsReadRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -1895,13 +1895,13 @@ extension MarkAllNotificationsReadRequest: SwiftProtobuf.Message, SwiftProtobuf.
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: MarkAllNotificationsReadRequest, rhs: MarkAllNotificationsReadRequest) -> Bool {
+  public static func ==(lhs: DRMarkAllNotificationsReadRequest, rhs: DRMarkAllNotificationsReadRequest) -> Bool {
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension MarkAllNotificationsReadResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRMarkAllNotificationsReadResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".MarkAllNotificationsReadResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}marked_count\0")
 
@@ -1924,14 +1924,14 @@ extension MarkAllNotificationsReadResponse: SwiftProtobuf.Message, SwiftProtobuf
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: MarkAllNotificationsReadResponse, rhs: MarkAllNotificationsReadResponse) -> Bool {
+  public static func ==(lhs: DRMarkAllNotificationsReadResponse, rhs: DRMarkAllNotificationsReadResponse) -> Bool {
     if lhs.markedCount != rhs.markedCount {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension RegisterDeviceRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRRegisterDeviceRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".RegisterDeviceRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}token\0\u{1}environment\0")
 
@@ -1958,7 +1958,7 @@ extension RegisterDeviceRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: RegisterDeviceRequest, rhs: RegisterDeviceRequest) -> Bool {
+  public static func ==(lhs: DRRegisterDeviceRequest, rhs: DRRegisterDeviceRequest) -> Bool {
     if lhs.token != rhs.token {return false}
     if lhs.environment != rhs.environment {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
@@ -1966,7 +1966,7 @@ extension RegisterDeviceRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
   }
 }
 
-extension RegisterDeviceResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRRegisterDeviceResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".RegisterDeviceResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}device\0")
 
@@ -1993,14 +1993,14 @@ extension RegisterDeviceResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageI
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: RegisterDeviceResponse, rhs: RegisterDeviceResponse) -> Bool {
+  public static func ==(lhs: DRRegisterDeviceResponse, rhs: DRRegisterDeviceResponse) -> Bool {
     if lhs._device != rhs._device {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension UnregisterDeviceRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRUnregisterDeviceRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".UnregisterDeviceRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}device_id\0")
 
@@ -2023,14 +2023,14 @@ extension UnregisterDeviceRequest: SwiftProtobuf.Message, SwiftProtobuf._Message
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: UnregisterDeviceRequest, rhs: UnregisterDeviceRequest) -> Bool {
+  public static func ==(lhs: DRUnregisterDeviceRequest, rhs: DRUnregisterDeviceRequest) -> Bool {
     if lhs.deviceID != rhs.deviceID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension UnregisterDeviceResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRUnregisterDeviceResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".UnregisterDeviceResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -2043,13 +2043,13 @@ extension UnregisterDeviceResponse: SwiftProtobuf.Message, SwiftProtobuf._Messag
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: UnregisterDeviceResponse, rhs: UnregisterDeviceResponse) -> Bool {
+  public static func ==(lhs: DRUnregisterDeviceResponse, rhs: DRUnregisterDeviceResponse) -> Bool {
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension GetRoadmapRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRGetRoadmapRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetRoadmapRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -2062,13 +2062,13 @@ extension GetRoadmapRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: GetRoadmapRequest, rhs: GetRoadmapRequest) -> Bool {
+  public static func ==(lhs: DRGetRoadmapRequest, rhs: DRGetRoadmapRequest) -> Bool {
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension GetRoadmapResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRGetRoadmapResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetRoadmapResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}columns\0")
 
@@ -2091,14 +2091,14 @@ extension GetRoadmapResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: GetRoadmapResponse, rhs: GetRoadmapResponse) -> Bool {
+  public static func ==(lhs: DRGetRoadmapResponse, rhs: DRGetRoadmapResponse) -> Bool {
     if lhs.columns != rhs.columns {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension ListChangelogRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRListChangelogRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListChangelogRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}cursor\0")
 
@@ -2121,14 +2121,14 @@ extension ListChangelogRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: ListChangelogRequest, rhs: ListChangelogRequest) -> Bool {
+  public static func ==(lhs: DRListChangelogRequest, rhs: DRListChangelogRequest) -> Bool {
     if lhs.cursor != rhs.cursor {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension ListChangelogResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRListChangelogResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListChangelogResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}entries\0\u{3}next_cursor\0")
 
@@ -2155,7 +2155,7 @@ extension ListChangelogResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: ListChangelogResponse, rhs: ListChangelogResponse) -> Bool {
+  public static func ==(lhs: DRListChangelogResponse, rhs: DRListChangelogResponse) -> Bool {
     if lhs.entries != rhs.entries {return false}
     if lhs.nextCursor != rhs.nextCursor {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}

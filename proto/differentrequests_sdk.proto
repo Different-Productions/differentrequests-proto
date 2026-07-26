@@ -6,7 +6,7 @@ import "differentrequests_domain.proto";
 import "differentrequests_options.proto";
 import "google/protobuf/timestamp.proto";
 
-option swift_prefix = "";
+option swift_prefix = "DR";
 
 // The SDK-facing surface: everything a third-party iOS app can reach.
 //

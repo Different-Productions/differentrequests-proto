@@ -32,7 +32,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 /// There are deliberately no console or platform-admin values. Those surfaces are
 /// server-rendered HTML in a private repository and have no rpcs to mark, so a
 /// value for them would name a caller that does not exist.
-public enum Audience: SwiftProtobuf.Enum, Swift.CaseIterable {
+public enum DRAudience: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
   /// Never valid on an rpc. Present because proto3 requires a zero value, and an
@@ -72,7 +72,7 @@ public enum Audience: SwiftProtobuf.Enum, Swift.CaseIterable {
   }
 
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  public static let allCases: [Audience] = [
+  public static let allCases: [DRAudience] = [
     .unspecified,
     .appKey,
     .endUser,
@@ -80,7 +80,7 @@ public enum Audience: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 }
 
-public enum HttpMethod: SwiftProtobuf.Enum, Swift.CaseIterable {
+public enum DRHttpMethod: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
   case unspecified // = 0
   case get // = 1
@@ -116,7 +116,7 @@ public enum HttpMethod: SwiftProtobuf.Enum, Swift.CaseIterable {
   }
 
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  public static let allCases: [HttpMethod] = [
+  public static let allCases: [DRHttpMethod] = [
     .unspecified,
     .get,
     .post,
@@ -126,12 +126,12 @@ public enum HttpMethod: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 }
 
-public struct Route: Sendable {
+public struct DRRoute: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var method: HttpMethod = .unspecified
+  public var method: DRHttpMethod = .unspecified
 
   /// Path template relative to the API root, with `{brace}` parameters —
   /// `/requests/{requestId}/comments`. A parameter name matches the field in the
@@ -139,7 +139,7 @@ public struct Route: Sendable {
   /// it without a second mapping to keep in sync.
   public var path: String = String()
 
-  public var audience: Audience = .unspecified
+  public var audience: DRAudience = .unspecified
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -157,62 +157,62 @@ public struct Route: Sendable {
 
 extension SwiftProtobuf.Google_Protobuf_EnumValueOptions {
 
-  public var urlToken: String {
-    get {return getExtensionValue(ext: Extensions_url_token) ?? String()}
-    set {setExtensionValue(ext: Extensions_url_token, value: newValue)}
+  public var DRurlToken: String {
+    get {return getExtensionValue(ext: DRExtensions_url_token) ?? String()}
+    set {setExtensionValue(ext: DRExtensions_url_token, value: newValue)}
   }
-  /// Returns true if extension `Extensions_url_token`
+  /// Returns true if extension `DRExtensions_url_token`
   /// has been explicitly set.
-  public var hasURLToken: Bool {
-    return hasExtensionValue(ext: Extensions_url_token)
+  public var hasDRurlToken: Bool {
+    return hasExtensionValue(ext: DRExtensions_url_token)
   }
-  /// Clears the value of extension `Extensions_url_token`.
+  /// Clears the value of extension `DRExtensions_url_token`.
   /// Subsequent reads from it will return its default value.
-  public mutating func clearURLToken() {
-    clearExtensionValue(ext: Extensions_url_token)
+  public mutating func clearDRurlToken() {
+    clearExtensionValue(ext: DRExtensions_url_token)
   }
 }
 
 extension SwiftProtobuf.Google_Protobuf_MethodOptions {
 
-  public var route: Route {
-    get {return getExtensionValue(ext: Extensions_route) ?? Route()}
-    set {setExtensionValue(ext: Extensions_route, value: newValue)}
+  public var DRroute: DRRoute {
+    get {return getExtensionValue(ext: DRExtensions_route) ?? DRRoute()}
+    set {setExtensionValue(ext: DRExtensions_route, value: newValue)}
   }
-  /// Returns true if extension `Extensions_route`
+  /// Returns true if extension `DRExtensions_route`
   /// has been explicitly set.
-  public var hasRoute: Bool {
-    return hasExtensionValue(ext: Extensions_route)
+  public var hasDRroute: Bool {
+    return hasExtensionValue(ext: DRExtensions_route)
   }
-  /// Clears the value of extension `Extensions_route`.
+  /// Clears the value of extension `DRExtensions_route`.
   /// Subsequent reads from it will return its default value.
-  public mutating func clearRoute() {
-    clearExtensionValue(ext: Extensions_route)
+  public mutating func clearDRroute() {
+    clearExtensionValue(ext: DRExtensions_route)
   }
 
 }
 
-// MARK: - File's ExtensionMap: DifferentrequestsOptions_Extensions
+// MARK: - File's ExtensionMap: DRDifferentrequestsOptions_Extensions
 
 /// A `SwiftProtobuf.SimpleExtensionMap` that includes all of the extensions defined by
 /// this .proto file. It can be used any place an `SwiftProtobuf.ExtensionMap` is needed
 /// in parsing, or it can be combined with other `SwiftProtobuf.SimpleExtensionMap`s to create
 /// a larger `SwiftProtobuf.SimpleExtensionMap`.
-public let DifferentrequestsOptions_Extensions: SwiftProtobuf.SimpleExtensionMap = [
-  Extensions_route,
-  Extensions_url_token
+public let DRDifferentrequestsOptions_Extensions: SwiftProtobuf.SimpleExtensionMap = [
+  DRExtensions_route,
+  DRExtensions_url_token
 ]
 
 // Extension Objects - The only reason these might be needed is when manually
 // constructing a `SimpleExtensionMap`, otherwise, use the above _Extension Properties_
 // accessors for the extension fields on the messages directly.
 
-public let Extensions_route = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalMessageExtensionField<Route>, SwiftProtobuf.Google_Protobuf_MethodOptions>(
+public let DRExtensions_route = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalMessageExtensionField<DRRoute>, SwiftProtobuf.Google_Protobuf_MethodOptions>(
   _protobuf_fieldNumber: 51240,
   fieldName: "differentrequests.v1.route"
 )
 
-public let Extensions_url_token = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalExtensionField<SwiftProtobuf.ProtobufString>, SwiftProtobuf.Google_Protobuf_EnumValueOptions>(
+public let DRExtensions_url_token = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalExtensionField<SwiftProtobuf.ProtobufString>, SwiftProtobuf.Google_Protobuf_EnumValueOptions>(
   _protobuf_fieldNumber: 51241,
   fieldName: "differentrequests.v1.url_token"
 )
@@ -221,15 +221,15 @@ public let Extensions_url_token = SwiftProtobuf.MessageExtension<SwiftProtobuf.O
 
 fileprivate let _protobuf_package = "differentrequests.v1"
 
-extension Audience: SwiftProtobuf._ProtoNameProviding {
+extension DRAudience: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0AUDIENCE_UNSPECIFIED\0\u{1}AUDIENCE_APP_KEY\0\u{1}AUDIENCE_END_USER\0")
 }
 
-extension HttpMethod: SwiftProtobuf._ProtoNameProviding {
+extension DRHttpMethod: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0HTTP_METHOD_UNSPECIFIED\0\u{1}HTTP_METHOD_GET\0\u{1}HTTP_METHOD_POST\0\u{1}HTTP_METHOD_PUT\0\u{1}HTTP_METHOD_DELETE\0")
 }
 
-extension Route: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension DRRoute: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Route"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}method\0\u{1}path\0\u{1}audience\0")
 
@@ -260,7 +260,7 @@ extension Route: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: Route, rhs: Route) -> Bool {
+  public static func ==(lhs: DRRoute, rhs: DRRoute) -> Bool {
     if lhs.method != rhs.method {return false}
     if lhs.path != rhs.path {return false}
     if lhs.audience != rhs.audience {return false}

@@ -4,7 +4,7 @@ package differentrequests.v1;
 
 import "google/protobuf/descriptor.proto";
 
-option swift_prefix = "";
+option swift_prefix = "DR";
 
 // Route metadata attached to an rpc: the verb and path it is served at, and the
 // credential it requires.

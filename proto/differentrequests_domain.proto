@@ -5,7 +5,12 @@ package differentrequests.v1;
 import "differentrequests_options.proto";
 import "google/protobuf/timestamp.proto";
 
-option swift_prefix = "";
+// Types carry a `DR` prefix. The names in here are the most generic words in the
+// domain — App, Comment, Plan, Notification — and Notification alone already shadows
+// Foundation's. A consumer should not have to rename its own configuration type
+// because the contract claimed a common noun, which is the same reason igdb.proto
+// keeps its package prefix and arrives as Proto_Game.
+option swift_prefix = "DR";
 
 // The DifferentRequests domain: what a feature-request board is made of.
 //
