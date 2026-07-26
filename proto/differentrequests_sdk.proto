@@ -183,7 +183,12 @@ message ListRequestsRequest {
   string query = 3;
 
   // Opaque continuation from a previous page. Empty for the first page.
-  string cursor = 4;
+  //
+  // Bytes, not a string: it carries a serialized message the server owns, and a
+  // string field would need base64 to hold it — a second encoding for something
+  // that is already proto. Field 4 held the base64 form.
+  reserved 4;
+  bytes cursor = 6;
 
   // The server decides the page size, so a caller does not send one. Asking for a
   // window the server clamps is how a pager steps past results that were never
@@ -196,8 +201,9 @@ message ListRequestsResponse {
   repeated FeatureRequest requests = 1;
 
   // Empty when this is the last page. Presence, not a bool, so "is there more?"
-  // cannot disagree with "what do I pass next?".
-  string next_cursor = 2;
+  // cannot disagree with "what do I pass next?". Field 2 held the base64 form.
+  reserved 2;
+  bytes next_cursor = 3;
 }
 
 message GetRequestRequest {
@@ -274,15 +280,17 @@ message ListCommentsRequest {
 
   // Oldest first, always — a discussion read newest-first is unreadable. No sort
   // parameter for that reason.
-  string cursor = 2;
-
-  // See ListRequestsRequest: the server decides the page size.
-  reserved 3;
+  //
+  // Field 2 held the base64 form; field 3 held a page size.
+  reserved 2, 3;
+  bytes cursor = 4;
 }
 
 message ListCommentsResponse {
   repeated Comment comments = 1;
-  string next_cursor = 2;
+
+  reserved 2;
+  bytes next_cursor = 3;
 }
 
 message CreateCommentRequest {
@@ -299,15 +307,16 @@ message CreateCommentResponse {
 // ---------------------------------------------------------------------------
 
 message ListNotificationsRequest {
-  string cursor = 1;
-
-  // See ListRequestsRequest: the server decides the page size.
-  reserved 2;
+  // Field 1 held the base64 form; field 2 held a page size.
+  reserved 1, 2;
+  bytes cursor = 3;
 }
 
 message ListNotificationsResponse {
   repeated Notification notifications = 1;
-  string next_cursor = 2;
+
+  reserved 2;
+  bytes next_cursor = 3;
 }
 
 message GetUnreadCountRequest {}
@@ -360,16 +369,17 @@ message GetRoadmapResponse {
 }
 
 message ListChangelogRequest {
-  string cursor = 1;
-
-  // See ListRequestsRequest: the server decides the page size.
-  reserved 2;
+  // Field 1 held the base64 form; field 2 held a page size.
+  reserved 1, 2;
+  bytes cursor = 3;
 }
 
 message ListChangelogResponse {
   // Published entries only, newest first. A draft is never on the wire.
   repeated ChangelogEntry entries = 1;
-  string next_cursor = 2;
+
+  reserved 2;
+  bytes next_cursor = 3;
 }
 
 // ---------------------------------------------------------------------------
