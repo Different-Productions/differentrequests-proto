@@ -170,7 +170,11 @@ message RequestDecline {
 // between a board that feels like a form and one that feels like a room: the
 // vote button has to already know it has been pressed.
 message ViewerState {
-  bool has_voted = 1;
+  // Named `voted` rather than `has_voted`: protoc-gen-swift reserves `has<Field>` for message
+  // presence, so a bool called has_voted generates as `hasVoted_p` and that suffix would show up
+  // at every call site in the server, the SDK, and every view.
+  bool voted = 1;
+
   bool is_following = 2;
 
   // Whether the caller wrote it, so a client can offer to withdraw it.

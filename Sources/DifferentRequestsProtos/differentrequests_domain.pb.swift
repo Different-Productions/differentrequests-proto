@@ -481,7 +481,10 @@ public struct ViewerState: Sendable {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var hasVoted_p: Bool = false
+  /// Named `voted` rather than `has_voted`: protoc-gen-swift reserves `has<Field>` for message
+  /// presence, so a bool called has_voted generates as `hasVoted_p` and that suffix would show up
+  /// at every call site in the server, the SDK, and every view.
+  public var voted: Bool = false
 
   public var isFollowing: Bool = false
 
@@ -1114,7 +1117,7 @@ extension RequestDecline: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
 
 extension ViewerState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ViewerState"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}has_voted\0\u{3}is_following\0\u{3}is_author\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}voted\0\u{3}is_following\0\u{3}is_author\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1122,7 +1125,7 @@ extension ViewerState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularBoolField(value: &self.hasVoted_p) }()
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.voted) }()
       case 2: try { try decoder.decodeSingularBoolField(value: &self.isFollowing) }()
       case 3: try { try decoder.decodeSingularBoolField(value: &self.isAuthor) }()
       default: break
@@ -1131,8 +1134,8 @@ extension ViewerState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if self.hasVoted_p != false {
-      try visitor.visitSingularBoolField(value: self.hasVoted_p, fieldNumber: 1)
+    if self.voted != false {
+      try visitor.visitSingularBoolField(value: self.voted, fieldNumber: 1)
     }
     if self.isFollowing != false {
       try visitor.visitSingularBoolField(value: self.isFollowing, fieldNumber: 2)
@@ -1144,7 +1147,7 @@ extension ViewerState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   }
 
   public static func ==(lhs: ViewerState, rhs: ViewerState) -> Bool {
-    if lhs.hasVoted_p != rhs.hasVoted_p {return false}
+    if lhs.voted != rhs.voted {return false}
     if lhs.isFollowing != rhs.isFollowing {return false}
     if lhs.isAuthor != rhs.isAuthor {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
