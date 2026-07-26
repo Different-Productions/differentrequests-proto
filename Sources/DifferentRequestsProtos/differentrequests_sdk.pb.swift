@@ -326,9 +326,6 @@ public struct ListRequestsRequest: Sendable {
   /// Opaque continuation from a previous page. Empty for the first page.
   public var cursor: String = String()
 
-  /// Server-clamped. Zero means the server's default.
-  public var limit: Int32 = 0
-
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -573,8 +570,6 @@ public struct ListCommentsRequest: Sendable {
   /// parameter for that reason.
   public var cursor: String = String()
 
-  public var limit: Int32 = 0
-
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -635,8 +630,6 @@ public struct ListNotificationsRequest: Sendable {
   // methods supported on all messages.
 
   public var cursor: String = String()
-
-  public var limit: Int32 = 0
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -823,8 +816,6 @@ public struct ListChangelogRequest: Sendable {
   // methods supported on all messages.
 
   public var cursor: String = String()
-
-  public var limit: Int32 = 0
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1101,7 +1092,7 @@ extension CreateSessionResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
 
 extension ListRequestsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListRequestsRequest"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}statuses\0\u{1}sort\0\u{1}query\0\u{1}cursor\0\u{1}limit\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}statuses\0\u{1}sort\0\u{1}query\0\u{1}cursor\0\u{c}\u{5}\u{1}")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1113,7 +1104,6 @@ extension ListRequestsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       case 2: try { try decoder.decodeSingularEnumField(value: &self.sort) }()
       case 3: try { try decoder.decodeSingularStringField(value: &self.query) }()
       case 4: try { try decoder.decodeSingularStringField(value: &self.cursor) }()
-      case 5: try { try decoder.decodeSingularInt32Field(value: &self.limit) }()
       default: break
       }
     }
@@ -1132,9 +1122,6 @@ extension ListRequestsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if !self.cursor.isEmpty {
       try visitor.visitSingularStringField(value: self.cursor, fieldNumber: 4)
     }
-    if self.limit != 0 {
-      try visitor.visitSingularInt32Field(value: self.limit, fieldNumber: 5)
-    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1143,7 +1130,6 @@ extension ListRequestsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if lhs.sort != rhs.sort {return false}
     if lhs.query != rhs.query {return false}
     if lhs.cursor != rhs.cursor {return false}
-    if lhs.limit != rhs.limit {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1575,7 +1561,7 @@ extension UnfollowResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
 
 extension ListCommentsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListCommentsRequest"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}request_id\0\u{1}cursor\0\u{1}limit\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}request_id\0\u{1}cursor\0\u{c}\u{3}\u{1}")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1585,7 +1571,6 @@ extension ListCommentsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.requestID) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self.cursor) }()
-      case 3: try { try decoder.decodeSingularInt32Field(value: &self.limit) }()
       default: break
       }
     }
@@ -1598,16 +1583,12 @@ extension ListCommentsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if !self.cursor.isEmpty {
       try visitor.visitSingularStringField(value: self.cursor, fieldNumber: 2)
     }
-    if self.limit != 0 {
-      try visitor.visitSingularInt32Field(value: self.limit, fieldNumber: 3)
-    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: ListCommentsRequest, rhs: ListCommentsRequest) -> Bool {
     if lhs.requestID != rhs.requestID {return false}
     if lhs.cursor != rhs.cursor {return false}
-    if lhs.limit != rhs.limit {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1719,7 +1700,7 @@ extension CreateCommentResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
 
 extension ListNotificationsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListNotificationsRequest"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}cursor\0\u{1}limit\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}cursor\0\u{c}\u{2}\u{1}")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1728,7 +1709,6 @@ extension ListNotificationsRequest: SwiftProtobuf.Message, SwiftProtobuf._Messag
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.cursor) }()
-      case 2: try { try decoder.decodeSingularInt32Field(value: &self.limit) }()
       default: break
       }
     }
@@ -1738,15 +1718,11 @@ extension ListNotificationsRequest: SwiftProtobuf.Message, SwiftProtobuf._Messag
     if !self.cursor.isEmpty {
       try visitor.visitSingularStringField(value: self.cursor, fieldNumber: 1)
     }
-    if self.limit != 0 {
-      try visitor.visitSingularInt32Field(value: self.limit, fieldNumber: 2)
-    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: ListNotificationsRequest, rhs: ListNotificationsRequest) -> Bool {
     if lhs.cursor != rhs.cursor {return false}
-    if lhs.limit != rhs.limit {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2118,7 +2094,7 @@ extension GetRoadmapResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
 
 extension ListChangelogRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ListChangelogRequest"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}cursor\0\u{1}limit\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}cursor\0\u{c}\u{2}\u{1}")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2127,7 +2103,6 @@ extension ListChangelogRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.cursor) }()
-      case 2: try { try decoder.decodeSingularInt32Field(value: &self.limit) }()
       default: break
       }
     }
@@ -2137,15 +2112,11 @@ extension ListChangelogRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if !self.cursor.isEmpty {
       try visitor.visitSingularStringField(value: self.cursor, fieldNumber: 1)
     }
-    if self.limit != 0 {
-      try visitor.visitSingularInt32Field(value: self.limit, fieldNumber: 2)
-    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: ListChangelogRequest, rhs: ListChangelogRequest) -> Bool {
     if lhs.cursor != rhs.cursor {return false}
-    if lhs.limit != rhs.limit {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
