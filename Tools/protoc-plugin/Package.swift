@@ -14,11 +14,19 @@ import PackageDescription
 //
 // Pinned to the same version backlog-proto pins, so the two contract packages in
 // this org emit identically formatted Swift.
+// endpoint-gen declares no dependency at all — it is a pure Swift parser over the
+// .proto text and never invokes protoc. swift-protobuf generates no service code, so
+// there is no descriptor carrying the rpc list at the point the table is needed.
 let package = Package(
   name: "protoc-plugin",
   platforms: [.macOS("15.0")],
+  products: [
+    .executable(name: "endpoint-gen", targets: ["endpoint-gen"])
+  ],
   dependencies: [
     .package(url: "https://github.com/apple/swift-protobuf.git", exact: "1.33.3")
   ],
-  targets: []
+  targets: [
+    .executableTarget(name: "endpoint-gen")
+  ]
 )

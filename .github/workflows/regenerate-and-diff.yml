@@ -1,0 +1,63 @@
+name: Regenerate and diff
+
+# The committed .pb.swift must be exactly what Scripts/generate.sh produces.
+# If it isn't, a consumer links message types that no longer describe the
+# contract in proto/ — which is the whole failure this package exists to prevent.
+#
+# Both halves of the toolchain are pinned: protoc-gen-swift comes from the
+# swift-protobuf version in Tools/protoc-plugin/Package.swift, and protoc itself
+# is fetched at a fixed version here. protoc renders the descriptors the plugin
+# consumes, so an unpinned protoc moves the output on its own.
+#
+# Runs on GitHub-hosted Linux rather than the arvis runners: this repo builds no
+# Apple-platform product and deploys nothing, so it has no reason to take a slot
+# on a serial macOS runner that the server and the CMS queue behind.
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+env:
+  PROTOC_VERSION: "33.2"
+
+jobs:
+  regenerate-and-diff:
+    runs-on: ubuntu-latest
+    container: swift:6.3
+    # The container's default shell is dash, which has no `set -o pipefail`.
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pinned protoc
+        run: |
+          set -euo pipefail
+          apt-get update && apt-get install -y --no-install-recommends unzip curl
+          curl -fsSL -o /tmp/protoc.zip \
+            "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip"
+          unzip -q /tmp/protoc.zip -d /usr/local
+          protoc --version
+
+      - name: Build the library
+        run: swift build
+
+      # actions/checkout falls back to a tarball download when the image has no
+      # usable git, so there is no .git here to diff against. Snapshot the
+      # committed output instead — which also means this check never depends on
+      # the container's git version.
+      - name: Snapshot committed output
+        run: cp -a Sources/DifferentRequestsProtos "${RUNNER_TEMP}/committed"
+
+      - name: Regenerate
+        run: ./Scripts/generate.sh
+
+      - name: Fail if committed output differs from a fresh run
+        run: |
+          if ! diff -ru "${RUNNER_TEMP}/committed" Sources/DifferentRequestsProtos; then
+            echo "::error::Sources/DifferentRequestsProtos is stale. Run ./Scripts/generate.sh and commit the result."
+            exit 1
+          fi
+          echo "Committed output matches a fresh run."

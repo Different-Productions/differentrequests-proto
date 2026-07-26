@@ -44,4 +44,12 @@ protoc --proto_path="$PACKAGE_ROOT/proto" \
     "$PACKAGE_ROOT/proto/differentrequests_domain.proto" \
     "$PACKAGE_ROOT/proto/differentrequests_sdk.proto"
 
+# The endpoint table: one Swift case per rpc, carrying the path it is called at and
+# the audience it declared. Generated so that no consumer — client or server — ever
+# hand-writes a path string, which would be a copy of the service definition that
+# nothing checks.
+swift build --package-path "$PLUGIN_PKG" --product endpoint-gen -c release
+ENDPOINT_GEN_BIN="$(swift build --package-path "$PLUGIN_PKG" --product endpoint-gen -c release --show-bin-path)/endpoint-gen"
+"$ENDPOINT_GEN_BIN" "$PACKAGE_ROOT/proto/differentrequests_sdk.proto" "$OUTPUT_PATH"
+
 echo "Generated message types to $OUTPUT_PATH"

@@ -102,8 +102,15 @@ The package identity is `differentrequests-proto`, so the product reference is
 ## Regenerating
 
 ```sh
-./Scripts/generate.sh        # rewrites Sources/DifferentRequestsProtos/*.pb.swift
+./Scripts/generate.sh        # rewrites Sources/DifferentRequestsProtos/
 ```
+
+Two generators run. `protoc-gen-swift` emits the message types. `endpoint-gen`
+(`Tools/protoc-plugin`) emits `ServiceEndpoints.generated.swift` — one case per rpc,
+carrying the path it is called at and the audience it declared — so that neither the
+client nor the server ever hand-writes a path string. A path typed into a client is a
+copy of the service definition that nothing checks; an rpc that forgets its audience is
+a build failure rather than an open route.
 
 Requires `protoc` (`brew install protobuf`). `protoc-gen-swift` is **not** taken from
 `PATH` — it is built from the swift-protobuf version pinned in
