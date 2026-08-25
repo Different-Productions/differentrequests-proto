@@ -668,6 +668,38 @@ public struct DRFeatureRequest: @unchecked Sendable {
   fileprivate var _storage = _StorageClass.defaultInstance
 }
 
+/// A comment an operator has taken down.
+///
+/// It carries no text, which is the point: a hidden comment used to be a body
+/// field beside an `is_hidden` flag, and `{is_hidden: true, body: "…"}` was a
+/// legal message. One line of Swift emptied it on one read path, so any second
+/// reader — a console page, a push payload, a future GetComment — would have
+/// served the text a moderator removed.
+///
+/// Whoever builds hiding keeps the original in storage, not here: the row is what
+/// makes the decision reversible and stops the same abuse being re-reported, and
+/// storage is where a fact the wire must never carry belongs.
+public struct DRCommentHidden: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var hiddenAt: SwiftProtobuf.Google_Protobuf_Timestamp {
+    get {return _hiddenAt ?? SwiftProtobuf.Google_Protobuf_Timestamp()}
+    set {_hiddenAt = newValue}
+  }
+  /// Returns true if `hiddenAt` has been explicitly set.
+  public var hasHiddenAt: Bool {return self._hiddenAt != nil}
+  /// Clears the value of `hiddenAt`. Subsequent reads from it will return its default value.
+  public mutating func clearHiddenAt() {self._hiddenAt = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _hiddenAt: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
+}
+
 public struct DRComment: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -689,13 +721,6 @@ public struct DRComment: Sendable {
 
   public var authorRole: DRCommentAuthorRole = .unspecified
 
-  public var body: String = String()
-
-  /// Set when an operator has hidden this comment. The body is emptied on the
-  /// way out when this is true, so hidden text cannot be recovered from the
-  /// wire; the row survives so the same abuse is not re-reported forever.
-  public var isHidden: Bool = false
-
   public var createdAt: SwiftProtobuf.Google_Protobuf_Timestamp {
     get {return _createdAt ?? SwiftProtobuf.Google_Protobuf_Timestamp()}
     set {_createdAt = newValue}
@@ -705,7 +730,39 @@ public struct DRComment: Sendable {
   /// Clears the value of `createdAt`. Subsequent reads from it will return its default value.
   public mutating func clearCreatedAt() {self._createdAt = nil}
 
+  /// What this comment says, or that it no longer says it.
+  ///
+  /// Unset is a row written before this field existed, or by a server newer than
+  /// this client. A reader draws nothing for it rather than an empty bubble.
+  public var content: DRComment.OneOf_Content? = nil
+
+  public var body: String {
+    get {
+      if case .body(let v)? = content {return v}
+      return String()
+    }
+    set {content = .body(newValue)}
+  }
+
+  public var hidden: DRCommentHidden {
+    get {
+      if case .hidden(let v)? = content {return v}
+      return DRCommentHidden()
+    }
+    set {content = .hidden(newValue)}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  /// What this comment says, or that it no longer says it.
+  ///
+  /// Unset is a row written before this field existed, or by a server newer than
+  /// this client. A reader draws nothing for it rather than an empty bubble.
+  public enum OneOf_Content: Equatable, Sendable {
+    case body(String)
+    case hidden(DRCommentHidden)
+
+  }
 
   public init() {}
 
@@ -1628,9 +1685,43 @@ extension DRFeatureRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
   }
 }
 
+extension DRCommentHidden: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CommentHidden"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}hidden_at\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._hiddenAt) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._hiddenAt {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DRCommentHidden, rhs: DRCommentHidden) -> Bool {
+    if lhs._hiddenAt != rhs._hiddenAt {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension DRComment: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Comment"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}request_id\0\u{1}author\0\u{3}author_role\0\u{1}body\0\u{3}is_hidden\0\u{3}created_at\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}request_id\0\u{1}author\0\u{3}author_role\0\u{4}\u{3}created_at\0\u{1}body\0\u{1}hidden\0\u{b}is_hidden\0\u{c}\u{5}\u{1}\u{c}\u{6}\u{1}")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1642,9 +1733,28 @@ extension DRComment: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
       case 2: try { try decoder.decodeSingularStringField(value: &self.requestID) }()
       case 3: try { try decoder.decodeSingularMessageField(value: &self._author) }()
       case 4: try { try decoder.decodeSingularEnumField(value: &self.authorRole) }()
-      case 5: try { try decoder.decodeSingularStringField(value: &self.body) }()
-      case 6: try { try decoder.decodeSingularBoolField(value: &self.isHidden) }()
       case 7: try { try decoder.decodeSingularMessageField(value: &self._createdAt) }()
+      case 8: try {
+        var v: String?
+        try decoder.decodeSingularStringField(value: &v)
+        if let v = v {
+          if self.content != nil {try decoder.handleConflictingOneOf()}
+          self.content = .body(v)
+        }
+      }()
+      case 9: try {
+        var v: DRCommentHidden?
+        var hadOneofValue = false
+        if let current = self.content {
+          hadOneofValue = true
+          if case .hidden(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.content = .hidden(v)
+        }
+      }()
       default: break
       }
     }
@@ -1667,15 +1777,20 @@ extension DRComment: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     if self.authorRole != .unspecified {
       try visitor.visitSingularEnumField(value: self.authorRole, fieldNumber: 4)
     }
-    if !self.body.isEmpty {
-      try visitor.visitSingularStringField(value: self.body, fieldNumber: 5)
-    }
-    if self.isHidden != false {
-      try visitor.visitSingularBoolField(value: self.isHidden, fieldNumber: 6)
-    }
     try { if let v = self._createdAt {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
     } }()
+    switch self.content {
+    case .body?: try {
+      guard case .body(let v)? = self.content else { preconditionFailure() }
+      try visitor.visitSingularStringField(value: v, fieldNumber: 8)
+    }()
+    case .hidden?: try {
+      guard case .hidden(let v)? = self.content else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
+    }()
+    case nil: break
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1684,9 +1799,8 @@ extension DRComment: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     if lhs.requestID != rhs.requestID {return false}
     if lhs._author != rhs._author {return false}
     if lhs.authorRole != rhs.authorRole {return false}
-    if lhs.body != rhs.body {return false}
-    if lhs.isHidden != rhs.isHidden {return false}
     if lhs._createdAt != rhs._createdAt {return false}
+    if lhs.content != rhs.content {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

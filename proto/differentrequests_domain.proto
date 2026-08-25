@@ -298,6 +298,21 @@ enum CommentAuthorRole {
   COMMENT_AUTHOR_ROLE_TEAM = 2;
 }
 
+// A comment an operator has taken down.
+//
+// It carries no text, which is the point: a hidden comment used to be a body
+// field beside an `is_hidden` flag, and `{is_hidden: true, body: "…"}` was a
+// legal message. One line of Swift emptied it on one read path, so any second
+// reader — a console page, a push payload, a future GetComment — would have
+// served the text a moderator removed.
+//
+// Whoever builds hiding keeps the original in storage, not here: the row is what
+// makes the decision reversible and stops the same abuse being re-reported, and
+// storage is where a fact the wire must never carry belongs.
+message CommentHidden {
+  google.protobuf.Timestamp hidden_at = 1;
+}
+
 message Comment {
   string id = 1;
   string request_id = 2;
@@ -306,14 +321,25 @@ message Comment {
   UserRef author = 3;
   CommentAuthorRole author_role = 4;
 
-  string body = 5;
-
-  // Set when an operator has hidden this comment. The body is emptied on the
-  // way out when this is true, so hidden text cannot be recovered from the
-  // wire; the row survives so the same abuse is not re-reported forever.
-  bool is_hidden = 6;
+  // A body beside a flag saying the body is not there. The flag could not empty
+  // the field; only a reader could, and only if it remembered to.
+  //
+  // Only `is_hidden` is reserved by name. `body` keeps its name at a new number
+  // because it is the same fact — a JSON reader spelling `body` still means the
+  // text — while field 5 stays reserved so nothing writes the old slot.
+  reserved 5, 6;
+  reserved "is_hidden";
 
   google.protobuf.Timestamp created_at = 7;
+
+  // What this comment says, or that it no longer says it.
+  //
+  // Unset is a row written before this field existed, or by a server newer than
+  // this client. A reader draws nothing for it rather than an empty bubble.
+  oneof content {
+    string body = 8;
+    CommentHidden hidden = 9;
+  }
 }
 
 // Why someone is being told something. The kinds are the events worth
