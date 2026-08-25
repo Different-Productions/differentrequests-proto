@@ -9,7 +9,7 @@ extension DRRequestStatus {
   /// impossible to put in a query string rather than merely discouraged.
   public var urlToken: String? {
     switch self {
-    case .open: return "open"
+    case .`open`: return "open"
     case .planned: return "planned"
     case .inProgress: return "in-progress"
     case .shipped: return "shipped"
@@ -23,7 +23,7 @@ extension DRRequestStatus {
   /// unrecognized token is rejected by the caller rather than silently becoming a default.
   public init?(urlToken: String) {
     switch urlToken {
-    case "open": self = .open
+    case "open": self = .`open`
     case "planned": self = .planned
     case "in-progress": self = .inProgress
     case "shipped": self = .shipped

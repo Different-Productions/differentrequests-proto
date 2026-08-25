@@ -419,157 +419,119 @@ message ListChangelogResponse {
 service RequestsService {
 
   rpc GetConfig(GetConfigRequest) returns (GetConfigResponse) {
-    option (route) = {
-      method: HTTP_METHOD_GET
-      path: "/config"
-      audience: AUDIENCE_APP_KEY
-    };
+    option (route_method) = HTTP_METHOD_GET;
+    option (route_path) = "/config";
+    option (route_audience) = AUDIENCE_APP_KEY;
   }
 
   rpc CreateSession(CreateSessionRequest) returns (CreateSessionResponse) {
-    option (route) = {
-      method: HTTP_METHOD_POST
-      path: "/sessions"
-      audience: AUDIENCE_APP_KEY
-    };
+    option (route_method) = HTTP_METHOD_POST;
+    option (route_path) = "/sessions";
+    option (route_audience) = AUDIENCE_APP_KEY;
   }
 
   rpc ListRequests(ListRequestsRequest) returns (ListRequestsResponse) {
-    option (route) = {
-      method: HTTP_METHOD_GET
-      path: "/requests"
-      audience: AUDIENCE_APP_KEY
-    };
+    option (route_method) = HTTP_METHOD_GET;
+    option (route_path) = "/requests";
+    option (route_audience) = AUDIENCE_APP_KEY;
   }
 
   rpc CreateRequest(CreateRequestRequest) returns (CreateRequestResponse) {
-    option (route) = {
-      method: HTTP_METHOD_POST
-      path: "/requests"
-      audience: AUDIENCE_END_USER
-    };
+    option (route_method) = HTTP_METHOD_POST;
+    option (route_path) = "/requests";
+    option (route_audience) = AUDIENCE_END_USER;
   }
 
   rpc GetRequest(GetRequestRequest) returns (GetRequestResponse) {
-    option (route) = {
-      method: HTTP_METHOD_GET
-      path: "/requests/{requestId}"
-      audience: AUDIENCE_APP_KEY
-    };
+    option (route_method) = HTTP_METHOD_GET;
+    option (route_path) = "/requests/{requestId}";
+    option (route_audience) = AUDIENCE_APP_KEY;
   }
 
   rpc Vote(VoteRequest) returns (VoteResponse) {
-    option (route) = {
-      method: HTTP_METHOD_PUT
-      path: "/requests/{requestId}/vote"
-      audience: AUDIENCE_END_USER
-    };
+    option (route_method) = HTTP_METHOD_PUT;
+    option (route_path) = "/requests/{requestId}/vote";
+    option (route_audience) = AUDIENCE_END_USER;
   }
 
   rpc ClearVote(ClearVoteRequest) returns (ClearVoteResponse) {
-    option (route) = {
-      method: HTTP_METHOD_DELETE
-      path: "/requests/{requestId}/vote"
-      audience: AUDIENCE_END_USER
-    };
+    option (route_method) = HTTP_METHOD_DELETE;
+    option (route_path) = "/requests/{requestId}/vote";
+    option (route_audience) = AUDIENCE_END_USER;
   }
 
   rpc Follow(FollowRequest) returns (FollowResponse) {
-    option (route) = {
-      method: HTTP_METHOD_PUT
-      path: "/requests/{requestId}/follow"
-      audience: AUDIENCE_END_USER
-    };
+    option (route_method) = HTTP_METHOD_PUT;
+    option (route_path) = "/requests/{requestId}/follow";
+    option (route_audience) = AUDIENCE_END_USER;
   }
 
   rpc Unfollow(UnfollowRequest) returns (UnfollowResponse) {
-    option (route) = {
-      method: HTTP_METHOD_DELETE
-      path: "/requests/{requestId}/follow"
-      audience: AUDIENCE_END_USER
-    };
+    option (route_method) = HTTP_METHOD_DELETE;
+    option (route_path) = "/requests/{requestId}/follow";
+    option (route_audience) = AUDIENCE_END_USER;
   }
 
   rpc ListComments(ListCommentsRequest) returns (ListCommentsResponse) {
-    option (route) = {
-      method: HTTP_METHOD_GET
-      path: "/requests/{requestId}/comments"
-      audience: AUDIENCE_APP_KEY
-    };
+    option (route_method) = HTTP_METHOD_GET;
+    option (route_path) = "/requests/{requestId}/comments";
+    option (route_audience) = AUDIENCE_APP_KEY;
   }
 
   rpc CreateComment(CreateCommentRequest) returns (CreateCommentResponse) {
-    option (route) = {
-      method: HTTP_METHOD_POST
-      path: "/requests/{requestId}/comments"
-      audience: AUDIENCE_END_USER
-    };
+    option (route_method) = HTTP_METHOD_POST;
+    option (route_path) = "/requests/{requestId}/comments";
+    option (route_audience) = AUDIENCE_END_USER;
   }
 
   rpc ListNotifications(ListNotificationsRequest) returns (ListNotificationsResponse) {
-    option (route) = {
-      method: HTTP_METHOD_GET
-      path: "/notifications"
-      audience: AUDIENCE_END_USER
-    };
+    option (route_method) = HTTP_METHOD_GET;
+    option (route_path) = "/notifications";
+    option (route_audience) = AUDIENCE_END_USER;
   }
 
   // The literal segment is declared before the `{notificationId}` template below it. A
   // router matching in declaration order must keep it there, or the badge count becomes
   // a lookup for a notification called "unread-count".
   rpc GetUnreadCount(GetUnreadCountRequest) returns (GetUnreadCountResponse) {
-    option (route) = {
-      method: HTTP_METHOD_GET
-      path: "/notifications/unread-count"
-      audience: AUDIENCE_END_USER
-    };
+    option (route_method) = HTTP_METHOD_GET;
+    option (route_path) = "/notifications/unread-count";
+    option (route_audience) = AUDIENCE_END_USER;
   }
 
   rpc MarkAllNotificationsRead(MarkAllNotificationsReadRequest) returns (MarkAllNotificationsReadResponse) {
-    option (route) = {
-      method: HTTP_METHOD_PUT
-      path: "/notifications/read-all"
-      audience: AUDIENCE_END_USER
-    };
+    option (route_method) = HTTP_METHOD_PUT;
+    option (route_path) = "/notifications/read-all";
+    option (route_audience) = AUDIENCE_END_USER;
   }
 
   rpc MarkNotificationRead(MarkNotificationReadRequest) returns (MarkNotificationReadResponse) {
-    option (route) = {
-      method: HTTP_METHOD_PUT
-      path: "/notifications/{notificationId}/read"
-      audience: AUDIENCE_END_USER
-    };
+    option (route_method) = HTTP_METHOD_PUT;
+    option (route_path) = "/notifications/{notificationId}/read";
+    option (route_audience) = AUDIENCE_END_USER;
   }
 
   rpc RegisterDevice(RegisterDeviceRequest) returns (RegisterDeviceResponse) {
-    option (route) = {
-      method: HTTP_METHOD_PUT
-      path: "/devices"
-      audience: AUDIENCE_END_USER
-    };
+    option (route_method) = HTTP_METHOD_PUT;
+    option (route_path) = "/devices";
+    option (route_audience) = AUDIENCE_END_USER;
   }
 
   rpc UnregisterDevice(UnregisterDeviceRequest) returns (UnregisterDeviceResponse) {
-    option (route) = {
-      method: HTTP_METHOD_DELETE
-      path: "/devices/{deviceId}"
-      audience: AUDIENCE_END_USER
-    };
+    option (route_method) = HTTP_METHOD_DELETE;
+    option (route_path) = "/devices/{deviceId}";
+    option (route_audience) = AUDIENCE_END_USER;
   }
 
   rpc GetRoadmap(GetRoadmapRequest) returns (GetRoadmapResponse) {
-    option (route) = {
-      method: HTTP_METHOD_GET
-      path: "/roadmap"
-      audience: AUDIENCE_APP_KEY
-    };
+    option (route_method) = HTTP_METHOD_GET;
+    option (route_path) = "/roadmap";
+    option (route_audience) = AUDIENCE_APP_KEY;
   }
 
   rpc ListChangelog(ListChangelogRequest) returns (ListChangelogResponse) {
-    option (route) = {
-      method: HTTP_METHOD_GET
-      path: "/changelog"
-      audience: AUDIENCE_APP_KEY
-    };
+    option (route_method) = HTTP_METHOD_GET;
+    option (route_path) = "/changelog";
+    option (route_audience) = AUDIENCE_APP_KEY;
   }
 }

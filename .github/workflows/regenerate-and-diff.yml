@@ -51,14 +51,11 @@ jobs:
       - name: Snapshot committed output
         run: cp -a Sources/DifferentRequestsProtos "${RUNNER_TEMP}/committed"
 
+      # One script and one step: every generator is a protoc plugin, so protoc drives all
+      # of them from a single parse. The vocabulary needed its own script and its own
+      # descriptor set while it read one; it is a plugin now and comes out of this run.
       - name: Regenerate
         run: ./Scripts/generate.sh
-
-      # A separate script because it needs a descriptor set rather than protoc's
-      # Swift output, and a separate step so a vocabulary that was edited without
-      # being regenerated fails here rather than shipping a token nothing spells.
-      - name: Regenerate the vocabulary
-        run: ./Scripts/generate-vocabulary.sh
 
       - name: Fail if committed output differs from a fresh run
         run: |

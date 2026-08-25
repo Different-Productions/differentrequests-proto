@@ -126,26 +126,6 @@ public enum DRHttpMethod: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 }
 
-public struct DRRoute: Sendable {
-  // SwiftProtobuf.Message conformance is added in an extension below. See the
-  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
-  // methods supported on all messages.
-
-  public var method: DRHttpMethod = .unspecified
-
-  /// Path template relative to the API root, with `{brace}` parameters —
-  /// `/requests/{requestId}/comments`. A parameter name matches the field in the
-  /// rpc's request message that supplies it, which is what lets the generator bind
-  /// it without a second mapping to keep in sync.
-  public var path: String = String()
-
-  public var audience: DRAudience = .unspecified
-
-  public var unknownFields = SwiftProtobuf.UnknownStorage()
-
-  public init() {}
-}
-
 // MARK: - Extension support defined in differentrequests_options.proto.
 
 // MARK: - Extension Properties
@@ -190,19 +170,53 @@ extension SwiftProtobuf.Google_Protobuf_EnumValueOptions {
 
 extension SwiftProtobuf.Google_Protobuf_MethodOptions {
 
-  public var DRroute: DRRoute {
-    get {return getExtensionValue(ext: DRExtensions_route) ?? DRRoute()}
-    set {setExtensionValue(ext: DRExtensions_route, value: newValue)}
+  public var DRrouteMethod: DRHttpMethod {
+    get {return getExtensionValue(ext: DRExtensions_route_method) ?? .unspecified}
+    set {setExtensionValue(ext: DRExtensions_route_method, value: newValue)}
   }
-  /// Returns true if extension `DRExtensions_route`
+  /// Returns true if extension `DRExtensions_route_method`
   /// has been explicitly set.
-  public var hasDRroute: Bool {
-    return hasExtensionValue(ext: DRExtensions_route)
+  public var hasDRrouteMethod: Bool {
+    return hasExtensionValue(ext: DRExtensions_route_method)
   }
-  /// Clears the value of extension `DRExtensions_route`.
+  /// Clears the value of extension `DRExtensions_route_method`.
   /// Subsequent reads from it will return its default value.
-  public mutating func clearDRroute() {
-    clearExtensionValue(ext: DRExtensions_route)
+  public mutating func clearDRrouteMethod() {
+    clearExtensionValue(ext: DRExtensions_route_method)
+  }
+
+  /// Path template relative to the API root, with `{brace}` parameters —
+  /// `/requests/{requestId}/comments`. A parameter name matches the field in the
+  /// rpc's request message that supplies it, which is what lets the generator bind
+  /// it without a second mapping to keep in sync.
+  public var DRroutePath: String {
+    get {return getExtensionValue(ext: DRExtensions_route_path) ?? String()}
+    set {setExtensionValue(ext: DRExtensions_route_path, value: newValue)}
+  }
+  /// Returns true if extension `DRExtensions_route_path`
+  /// has been explicitly set.
+  public var hasDRroutePath: Bool {
+    return hasExtensionValue(ext: DRExtensions_route_path)
+  }
+  /// Clears the value of extension `DRExtensions_route_path`.
+  /// Subsequent reads from it will return its default value.
+  public mutating func clearDRroutePath() {
+    clearExtensionValue(ext: DRExtensions_route_path)
+  }
+
+  public var DRrouteAudience: DRAudience {
+    get {return getExtensionValue(ext: DRExtensions_route_audience) ?? .unspecified}
+    set {setExtensionValue(ext: DRExtensions_route_audience, value: newValue)}
+  }
+  /// Returns true if extension `DRExtensions_route_audience`
+  /// has been explicitly set.
+  public var hasDRrouteAudience: Bool {
+    return hasExtensionValue(ext: DRExtensions_route_audience)
+  }
+  /// Clears the value of extension `DRExtensions_route_audience`.
+  /// Subsequent reads from it will return its default value.
+  public mutating func clearDRrouteAudience() {
+    clearExtensionValue(ext: DRExtensions_route_audience)
   }
 
 }
@@ -214,7 +228,9 @@ extension SwiftProtobuf.Google_Protobuf_MethodOptions {
 /// in parsing, or it can be combined with other `SwiftProtobuf.SimpleExtensionMap`s to create
 /// a larger `SwiftProtobuf.SimpleExtensionMap`.
 public let DRDifferentrequestsOptions_Extensions: SwiftProtobuf.SimpleExtensionMap = [
-  DRExtensions_route,
+  DRExtensions_route_method,
+  DRExtensions_route_path,
+  DRExtensions_route_audience,
   DRExtensions_url_token,
   DRExtensions_token
 ]
@@ -223,9 +239,23 @@ public let DRDifferentrequestsOptions_Extensions: SwiftProtobuf.SimpleExtensionM
 // constructing a `SimpleExtensionMap`, otherwise, use the above _Extension Properties_
 // accessors for the extension fields on the messages directly.
 
-public let DRExtensions_route = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalMessageExtensionField<DRRoute>, SwiftProtobuf.Google_Protobuf_MethodOptions>(
-  _protobuf_fieldNumber: 51240,
-  fieldName: "differentrequests.v1.route"
+public let DRExtensions_route_method = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalEnumExtensionField<DRHttpMethod>, SwiftProtobuf.Google_Protobuf_MethodOptions>(
+  _protobuf_fieldNumber: 51243,
+  fieldName: "differentrequests.v1.route_method"
+)
+
+/// Path template relative to the API root, with `{brace}` parameters —
+/// `/requests/{requestId}/comments`. A parameter name matches the field in the
+/// rpc's request message that supplies it, which is what lets the generator bind
+/// it without a second mapping to keep in sync.
+public let DRExtensions_route_path = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalExtensionField<SwiftProtobuf.ProtobufString>, SwiftProtobuf.Google_Protobuf_MethodOptions>(
+  _protobuf_fieldNumber: 51244,
+  fieldName: "differentrequests.v1.route_path"
+)
+
+public let DRExtensions_route_audience = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalEnumExtensionField<DRAudience>, SwiftProtobuf.Google_Protobuf_MethodOptions>(
+  _protobuf_fieldNumber: 51245,
+  fieldName: "differentrequests.v1.route_audience"
 )
 
 public let DRExtensions_url_token = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalExtensionField<SwiftProtobuf.ProtobufString>, SwiftProtobuf.Google_Protobuf_EnumValueOptions>(
@@ -240,52 +270,10 @@ public let DRExtensions_token = SwiftProtobuf.MessageExtension<SwiftProtobuf.Opt
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "differentrequests.v1"
-
 extension DRAudience: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0AUDIENCE_UNSPECIFIED\0\u{1}AUDIENCE_APP_KEY\0\u{1}AUDIENCE_END_USER\0")
 }
 
 extension DRHttpMethod: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0HTTP_METHOD_UNSPECIFIED\0\u{1}HTTP_METHOD_GET\0\u{1}HTTP_METHOD_POST\0\u{1}HTTP_METHOD_PUT\0\u{1}HTTP_METHOD_DELETE\0")
-}
-
-extension DRRoute: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  public static let protoMessageName: String = _protobuf_package + ".Route"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}method\0\u{1}path\0\u{1}audience\0")
-
-  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularEnumField(value: &self.method) }()
-      case 2: try { try decoder.decodeSingularStringField(value: &self.path) }()
-      case 3: try { try decoder.decodeSingularEnumField(value: &self.audience) }()
-      default: break
-      }
-    }
-  }
-
-  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if self.method != .unspecified {
-      try visitor.visitSingularEnumField(value: self.method, fieldNumber: 1)
-    }
-    if !self.path.isEmpty {
-      try visitor.visitSingularStringField(value: self.path, fieldNumber: 2)
-    }
-    if self.audience != .unspecified {
-      try visitor.visitSingularEnumField(value: self.audience, fieldNumber: 3)
-    }
-    try unknownFields.traverse(visitor: &visitor)
-  }
-
-  public static func ==(lhs: DRRoute, rhs: DRRoute) -> Bool {
-    if lhs.method != rhs.method {return false}
-    if lhs.path != rhs.path {return false}
-    if lhs.audience != rhs.audience {return false}
-    if lhs.unknownFields != rhs.unknownFields {return false}
-    return true
-  }
 }

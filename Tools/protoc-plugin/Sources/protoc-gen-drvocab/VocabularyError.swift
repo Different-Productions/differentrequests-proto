@@ -1,28 +1,17 @@
-/// Every way vocab-gen refuses to emit. Each names the enum, and where the fault is
+/// Every way the vocabulary generator refuses to emit. Each names the enum, and where the fault is
 /// one value's, the value.
-enum VocabularyError: Error {
-  case descriptorUnreadable(path: String, reason: String)
-  case descriptorUndecodable(path: String, reason: String)
-  case protoFileAbsent(protoFileName: String, descriptorSetPath: String)
+///
+/// `CustomStringConvertible` because protoc reports a plugin's failure by calling
+/// `String(describing:)` on whatever it throws.
+enum VocabularyError: Error, CustomStringConvertible {
   case messageDeclared(protoFileName: String, messageName: String)
   case tokenAbsent(enumName: String, valueName: String)
   case tokenDuplicated(enumName: String, token: String, first: String, second: String)
   case caseNameDuplicated(enumName: String, caseName: String)
   case nothingEmitted(protoFileNames: [String])
-  case directoryUncreatable(path: String, reason: String)
-  case fileUnwritable(path: String, reason: String)
 
-  var message: String {
+  var description: String {
     switch self {
-    case .descriptorUnreadable(let path, let reason):
-      return "cannot read the descriptor set at \(path): \(reason)"
-    case .descriptorUndecodable(let path, let reason):
-      return "cannot decode the descriptor set at \(path): \(reason)"
-    case .protoFileAbsent(let protoFileName, let descriptorSetPath):
-      return """
-        \(protoFileName) is not in the descriptor set at \(descriptorSetPath). \
-        Pass the name protoc recorded, which is the path relative to --proto_path.
-        """
     case .messageDeclared(let protoFileName, let messageName):
       return """
         \(protoFileName) declares message \(messageName). The vocabulary is enums \
@@ -48,10 +37,6 @@ enum VocabularyError: Error {
         no enums were found in \(protoFileNames.joined(separator: ", ")). A generator \
         that emits nothing is the failure this generator exists to remove.
         """
-    case .directoryUncreatable(let path, let reason):
-      return "cannot create \(path): \(reason)"
-    case .fileUnwritable(let path, let reason):
-      return "cannot write \(path): \(reason)"
     }
   }
 }

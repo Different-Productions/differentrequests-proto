@@ -30,9 +30,9 @@ parameter scopes a read; both make a response cacheable and a request legible in
 `BacklogServer` and `backlog-admin-cms` speak exactly this, down to the content type.
 
 What that leaves is the risk of a query key or an enum spelling being typed twice — once
-in the client, once in the server. Neither is: `fields-gen` emits each message's field
-names and `tokens-gen` emits each value's URL spelling, so both sides read one
-declaration.
+in the client, once in the server. Neither is: `protoc-gen-drfields` emits each message's
+field names and `protoc-gen-drtokens` emits each value's URL spelling, so both sides read
+one declaration.
 
 ### No shadow objects
 
@@ -108,18 +108,34 @@ The package identity is `differentrequests-proto`, so the product reference is
 ./Scripts/generate.sh        # rewrites Sources/DifferentRequestsProtos/
 ```
 
-Four generators run, all of them in `Tools/protoc-plugin`, and each emits something
+Five generators run, all of them in `Tools/protoc-plugin`, and each emits something
 `protoc-gen-swift` does not.
 
 - `protoc-gen-swift` — the message types.
-- `endpoint-gen` — the endpoint table. One CaseIterable enum a server builds its router
-  from, carrying each rpc's verb, path template, and audience; and one enum whose cases
-  carry the path parameters, so a client cannot construct a call without the ids its path
-  needs. An rpc declaring no audience is a build failure rather than an open route.
-- `tokens-gen` — how an enum value is spelled in a URL, and an initializer that reads one
-  back. A value with no declared spelling cannot be sent.
-- `fields-gen` — each message's field names as the schema spells them, so a query key is
-  referenced rather than typed.
+- `protoc-gen-drendpoints` — the endpoint table. One CaseIterable enum a server builds its
+  router from, carrying each rpc's verb, path template, and audience; and one enum whose
+  cases carry the path parameters, so a client cannot construct a call without the ids its
+  path needs. An rpc declaring no audience is a build failure rather than an open route.
+- `protoc-gen-drtokens` — how an enum value is spelled in a URL, and an initializer that
+  reads one back. A value with no declared spelling cannot be sent.
+- `protoc-gen-drfields` — each message's field names as the schema spells them, so a query
+  key is referenced rather than typed.
+- `protoc-gen-drvocab` — values whose contract *is* their spelling: an HTTP header, an
+  authorization scheme, a media type. protoc emits Int-backed enums, so the string a value
+  carries when it leaves Swift has nowhere else to live.
+
+Every one of them is a protoc plugin, the shape `protoc-gen-swift` itself is: protoc parses
+the schema once and hands each of them descriptors. None opens a `.proto` file. A generator
+that read the text would be a second implementation of a grammar protoc already implements,
+and wrong wherever the two disagree — a brace opened by a `oneof` closing a message, a `//`
+inside a string literal starting a comment, a declaration split across lines never seen at
+all.
+
+That is also why the route metadata is three scalar options rather than one `Route` message.
+A message-typed option can only be read by decoding it, and decoding needs the generated
+Swift for the file that declares it — which would make the generator depend on its own
+output. Scalars are read as the numbers they are, and their names resolved through the
+descriptor.
 
 Types carry a `DR` prefix. The domain's nouns are the most generic words available — App,
 Comment, Plan — and `Notification` shadows Foundation's outright, so a consumer would

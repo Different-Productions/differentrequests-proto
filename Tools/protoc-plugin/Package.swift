@@ -14,23 +14,67 @@ import PackageDescription
 //
 // Pinned to the same version backlog-proto pins, so the two contract packages in
 // this org emit identically formatted Swift.
-// The generators declare no dependency at all — each is a pure Swift parser over the
-// .proto text and none invokes protoc. What they emit is what protoc-gen-swift does
-// not: the rpc table, the URL spelling of an enum value, and a field's wire name.
+//
+// Every generator here is a protoc plugin, the same shape protoc-gen-swift is:
+// protoc parses the schema and hands over descriptors, and the custom options are
+// declared to the library rather than matched out of text. None of them opens a
+// .proto file. A generator that read the text would be a second implementation of
+// a grammar protoc already implements, and wrong wherever the two disagree — a
+// brace opened by a `oneof` closing a message, a `//` inside a string literal
+// starting a comment, a declaration split across lines never seen at all.
 let package = Package(
   name: "protoc-plugin",
   platforms: [.macOS("15.0")],
   products: [
-    .executable(name: "endpoint-gen", targets: ["endpoint-gen"]),
-    .executable(name: "tokens-gen", targets: ["tokens-gen"]),
-    .executable(name: "fields-gen", targets: ["fields-gen"])
+    .executable(name: "protoc-gen-drendpoints", targets: ["protoc-gen-drendpoints"]),
+    .executable(name: "protoc-gen-drtokens", targets: ["protoc-gen-drtokens"]),
+    .executable(name: "protoc-gen-drfields", targets: ["protoc-gen-drfields"]),
+    .executable(name: "protoc-gen-drvocab", targets: ["protoc-gen-drvocab"])
   ],
   dependencies: [
     .package(url: "https://github.com/apple/swift-protobuf.git", exact: "1.33.3")
   ],
   targets: [
-    .executableTarget(name: "endpoint-gen"),
-    .executableTarget(name: "tokens-gen"),
-    .executableTarget(name: "fields-gen")
+    // What every generator here needs and none of them should each hold a copy of: the contract's
+    // custom options declared once, and the naming a generated file is built from.
+    .target(
+      name: "ContractGeneration",
+      dependencies: [
+        .product(name: "SwiftProtobuf", package: "swift-protobuf"),
+        .product(name: "SwiftProtobufPluginLibrary", package: "swift-protobuf")
+      ]
+    ),
+    .executableTarget(
+      name: "protoc-gen-drendpoints",
+      dependencies: [
+        "ContractGeneration",
+        .product(name: "SwiftProtobuf", package: "swift-protobuf"),
+        .product(name: "SwiftProtobufPluginLibrary", package: "swift-protobuf")
+      ]
+    ),
+    .executableTarget(
+      name: "protoc-gen-drtokens",
+      dependencies: [
+        "ContractGeneration",
+        .product(name: "SwiftProtobuf", package: "swift-protobuf"),
+        .product(name: "SwiftProtobufPluginLibrary", package: "swift-protobuf")
+      ]
+    ),
+    .executableTarget(
+      name: "protoc-gen-drfields",
+      dependencies: [
+        "ContractGeneration",
+        .product(name: "SwiftProtobuf", package: "swift-protobuf"),
+        .product(name: "SwiftProtobufPluginLibrary", package: "swift-protobuf")
+      ]
+    ),
+    .executableTarget(
+      name: "protoc-gen-drvocab",
+      dependencies: [
+        "ContractGeneration",
+        .product(name: "SwiftProtobuf", package: "swift-protobuf"),
+        .product(name: "SwiftProtobufPluginLibrary", package: "swift-protobuf")
+      ]
+    )
   ]
 )

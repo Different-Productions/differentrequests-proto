@@ -15,8 +15,23 @@ option swift_prefix = "DR";
 //
 // The audience is here because it is the one thing HTTP cannot state, and getting
 // it wrong is what leaks one tenant's board into another's app.
+//
+// Three scalar options rather than one `Route` message at 51240, which is retired.
+// A message-typed option can only be read by decoding it, and decoding needs the
+// generated Swift for this file — which would make the generator that produces
+// that Swift depend on its own output. Scalars are read as the numbers they are
+// and their names resolved through the descriptor, so the generator needs no
+// generated type at all.
 extend google.protobuf.MethodOptions {
-  Route route = 51240;
+  HttpMethod route_method = 51243;
+
+  // Path template relative to the API root, with `{brace}` parameters —
+  // `/requests/{requestId}/comments`. A parameter name matches the field in the
+  // rpc's request message that supplies it, which is what lets the generator bind
+  // it without a second mapping to keep in sync.
+  string route_path = 51244;
+
+  Audience route_audience = 51245;
 }
 
 // How an enum value is spelled when it appears in a URL.
@@ -79,14 +94,3 @@ enum HttpMethod {
   HTTP_METHOD_DELETE = 4;
 }
 
-message Route {
-  HttpMethod method = 1;
-
-  // Path template relative to the API root, with `{brace}` parameters —
-  // `/requests/{requestId}/comments`. A parameter name matches the field in the
-  // rpc's request message that supplies it, which is what lets the generator bind
-  // it without a second mapping to keep in sync.
-  string path = 2;
-
-  Audience audience = 3;
-}
