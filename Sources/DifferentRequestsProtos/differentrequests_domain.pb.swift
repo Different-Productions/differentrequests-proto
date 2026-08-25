@@ -25,6 +25,10 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 public enum DRPlan: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
   case unspecified // = 0
+
+  /// Spelled because an operator names a plan on the command line when provisioning
+  /// a tenant. A value with no spelling cannot be named, which is what keeps the
+  /// zero sentinel off the console.
   case free // = 1
   case pro // = 2
   case UNRECOGNIZED(Int)

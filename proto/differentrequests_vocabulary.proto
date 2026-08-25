@@ -44,6 +44,10 @@ enum HTTPHeaderName {
   HTTP_HEADER_NAME_AUTHORIZATION = 1 [(token) = "Authorization"];
 
   HTTP_HEADER_NAME_CONTENT_TYPE = 2 [(token) = "Content-Type"];
+
+  // What a caller will accept back. Every response on this API is a serialized
+  // message, so this is sent on every request and never varies.
+  HTTP_HEADER_NAME_ACCEPT = 3 [(token) = "Accept"];
 }
 
 // The scheme prefixing a credential in an `Authorization` header.

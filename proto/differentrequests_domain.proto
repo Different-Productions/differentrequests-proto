@@ -49,8 +49,12 @@ message Tenant {
 // tracked previously described a product with no buyers.
 enum Plan {
   PLAN_UNSPECIFIED = 0;
-  PLAN_FREE = 1;
-  PLAN_PRO = 2;
+
+  // Spelled because an operator names a plan on the command line when provisioning
+  // a tenant. A value with no spelling cannot be named, which is what keeps the
+  // zero sentinel off the console.
+  PLAN_FREE = 1 [(url_token) = "free"];
+  PLAN_PRO = 2 [(url_token) = "pro"];
 }
 
 // One board, belonging to one tenant, embedded in one iOS app.

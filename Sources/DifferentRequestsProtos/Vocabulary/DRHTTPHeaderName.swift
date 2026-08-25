@@ -12,4 +12,7 @@ public enum DRHTTPHeaderName: String, CaseIterable, Sendable {
   /// The header an end-user session token is presented in, under the bearer scheme.
   case authorization = "Authorization"
   case contentType = "Content-Type"
+  /// What a caller will accept back. Every response on this API is a serialized
+  /// message, so this is sent on every request and never varies.
+  case accept = "Accept"
 }
