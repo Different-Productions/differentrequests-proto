@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package differentrequests.v1;
+
+import "differentrequests_options.proto";
+
+option swift_prefix = "DR";
+
+// Every string this API agrees on with the things it talks to, whose spelling is
+// the contract.
+//
+// An HTTP header, an authorization scheme, a media type: for all of these the token
+// is what two processes agree on, and an Int-backed enum cannot carry a token. So
+// every value here spells its own with `(token)`. A value whose token this file does
+// not spell is a value no generator can emit.
+//
+// The token is the byte string. The value's number orders the file and nothing else:
+// nothing here describes a message field, so no number is load-bearing and
+// renumbering costs nothing. Renaming a token is a wire change.
+//
+// This file emits no Swift through protoc. protoc parses it so a duplicate value, an
+// unterminated block or an unknown option fails in the real parser, and vocab-gen
+// reads the descriptor protoc renders.
+//
+// Closed sets that ride *inside* a URL are not here — `url_token` on the domain and
+// SDK enums owns those, because they are values of a field the contract declares
+// rather than vocabulary the transport agrees on.
+
+// ---------------------------------------------------------------------------
+// HTTP
+// ---------------------------------------------------------------------------
+
+// Header names on requests this API sends or receives.
+//
+// Both were literals in two repositories: the SDK wrote them and the server matched
+// on them, and nothing failed loudly if they stopped agreeing — the server would
+// simply stop seeing a credential the client believed it had sent.
+enum HTTPHeaderName {
+  // The header an app key is presented in, on every rpc without exception. Names
+  // the tenant's app and nobody within it.
+  HTTP_HEADER_NAME_APP_KEY = 0 [(token) = "X-App-Key"];
+
+  // The header an end-user session token is presented in, under the bearer scheme.
+  HTTP_HEADER_NAME_AUTHORIZATION = 1 [(token) = "Authorization"];
+
+  HTTP_HEADER_NAME_CONTENT_TYPE = 2 [(token) = "Content-Type"];
+}
+
+// The scheme prefixing a credential in an `Authorization` header.
+//
+// A caller writes the scheme into the value and the server strips it back off, so a
+// change here is a change both sides make together.
+enum AuthorizationScheme {
+  AUTHORIZATION_SCHEME_BEARER = 0 [(token) = "Bearer"];
+}
+
+// The media type every request and response body carries, in both directions.
+//
+// Every payload on this API is a serialized message, a failure included — which is
+// why there is one media type here and not one per direction.
+enum MediaType {
+  MEDIA_TYPE_PROTOBUF = 0 [(token) = "application/x-protobuf"];
+}

@@ -29,6 +29,21 @@ extend google.protobuf.EnumValueOptions {
   string url_token = 51241;
 }
 
+// The exact token a value takes when it leaves Swift.
+//
+// protoc emits Int-backed enums, so a value whose contract *is* its spelling — an
+// HTTP header, an authorization scheme, a media type, an id prefix — cannot carry
+// that spelling in the generated enum. This option carries it, and vocab-gen reads
+// it off the descriptor.
+//
+// Separate from `url_token`, which says how a value is spelled inside a URL this
+// API already serves. These are spellings the API agrees on with everything it
+// talks to, and every one of them was a literal in the server and the SDK both
+// until it was declared here.
+extend google.protobuf.EnumValueOptions {
+  string token = 51242;
+}
+
 // The *minimum* credential a caller must present. Every rpc names exactly one;
 // there is no "any" and no default, so an rpc that forgets to say is a generator
 // error rather than an open endpoint.

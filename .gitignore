@@ -2,5 +2,7 @@
 .DS_Store
 .swiftpm/
 Tools/protoc-plugin/.build/
+Tools/vocab-gen/.build/
 Package.resolved
 Tools/protoc-plugin/Package.resolved
+Tools/vocab-gen/Package.resolved

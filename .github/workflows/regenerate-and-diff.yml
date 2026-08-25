@@ -54,6 +54,12 @@ jobs:
       - name: Regenerate
         run: ./Scripts/generate.sh
 
+      # A separate script because it needs a descriptor set rather than protoc's
+      # Swift output, and a separate step so a vocabulary that was edited without
+      # being regenerated fails here rather than shipping a token nothing spells.
+      - name: Regenerate the vocabulary
+        run: ./Scripts/generate-vocabulary.sh
+
       - name: Fail if committed output differs from a fresh run
         run: |
           if ! diff -ru "${RUNNER_TEMP}/committed" Sources/DifferentRequestsProtos; then

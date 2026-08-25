@@ -171,6 +171,21 @@ extension SwiftProtobuf.Google_Protobuf_EnumValueOptions {
   public mutating func clearDRurlToken() {
     clearExtensionValue(ext: DRExtensions_url_token)
   }
+
+  public var DRtoken: String {
+    get {return getExtensionValue(ext: DRExtensions_token) ?? String()}
+    set {setExtensionValue(ext: DRExtensions_token, value: newValue)}
+  }
+  /// Returns true if extension `DRExtensions_token`
+  /// has been explicitly set.
+  public var hasDRtoken: Bool {
+    return hasExtensionValue(ext: DRExtensions_token)
+  }
+  /// Clears the value of extension `DRExtensions_token`.
+  /// Subsequent reads from it will return its default value.
+  public mutating func clearDRtoken() {
+    clearExtensionValue(ext: DRExtensions_token)
+  }
 }
 
 extension SwiftProtobuf.Google_Protobuf_MethodOptions {
@@ -200,7 +215,8 @@ extension SwiftProtobuf.Google_Protobuf_MethodOptions {
 /// a larger `SwiftProtobuf.SimpleExtensionMap`.
 public let DRDifferentrequestsOptions_Extensions: SwiftProtobuf.SimpleExtensionMap = [
   DRExtensions_route,
-  DRExtensions_url_token
+  DRExtensions_url_token,
+  DRExtensions_token
 ]
 
 // Extension Objects - The only reason these might be needed is when manually
@@ -215,6 +231,11 @@ public let DRExtensions_route = SwiftProtobuf.MessageExtension<SwiftProtobuf.Opt
 public let DRExtensions_url_token = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalExtensionField<SwiftProtobuf.ProtobufString>, SwiftProtobuf.Google_Protobuf_EnumValueOptions>(
   _protobuf_fieldNumber: 51241,
   fieldName: "differentrequests.v1.url_token"
+)
+
+public let DRExtensions_token = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalExtensionField<SwiftProtobuf.ProtobufString>, SwiftProtobuf.Google_Protobuf_EnumValueOptions>(
+  _protobuf_fieldNumber: 51242,
+  fieldName: "differentrequests.v1.token"
 )
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
