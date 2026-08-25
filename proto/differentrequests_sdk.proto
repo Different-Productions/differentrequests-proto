@@ -36,58 +36,105 @@ option swift_prefix = "DR";
 // Errors
 // ---------------------------------------------------------------------------
 
+// One field of the request failed validation — a blank title, a body over the
+// limit.
+message InvalidArgument {
+  // Which field, as the schema spells it. It sits here rather than on ApiError so
+  // that it exists only under the one reason it means anything for, and a reader
+  // never has to ask whether this failure is the kind that fills it in.
+  //
+  // Read from the generated field table. A name typed at the throw site is a second
+  // spelling of something the schema already spells.
+  string field = 1;
+}
+
+// The body was not the message the rpc takes at all.
+//
+// Separate from InvalidArgument, which names a field: there is no field to name
+// when the bytes did not decode, and the remedy is different — a wrong content
+// type or a stale client build, not a value somebody typed.
+message Malformed {}
+
+// Missing, expired, or unparseable credential. An expired end-user session is
+// this, and the SDK's response is to re-identify rather than to log anyone out.
+message Unauthenticated {}
+
+// Authenticated, but not permitted — someone else's request, another tenant's app.
+message PermissionDenied {}
+
+message NotFound {}
+
+// The request exists and its current state does not allow what was asked — moving
+// a request that has been merged away.
+//
+// Not InvalidArgument: every argument was well formed and the caller is not the one
+// who is wrong. Not Conflict: nothing raced, and asking again changes nothing.
+message FailedPrecondition {}
+
+// Somebody else wrote first, and this write would have replaced their decision
+// rather than been applied on top of it.
+//
+// Its own reason because the caller's input was correct: told their argument was
+// invalid, they go looking for a fault in a request that has none. The remedy is to
+// read the thing again and choose against what it now says.
+message Conflict {}
+
+// The feature exists but the tenant's plan does not include it. Distinct from
+// PermissionDenied because the remedy is a purchase, not a different account, and
+// only the host developer can act on it — never surfaced to an end user.
+message PlanRequired {}
+
+// Too many writes.
+message RateLimited {
+  // How long to wait. It sits here rather than on ApiError so that it exists only
+  // under the one reason it means anything for, and reads as zero nowhere else.
+  //
+  // The single statement of it — there is no Retry-After header in this protocol to
+  // disagree with.
+  int32 retry_after_seconds = 1;
+}
+
+message InternalFailure {}
+
 // Why a call failed.
 //
 // A failed call returns an ApiError in the body, encoded exactly like a successful
-// response. This enum is the whole of what a client branches on: the HTTP status is
-// transport, is not part of this contract, and must not be interpreted.
+// response. The arm of `reason` is the whole of what a client branches on: the HTTP
+// status is transport, is not part of this contract, and must not be interpreted.
 //
 // Stated that way because a status code cannot carry the distinctions that matter —
 // a 403 meaning "upgrade to Pro" and a 403 meaning "not your request" need
 // different UI — and a client branching on the status while the reason sits in the
 // body is reading a shadow of the error instead of the error.
-enum ErrorCode {
-  ERROR_CODE_UNSPECIFIED = 0;
-
-  // Malformed or failing validation — a blank title, a body over the limit.
-  ERROR_CODE_INVALID_ARGUMENT = 1;
-
-  // Missing, expired, or unparseable credential. An expired end-user session is
-  // this, and the SDK's response is to re-identify rather than to log anyone out.
-  ERROR_CODE_UNAUTHENTICATED = 2;
-
-  // Authenticated, but not permitted — someone else's request, another tenant's
-  // app.
-  ERROR_CODE_PERMISSION_DENIED = 3;
-
-  ERROR_CODE_NOT_FOUND = 4;
-
-  // The feature exists but the tenant's plan does not include it. Distinct from
-  // PERMISSION_DENIED because the remedy is a purchase, not a different account,
-  // and only the host developer can act on it — never surfaced to an end user.
-  ERROR_CODE_PLAN_REQUIRED = 5;
-
-  // Too many writes. Always accompanied by `retry_after_seconds`.
-  ERROR_CODE_RATE_LIMITED = 6;
-
-  ERROR_CODE_INTERNAL = 7;
-}
-
 message ApiError {
-  ErrorCode code = 1;
+  // The arm is the code, so `ErrorCode` is gone. `field` and `retry_after_seconds`
+  // went with it: each belonged to a single code and read as zero under every
+  // other, so nothing could tell a field that was empty from one that never
+  // applied. Each now sits on the one reason that carries it.
+  reserved 1, 3, 4;
+  reserved "code", "field", "retry_after_seconds";
 
   // Human-readable, English, for a developer reading a log. Not copy: a client
   // must not render this to an end user, because it is written for whoever is
   // debugging and may name internals.
   string message = 2;
 
-  // Which field failed, for INVALID_ARGUMENT. Names a field in the request
-  // message as the schema spells it.
-  string field = 3;
-
-  // Set only for RATE_LIMITED. The single statement of how long to wait — there is
-  // no Retry-After header to disagree with it.
-  int32 retry_after_seconds = 4;
+  // Why the call failed, and everything that failure carries.
+  //
+  // Unset is a server newer than this client. A client draws its general failure for
+  // that rather than guessing which reason it might have been.
+  oneof reason {
+    InvalidArgument invalid_argument = 5;
+    Malformed malformed = 6;
+    Unauthenticated unauthenticated = 7;
+    PermissionDenied permission_denied = 8;
+    NotFound not_found = 9;
+    FailedPrecondition failed_precondition = 10;
+    Conflict conflict = 11;
+    PlanRequired plan_required = 12;
+    RateLimited rate_limited = 13;
+    InternalFailure internal_failure = 14;
+  }
 }
 
 // ---------------------------------------------------------------------------

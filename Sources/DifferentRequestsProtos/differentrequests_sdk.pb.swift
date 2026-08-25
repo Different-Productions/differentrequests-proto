@@ -20,88 +20,6 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
-/// Why a call failed.
-///
-/// A failed call returns an ApiError in the body, encoded exactly like a successful
-/// response. This enum is the whole of what a client branches on: the HTTP status is
-/// transport, is not part of this contract, and must not be interpreted.
-///
-/// Stated that way because a status code cannot carry the distinctions that matter —
-/// a 403 meaning "upgrade to Pro" and a 403 meaning "not your request" need
-/// different UI — and a client branching on the status while the reason sits in the
-/// body is reading a shadow of the error instead of the error.
-public enum DRErrorCode: SwiftProtobuf.Enum, Swift.CaseIterable {
-  public typealias RawValue = Int
-  case unspecified // = 0
-
-  /// Malformed or failing validation — a blank title, a body over the limit.
-  case invalidArgument // = 1
-
-  /// Missing, expired, or unparseable credential. An expired end-user session is
-  /// this, and the SDK's response is to re-identify rather than to log anyone out.
-  case unauthenticated // = 2
-
-  /// Authenticated, but not permitted — someone else's request, another tenant's
-  /// app.
-  case permissionDenied // = 3
-  case notFound // = 4
-
-  /// The feature exists but the tenant's plan does not include it. Distinct from
-  /// PERMISSION_DENIED because the remedy is a purchase, not a different account,
-  /// and only the host developer can act on it — never surfaced to an end user.
-  case planRequired // = 5
-
-  /// Too many writes. Always accompanied by `retry_after_seconds`.
-  case rateLimited // = 6
-  case `internal` // = 7
-  case UNRECOGNIZED(Int)
-
-  public init() {
-    self = .unspecified
-  }
-
-  public init?(rawValue: Int) {
-    switch rawValue {
-    case 0: self = .unspecified
-    case 1: self = .invalidArgument
-    case 2: self = .unauthenticated
-    case 3: self = .permissionDenied
-    case 4: self = .notFound
-    case 5: self = .planRequired
-    case 6: self = .rateLimited
-    case 7: self = .internal
-    default: self = .UNRECOGNIZED(rawValue)
-    }
-  }
-
-  public var rawValue: Int {
-    switch self {
-    case .unspecified: return 0
-    case .invalidArgument: return 1
-    case .unauthenticated: return 2
-    case .permissionDenied: return 3
-    case .notFound: return 4
-    case .planRequired: return 5
-    case .rateLimited: return 6
-    case .internal: return 7
-    case .UNRECOGNIZED(let i): return i
-    }
-  }
-
-  // The compiler won't synthesize support with the UNRECOGNIZED case.
-  public static let allCases: [DRErrorCode] = [
-    .unspecified,
-    .invalidArgument,
-    .unauthenticated,
-    .permissionDenied,
-    .notFound,
-    .planRequired,
-    .rateLimited,
-    .internal,
-  ]
-
-}
-
 /// How a board page is ordered.
 public enum DRRequestSort: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
@@ -147,27 +65,271 @@ public enum DRRequestSort: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 }
 
-public struct DRApiError: Sendable {
+/// One field of the request failed validation — a blank title, a body over the
+/// limit.
+public struct DRInvalidArgument: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var code: DRErrorCode = .unspecified
+  /// Which field, as the schema spells it. It sits here rather than on ApiError so
+  /// that it exists only under the one reason it means anything for, and a reader
+  /// never has to ask whether this failure is the kind that fills it in.
+  ///
+  /// Read from the generated field table. A name typed at the throw site is a second
+  /// spelling of something the schema already spells.
+  public var field: String = String()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// The body was not the message the rpc takes at all.
+///
+/// Separate from InvalidArgument, which names a field: there is no field to name
+/// when the bytes did not decode, and the remedy is different — a wrong content
+/// type or a stale client build, not a value somebody typed.
+public struct DRMalformed: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// Missing, expired, or unparseable credential. An expired end-user session is
+/// this, and the SDK's response is to re-identify rather than to log anyone out.
+public struct DRUnauthenticated: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// Authenticated, but not permitted — someone else's request, another tenant's app.
+public struct DRPermissionDenied: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public struct DRNotFound: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// The request exists and its current state does not allow what was asked — moving
+/// a request that has been merged away.
+///
+/// Not InvalidArgument: every argument was well formed and the caller is not the one
+/// who is wrong. Not Conflict: nothing raced, and asking again changes nothing.
+public struct DRFailedPrecondition: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// Somebody else wrote first, and this write would have replaced their decision
+/// rather than been applied on top of it.
+///
+/// Its own reason because the caller's input was correct: told their argument was
+/// invalid, they go looking for a fault in a request that has none. The remedy is to
+/// read the thing again and choose against what it now says.
+public struct DRConflict: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// The feature exists but the tenant's plan does not include it. Distinct from
+/// PermissionDenied because the remedy is a purchase, not a different account, and
+/// only the host developer can act on it — never surfaced to an end user.
+public struct DRPlanRequired: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// Too many writes.
+public struct DRRateLimited: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// How long to wait. It sits here rather than on ApiError so that it exists only
+  /// under the one reason it means anything for, and reads as zero nowhere else.
+  ///
+  /// The single statement of it — there is no Retry-After header in this protocol to
+  /// disagree with.
+  public var retryAfterSeconds: Int32 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public struct DRInternalFailure: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// Why a call failed.
+///
+/// A failed call returns an ApiError in the body, encoded exactly like a successful
+/// response. The arm of `reason` is the whole of what a client branches on: the HTTP
+/// status is transport, is not part of this contract, and must not be interpreted.
+///
+/// Stated that way because a status code cannot carry the distinctions that matter —
+/// a 403 meaning "upgrade to Pro" and a 403 meaning "not your request" need
+/// different UI — and a client branching on the status while the reason sits in the
+/// body is reading a shadow of the error instead of the error.
+public struct DRApiError: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
 
   /// Human-readable, English, for a developer reading a log. Not copy: a client
   /// must not render this to an end user, because it is written for whoever is
   /// debugging and may name internals.
   public var message: String = String()
 
-  /// Which field failed, for INVALID_ARGUMENT. Names a field in the request
-  /// message as the schema spells it.
-  public var field: String = String()
+  /// Why the call failed, and everything that failure carries.
+  ///
+  /// Unset is a server newer than this client. A client draws its general failure for
+  /// that rather than guessing which reason it might have been.
+  public var reason: DRApiError.OneOf_Reason? = nil
 
-  /// Set only for RATE_LIMITED. The single statement of how long to wait — there is
-  /// no Retry-After header to disagree with it.
-  public var retryAfterSeconds: Int32 = 0
+  public var invalidArgument: DRInvalidArgument {
+    get {
+      if case .invalidArgument(let v)? = reason {return v}
+      return DRInvalidArgument()
+    }
+    set {reason = .invalidArgument(newValue)}
+  }
+
+  public var malformed: DRMalformed {
+    get {
+      if case .malformed(let v)? = reason {return v}
+      return DRMalformed()
+    }
+    set {reason = .malformed(newValue)}
+  }
+
+  public var unauthenticated: DRUnauthenticated {
+    get {
+      if case .unauthenticated(let v)? = reason {return v}
+      return DRUnauthenticated()
+    }
+    set {reason = .unauthenticated(newValue)}
+  }
+
+  public var permissionDenied: DRPermissionDenied {
+    get {
+      if case .permissionDenied(let v)? = reason {return v}
+      return DRPermissionDenied()
+    }
+    set {reason = .permissionDenied(newValue)}
+  }
+
+  public var notFound: DRNotFound {
+    get {
+      if case .notFound(let v)? = reason {return v}
+      return DRNotFound()
+    }
+    set {reason = .notFound(newValue)}
+  }
+
+  public var failedPrecondition: DRFailedPrecondition {
+    get {
+      if case .failedPrecondition(let v)? = reason {return v}
+      return DRFailedPrecondition()
+    }
+    set {reason = .failedPrecondition(newValue)}
+  }
+
+  public var conflict: DRConflict {
+    get {
+      if case .conflict(let v)? = reason {return v}
+      return DRConflict()
+    }
+    set {reason = .conflict(newValue)}
+  }
+
+  public var planRequired: DRPlanRequired {
+    get {
+      if case .planRequired(let v)? = reason {return v}
+      return DRPlanRequired()
+    }
+    set {reason = .planRequired(newValue)}
+  }
+
+  public var rateLimited: DRRateLimited {
+    get {
+      if case .rateLimited(let v)? = reason {return v}
+      return DRRateLimited()
+    }
+    set {reason = .rateLimited(newValue)}
+  }
+
+  public var internalFailure: DRInternalFailure {
+    get {
+      if case .internalFailure(let v)? = reason {return v}
+      return DRInternalFailure()
+    }
+    set {reason = .internalFailure(newValue)}
+  }
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  /// Why the call failed, and everything that failure carries.
+  ///
+  /// Unset is a server newer than this client. A client draws its general failure for
+  /// that rather than guessing which reason it might have been.
+  public enum OneOf_Reason: Equatable, Sendable {
+    case invalidArgument(DRInvalidArgument)
+    case malformed(DRMalformed)
+    case unauthenticated(DRUnauthenticated)
+    case permissionDenied(DRPermissionDenied)
+    case notFound(DRNotFound)
+    case failedPrecondition(DRFailedPrecondition)
+    case conflict(DRConflict)
+    case planRequired(DRPlanRequired)
+    case rateLimited(DRRateLimited)
+    case internalFailure(DRInternalFailure)
+
+  }
 
   public init() {}
 }
@@ -847,17 +1009,13 @@ public struct DRListChangelogResponse: Sendable {
 
 fileprivate let _protobuf_package = "differentrequests.v1"
 
-extension DRErrorCode: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0ERROR_CODE_UNSPECIFIED\0\u{1}ERROR_CODE_INVALID_ARGUMENT\0\u{1}ERROR_CODE_UNAUTHENTICATED\0\u{1}ERROR_CODE_PERMISSION_DENIED\0\u{1}ERROR_CODE_NOT_FOUND\0\u{1}ERROR_CODE_PLAN_REQUIRED\0\u{1}ERROR_CODE_RATE_LIMITED\0\u{1}ERROR_CODE_INTERNAL\0")
-}
-
 extension DRRequestSort: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0REQUEST_SORT_UNSPECIFIED\0\u{1}REQUEST_SORT_TOP\0\u{1}REQUEST_SORT_NEW\0")
 }
 
-extension DRApiError: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  public static let protoMessageName: String = _protobuf_package + ".ApiError"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}code\0\u{1}message\0\u{1}field\0\u{3}retry_after_seconds\0")
+extension DRInvalidArgument: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".InvalidArgument"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}field\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -865,36 +1023,411 @@ extension DRApiError: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularEnumField(value: &self.code) }()
-      case 2: try { try decoder.decodeSingularStringField(value: &self.message) }()
-      case 3: try { try decoder.decodeSingularStringField(value: &self.field) }()
-      case 4: try { try decoder.decodeSingularInt32Field(value: &self.retryAfterSeconds) }()
+      case 1: try { try decoder.decodeSingularStringField(value: &self.field) }()
       default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if self.code != .unspecified {
-      try visitor.visitSingularEnumField(value: self.code, fieldNumber: 1)
+    if !self.field.isEmpty {
+      try visitor.visitSingularStringField(value: self.field, fieldNumber: 1)
     }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DRInvalidArgument, rhs: DRInvalidArgument) -> Bool {
+    if lhs.field != rhs.field {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension DRMalformed: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".Malformed"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DRMalformed, rhs: DRMalformed) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension DRUnauthenticated: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".Unauthenticated"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DRUnauthenticated, rhs: DRUnauthenticated) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension DRPermissionDenied: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".PermissionDenied"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DRPermissionDenied, rhs: DRPermissionDenied) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension DRNotFound: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".NotFound"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DRNotFound, rhs: DRNotFound) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension DRFailedPrecondition: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".FailedPrecondition"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DRFailedPrecondition, rhs: DRFailedPrecondition) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension DRConflict: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".Conflict"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DRConflict, rhs: DRConflict) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension DRPlanRequired: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".PlanRequired"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DRPlanRequired, rhs: DRPlanRequired) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension DRRateLimited: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".RateLimited"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}retry_after_seconds\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularInt32Field(value: &self.retryAfterSeconds) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.retryAfterSeconds != 0 {
+      try visitor.visitSingularInt32Field(value: self.retryAfterSeconds, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DRRateLimited, rhs: DRRateLimited) -> Bool {
+    if lhs.retryAfterSeconds != rhs.retryAfterSeconds {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension DRInternalFailure: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".InternalFailure"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DRInternalFailure, rhs: DRInternalFailure) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension DRApiError: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".ApiError"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\u{2}message\0\u{4}\u{3}invalid_argument\0\u{1}malformed\0\u{1}unauthenticated\0\u{3}permission_denied\0\u{3}not_found\0\u{3}failed_precondition\0\u{1}conflict\0\u{3}plan_required\0\u{3}rate_limited\0\u{3}internal_failure\0\u{b}code\0\u{b}field\0\u{b}retry_after_seconds\0\u{c}\u{1}\u{1}\u{c}\u{3}\u{1}\u{c}\u{4}\u{1}")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 2: try { try decoder.decodeSingularStringField(value: &self.message) }()
+      case 5: try {
+        var v: DRInvalidArgument?
+        var hadOneofValue = false
+        if let current = self.reason {
+          hadOneofValue = true
+          if case .invalidArgument(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.reason = .invalidArgument(v)
+        }
+      }()
+      case 6: try {
+        var v: DRMalformed?
+        var hadOneofValue = false
+        if let current = self.reason {
+          hadOneofValue = true
+          if case .malformed(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.reason = .malformed(v)
+        }
+      }()
+      case 7: try {
+        var v: DRUnauthenticated?
+        var hadOneofValue = false
+        if let current = self.reason {
+          hadOneofValue = true
+          if case .unauthenticated(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.reason = .unauthenticated(v)
+        }
+      }()
+      case 8: try {
+        var v: DRPermissionDenied?
+        var hadOneofValue = false
+        if let current = self.reason {
+          hadOneofValue = true
+          if case .permissionDenied(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.reason = .permissionDenied(v)
+        }
+      }()
+      case 9: try {
+        var v: DRNotFound?
+        var hadOneofValue = false
+        if let current = self.reason {
+          hadOneofValue = true
+          if case .notFound(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.reason = .notFound(v)
+        }
+      }()
+      case 10: try {
+        var v: DRFailedPrecondition?
+        var hadOneofValue = false
+        if let current = self.reason {
+          hadOneofValue = true
+          if case .failedPrecondition(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.reason = .failedPrecondition(v)
+        }
+      }()
+      case 11: try {
+        var v: DRConflict?
+        var hadOneofValue = false
+        if let current = self.reason {
+          hadOneofValue = true
+          if case .conflict(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.reason = .conflict(v)
+        }
+      }()
+      case 12: try {
+        var v: DRPlanRequired?
+        var hadOneofValue = false
+        if let current = self.reason {
+          hadOneofValue = true
+          if case .planRequired(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.reason = .planRequired(v)
+        }
+      }()
+      case 13: try {
+        var v: DRRateLimited?
+        var hadOneofValue = false
+        if let current = self.reason {
+          hadOneofValue = true
+          if case .rateLimited(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.reason = .rateLimited(v)
+        }
+      }()
+      case 14: try {
+        var v: DRInternalFailure?
+        var hadOneofValue = false
+        if let current = self.reason {
+          hadOneofValue = true
+          if case .internalFailure(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.reason = .internalFailure(v)
+        }
+      }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if !self.message.isEmpty {
       try visitor.visitSingularStringField(value: self.message, fieldNumber: 2)
     }
-    if !self.field.isEmpty {
-      try visitor.visitSingularStringField(value: self.field, fieldNumber: 3)
-    }
-    if self.retryAfterSeconds != 0 {
-      try visitor.visitSingularInt32Field(value: self.retryAfterSeconds, fieldNumber: 4)
+    switch self.reason {
+    case .invalidArgument?: try {
+      guard case .invalidArgument(let v)? = self.reason else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
+    }()
+    case .malformed?: try {
+      guard case .malformed(let v)? = self.reason else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
+    }()
+    case .unauthenticated?: try {
+      guard case .unauthenticated(let v)? = self.reason else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
+    }()
+    case .permissionDenied?: try {
+      guard case .permissionDenied(let v)? = self.reason else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
+    }()
+    case .notFound?: try {
+      guard case .notFound(let v)? = self.reason else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
+    }()
+    case .failedPrecondition?: try {
+      guard case .failedPrecondition(let v)? = self.reason else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 10)
+    }()
+    case .conflict?: try {
+      guard case .conflict(let v)? = self.reason else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
+    }()
+    case .planRequired?: try {
+      guard case .planRequired(let v)? = self.reason else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
+    }()
+    case .rateLimited?: try {
+      guard case .rateLimited(let v)? = self.reason else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 13)
+    }()
+    case .internalFailure?: try {
+      guard case .internalFailure(let v)? = self.reason else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 14)
+    }()
+    case nil: break
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: DRApiError, rhs: DRApiError) -> Bool {
-    if lhs.code != rhs.code {return false}
     if lhs.message != rhs.message {return false}
-    if lhs.field != rhs.field {return false}
-    if lhs.retryAfterSeconds != rhs.retryAfterSeconds {return false}
+    if lhs.reason != rhs.reason {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
