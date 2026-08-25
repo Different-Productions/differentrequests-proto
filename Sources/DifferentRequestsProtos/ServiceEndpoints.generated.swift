@@ -102,6 +102,45 @@ public enum DRRequestsServiceRPC: String, Sendable, CaseIterable {
     case .listChangelog: return .appKey
     }
   }
+
+  /// The `{brace}` names in this rpc's template, in the order they appear.
+  ///
+  /// Empty for a path that takes none. Anything filling a template walks this rather than
+  /// every name the service declares, so an rpc is never handed a parameter its own path
+  /// does not have.
+  public var pathParameters: [String] {
+    switch self {
+    case .getConfig: return []
+    case .createSession: return []
+    case .listRequests: return []
+    case .createRequest: return []
+    case .getRequest: return ["requestId"]
+    case .vote: return ["requestId"]
+    case .clearVote: return ["requestId"]
+    case .follow: return ["requestId"]
+    case .unfollow: return ["requestId"]
+    case .listComments: return ["requestId"]
+    case .createComment: return ["requestId"]
+    case .listNotifications: return []
+    case .getUnreadCount: return []
+    case .markAllNotificationsRead: return []
+    case .markNotificationRead: return ["notificationId"]
+    case .registerDevice: return []
+    case .unregisterDevice: return ["deviceId"]
+    case .getRoadmap: return []
+    case .listChangelog: return []
+    }
+  }
+}
+
+/// Every `{brace}` name a path on `RequestsService` declares.
+///
+/// What a router binds a segment to, and what a handler reads it back by. Both are the
+/// template's own spelling, so neither is typed at the point it is used.
+public enum DRRequestsServicePathParameter {
+  public static let requestId = "requestId"
+  public static let notificationId = "notificationId"
+  public static let deviceId = "deviceId"
 }
 
 /// One call to `RequestsService`, with the ids its path needs.

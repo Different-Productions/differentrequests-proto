@@ -21,7 +21,46 @@ struct EmittedService {
   }
 
   var swiftSource: String {
-    rpcEnumSource + endpointEnumSource
+    rpcEnumSource + pathParameterEnumSource + endpointEnumSource
+  }
+
+  /// Every `{brace}` name any rpc on this service declares, in the order they first appear.
+  ///
+  /// A router binds a path segment to a name and a handler reads the segment back by that name.
+  /// Both are the template's, so both come from here rather than from a spelling typed at each
+  /// read.
+  private var pathParameterNames: [String] {
+    var found: [String] = []
+    for method in methods {
+      for parameter in method.pathParameters where found.contains(parameter) == false {
+        found.append(parameter)
+      }
+    }
+    return found
+  }
+
+  private var pathParameterEnumSource: String {
+    let names = pathParameterNames
+    if names.isEmpty {
+      return ""
+    }
+    var out = """
+
+      /// Every `{brace}` name a path on `\(name)` declares.
+      ///
+      /// What a router binds a segment to, and what a handler reads it back by. Both are the
+      /// template's own spelling, so neither is typed at the point it is used.
+      public enum \(typePrefix)\(name)PathParameter {
+
+      """
+    for parameter in names {
+      out += "  public static let \(parameter) = \"\(parameter)\"\n"
+    }
+    out += """
+      }
+
+      """
+    return out
   }
 
   /// What a server routes on: every rpc, its template, and what it demands of a caller.
@@ -60,6 +99,24 @@ struct EmittedService {
           public var audience: \(audienceTypeName)
         """,
       body: { ".\($0.audienceCaseName)" }
+    )
+
+    out += switchSource(
+      signature: """
+          /// The `{brace}` names in this rpc's template, in the order they appear.
+          ///
+          /// Empty for a path that takes none. Anything filling a template walks this rather than
+          /// every name the service declares, so an rpc is never handed a parameter its own path
+          /// does not have.
+          public var pathParameters: [String]
+        """,
+      body: { method in
+        let parameters = method.pathParameters
+        if parameters.isEmpty {
+          return "[]"
+        }
+        return "[\(parameters.map { "\"\($0)\"" }.joined(separator: ", "))]"
+      }
     )
 
     out += "}\n"
