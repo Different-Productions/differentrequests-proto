@@ -107,9 +107,14 @@ message UserRef {
   string display_name = 2;
 }
 
-// Where a request sits in the tenant's process.
+// Which kind of state a request is in, as a tag with nothing attached.
 //
-// Five states, each with an action attached. A state nobody acts on is a state
+// This is what a caller *filters* by and what a roadmap groups by:
+// `?statuses=open,planned` names kinds, not the things inside them. Where a
+// request's own state lives — and what that state carries — is
+// `FeatureRequest.state`.
+//
+// Six kinds, each with an action attached. A state nobody acts on is a state
 // that fills up: "under review" is what an untriaged board looks like, and OPEN
 // already says that honestly.
 enum RequestStatus {
@@ -166,7 +171,44 @@ message RequestDecline {
   // asked.
   string note = 2;
 
-  google.protobuf.Timestamp declined_at = 3;
+  // When a request entered this state is the request's own `entered_state_at`.
+  // Carried here as well, it was a second copy of one instant, and two copies of
+  // one instant is how a detail page and a changelog come to disagree.
+  reserved 3;
+  reserved "declined_at";
+}
+
+// ---------------------------------------------------------------------------
+// What a state carries
+// ---------------------------------------------------------------------------
+
+// A request's state, as one arm carrying exactly what that state means.
+//
+// These are the arms of `FeatureRequest.state`. Before them, a request held a
+// status *and* a decline *and* a merge target as three free fields, with the
+// rule between them written in a comment — so `{status: SHIPPED, decline: {…}}`
+// was a legal message, and the SDK drew both without consulting the status.
+//
+// The arm IS the state, so no arm can carry another's evidence, and a client
+// switching over them stops compiling when a seventh is added.
+
+// The three states that are the answer and nothing else. Empty because there is
+// nothing further to say about them, and a message rather than a bare arm
+// because a `oneof` arm takes a type — which is also where a state that later
+// earns a field puts it, without any client having to learn a new one.
+message RequestOpen {}
+message RequestPlanned {}
+message RequestInProgress {}
+
+// Built and released.
+message RequestShipped {}
+
+// Folded into another request, which now carries this one's votes.
+message RequestMerged {
+  // Required by this shape rather than by a comment, so a merge that names
+  // nowhere cannot be written. A merged request keeps answering on its own
+  // detail route so somebody holding a link is told where their vote went.
+  string into_request_id = 1;
 }
 
 // The calling end user's own relationship to a request.
@@ -197,13 +239,13 @@ message FeatureRequest {
   string title = 4;
   string body = 5;
 
-  RequestStatus status = 6;
-
-  // Set only when status is DECLINED. See RequestStatus.
-  RequestDecline decline = 7;
-
-  // Set only when status is MERGED. See RequestStatus.
-  string merged_into_request_id = 8;
+  // A status, a decline and a merge target as three independent fields, with
+  // "set only when" written between them in prose. Every disagreement was a
+  // legal message: shipped carrying a refusal, declined carrying no reason at
+  // all, open pointing at a request it had been folded into. `state` below is
+  // the same information as one arm, where none of those can be spelled.
+  reserved 6, 7, 8;
+  reserved "status", "decline", "merged_into_request_id";
 
   // Demand. Counted, not summed from a returned list — the list is paginated and
   // the count is not.
@@ -216,10 +258,30 @@ message FeatureRequest {
   google.protobuf.Timestamp created_at = 12;
   google.protobuf.Timestamp updated_at = 13;
 
-  // When the status last changed, which is what "recently triaged" sorts on and
-  // what the changelog reads. Distinct from updated_at, which also moves when a
-  // vote lands.
-  google.protobuf.Timestamp status_changed_at = 14;
+  // Named for the status it followed, and duplicated by RequestDecline's own
+  // instant. `entered_state_at` below is the one instant, on the message that
+  // owns the state.
+  reserved 14;
+  reserved "status_changed_at";
+
+  // Where this request sits, carrying what that answer means.
+  //
+  // Unset is a request written before this field existed, or by a client newer
+  // than this one. A reader draws what it can and says nothing about the rest;
+  // it is not an error.
+  oneof state {
+    RequestOpen open = 15;
+    RequestPlanned planned = 16;
+    RequestInProgress in_progress = 17;
+    RequestShipped shipped = 18;
+    RequestDecline declined = 19;
+    RequestMerged merged = 20;
+  }
+
+  // When the request entered the state above. What "recently triaged" sorts on
+  // and what the changelog reads. Distinct from updated_at, which also moves
+  // when a vote lands.
+  google.protobuf.Timestamp entered_state_at = 21;
 }
 
 // Who wrote a comment, in the sense that decides how it is presented.

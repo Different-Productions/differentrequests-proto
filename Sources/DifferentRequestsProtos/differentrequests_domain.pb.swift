@@ -60,9 +60,14 @@ public enum DRPlan: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 }
 
-/// Where a request sits in the tenant's process.
+/// Which kind of state a request is in, as a tag with nothing attached.
 ///
-/// Five states, each with an action attached. A state nobody acts on is a state
+/// This is what a caller *filters* by and what a roadmap groups by:
+/// `?statuses=open,planned` names kinds, not the things inside them. Where a
+/// request's own state lives — and what that state carries — is
+/// `FeatureRequest.state`.
+///
+/// Six kinds, each with an action attached. A state nobody acts on is a state
 /// that fills up: "under review" is what an untriaged board looks like, and OPEN
 /// already says that honestly.
 public enum DRRequestStatus: SwiftProtobuf.Enum, Swift.CaseIterable {
@@ -454,21 +459,72 @@ public struct DRRequestDecline: Sendable {
   /// asked.
   public var note: String = String()
 
-  public var declinedAt: SwiftProtobuf.Google_Protobuf_Timestamp {
-    get {return _declinedAt ?? SwiftProtobuf.Google_Protobuf_Timestamp()}
-    set {_declinedAt = newValue}
-  }
-  /// Returns true if `declinedAt` has been explicitly set.
-  public var hasDeclinedAt: Bool {return self._declinedAt != nil}
-  /// Clears the value of `declinedAt`. Subsequent reads from it will return its default value.
-  public mutating func clearDeclinedAt() {self._declinedAt = nil}
-
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _reason: DRDeclineReason? = nil
-  fileprivate var _declinedAt: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
+}
+
+/// The three states that are the answer and nothing else. Empty because there is
+/// nothing further to say about them, and a message rather than a bare arm
+/// because a `oneof` arm takes a type — which is also where a state that later
+/// earns a field puts it, without any client having to learn a new one.
+public struct DRRequestOpen: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public struct DRRequestPlanned: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public struct DRRequestInProgress: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// Built and released.
+public struct DRRequestShipped: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// Folded into another request, which now carries this one's votes.
+public struct DRRequestMerged: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Required by this shape rather than by a comment, so a merge that names
+  /// nowhere cannot be written. A merged request keeps answering on its own
+  /// detail route so somebody holding a link is told where their vote went.
+  public var intoRequestID: String = String()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
 }
 
 /// The calling end user's own relationship to a request.
@@ -532,27 +588,6 @@ public struct DRFeatureRequest: @unchecked Sendable {
     set {_uniqueStorage()._body = newValue}
   }
 
-  public var status: DRRequestStatus {
-    get {return _storage._status}
-    set {_uniqueStorage()._status = newValue}
-  }
-
-  /// Set only when status is DECLINED. See RequestStatus.
-  public var decline: DRRequestDecline {
-    get {return _storage._decline ?? DRRequestDecline()}
-    set {_uniqueStorage()._decline = newValue}
-  }
-  /// Returns true if `decline` has been explicitly set.
-  public var hasDecline: Bool {return _storage._decline != nil}
-  /// Clears the value of `decline`. Subsequent reads from it will return its default value.
-  public mutating func clearDecline() {_uniqueStorage()._decline = nil}
-
-  /// Set only when status is MERGED. See RequestStatus.
-  public var mergedIntoRequestID: String {
-    get {return _storage._mergedIntoRequestID}
-    set {_uniqueStorage()._mergedIntoRequestID = newValue}
-  }
-
   /// Demand. Counted, not summed from a returned list — the list is paginated and
   /// the count is not.
   public var voteCount: Int32 {
@@ -593,19 +628,92 @@ public struct DRFeatureRequest: @unchecked Sendable {
   /// Clears the value of `updatedAt`. Subsequent reads from it will return its default value.
   public mutating func clearUpdatedAt() {_uniqueStorage()._updatedAt = nil}
 
-  /// When the status last changed, which is what "recently triaged" sorts on and
-  /// what the changelog reads. Distinct from updated_at, which also moves when a
-  /// vote lands.
-  public var statusChangedAt: SwiftProtobuf.Google_Protobuf_Timestamp {
-    get {return _storage._statusChangedAt ?? SwiftProtobuf.Google_Protobuf_Timestamp()}
-    set {_uniqueStorage()._statusChangedAt = newValue}
+  /// Where this request sits, carrying what that answer means.
+  ///
+  /// Unset is a request written before this field existed, or by a client newer
+  /// than this one. A reader draws what it can and says nothing about the rest;
+  /// it is not an error.
+  public var state: OneOf_State? {
+    get {return _storage._state}
+    set {_uniqueStorage()._state = newValue}
   }
-  /// Returns true if `statusChangedAt` has been explicitly set.
-  public var hasStatusChangedAt: Bool {return _storage._statusChangedAt != nil}
-  /// Clears the value of `statusChangedAt`. Subsequent reads from it will return its default value.
-  public mutating func clearStatusChangedAt() {_uniqueStorage()._statusChangedAt = nil}
+
+  public var `open`: DRRequestOpen {
+    get {
+      if case .open(let v)? = _storage._state {return v}
+      return DRRequestOpen()
+    }
+    set {_uniqueStorage()._state = .open(newValue)}
+  }
+
+  public var planned: DRRequestPlanned {
+    get {
+      if case .planned(let v)? = _storage._state {return v}
+      return DRRequestPlanned()
+    }
+    set {_uniqueStorage()._state = .planned(newValue)}
+  }
+
+  public var inProgress: DRRequestInProgress {
+    get {
+      if case .inProgress(let v)? = _storage._state {return v}
+      return DRRequestInProgress()
+    }
+    set {_uniqueStorage()._state = .inProgress(newValue)}
+  }
+
+  public var shipped: DRRequestShipped {
+    get {
+      if case .shipped(let v)? = _storage._state {return v}
+      return DRRequestShipped()
+    }
+    set {_uniqueStorage()._state = .shipped(newValue)}
+  }
+
+  public var declined: DRRequestDecline {
+    get {
+      if case .declined(let v)? = _storage._state {return v}
+      return DRRequestDecline()
+    }
+    set {_uniqueStorage()._state = .declined(newValue)}
+  }
+
+  public var merged: DRRequestMerged {
+    get {
+      if case .merged(let v)? = _storage._state {return v}
+      return DRRequestMerged()
+    }
+    set {_uniqueStorage()._state = .merged(newValue)}
+  }
+
+  /// When the request entered the state above. What "recently triaged" sorts on
+  /// and what the changelog reads. Distinct from updated_at, which also moves
+  /// when a vote lands.
+  public var enteredStateAt: SwiftProtobuf.Google_Protobuf_Timestamp {
+    get {return _storage._enteredStateAt ?? SwiftProtobuf.Google_Protobuf_Timestamp()}
+    set {_uniqueStorage()._enteredStateAt = newValue}
+  }
+  /// Returns true if `enteredStateAt` has been explicitly set.
+  public var hasEnteredStateAt: Bool {return _storage._enteredStateAt != nil}
+  /// Clears the value of `enteredStateAt`. Subsequent reads from it will return its default value.
+  public mutating func clearEnteredStateAt() {_uniqueStorage()._enteredStateAt = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  /// Where this request sits, carrying what that answer means.
+  ///
+  /// Unset is a request written before this field existed, or by a client newer
+  /// than this one. A reader draws what it can and says nothing about the rest;
+  /// it is not an error.
+  public enum OneOf_State: Equatable, Sendable {
+    case `open`(DRRequestOpen)
+    case planned(DRRequestPlanned)
+    case inProgress(DRRequestInProgress)
+    case shipped(DRRequestShipped)
+    case declined(DRRequestDecline)
+    case merged(DRRequestMerged)
+
+  }
 
   public init() {}
 
@@ -1073,7 +1181,7 @@ extension DRDeclineReason: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
 
 extension DRRequestDecline: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".RequestDecline"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}reason\0\u{1}note\0\u{3}declined_at\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}reason\0\u{1}note\0\u{b}declined_at\0\u{c}\u{3}\u{1}")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1083,7 +1191,6 @@ extension DRRequestDecline: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularMessageField(value: &self._reason) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self.note) }()
-      case 3: try { try decoder.decodeSingularMessageField(value: &self._declinedAt) }()
       default: break
       }
     }
@@ -1100,16 +1207,118 @@ extension DRRequestDecline: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
     if !self.note.isEmpty {
       try visitor.visitSingularStringField(value: self.note, fieldNumber: 2)
     }
-    try { if let v = self._declinedAt {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: DRRequestDecline, rhs: DRRequestDecline) -> Bool {
     if lhs._reason != rhs._reason {return false}
     if lhs.note != rhs.note {return false}
-    if lhs._declinedAt != rhs._declinedAt {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension DRRequestOpen: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".RequestOpen"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DRRequestOpen, rhs: DRRequestOpen) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension DRRequestPlanned: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".RequestPlanned"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DRRequestPlanned, rhs: DRRequestPlanned) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension DRRequestInProgress: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".RequestInProgress"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DRRequestInProgress, rhs: DRRequestInProgress) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension DRRequestShipped: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".RequestShipped"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DRRequestShipped, rhs: DRRequestShipped) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension DRRequestMerged: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".RequestMerged"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}into_request_id\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.intoRequestID) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.intoRequestID.isEmpty {
+      try visitor.visitSingularStringField(value: self.intoRequestID, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DRRequestMerged, rhs: DRRequestMerged) -> Bool {
+    if lhs.intoRequestID != rhs.intoRequestID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1157,7 +1366,7 @@ extension DRViewerState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
 
 extension DRFeatureRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".FeatureRequest"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}app_id\0\u{1}author\0\u{1}title\0\u{1}body\0\u{1}status\0\u{1}decline\0\u{3}merged_into_request_id\0\u{3}vote_count\0\u{3}comment_count\0\u{1}viewer\0\u{3}created_at\0\u{3}updated_at\0\u{3}status_changed_at\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}app_id\0\u{1}author\0\u{1}title\0\u{1}body\0\u{4}\u{4}vote_count\0\u{3}comment_count\0\u{1}viewer\0\u{3}created_at\0\u{3}updated_at\0\u{2}\u{2}open\0\u{1}planned\0\u{3}in_progress\0\u{1}shipped\0\u{1}declined\0\u{1}merged\0\u{3}entered_state_at\0\u{b}status\0\u{b}decline\0\u{b}merged_into_request_id\0\u{b}status_changed_at\0\u{c}\u{6}\u{1}\u{c}\u{7}\u{1}\u{c}\u{8}\u{1}\u{c}\u{e}\u{1}")
 
   fileprivate class _StorageClass {
     var _id: String = String()
@@ -1165,15 +1374,13 @@ extension DRFeatureRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
     var _author: DRUserRef? = nil
     var _title: String = String()
     var _body: String = String()
-    var _status: DRRequestStatus = .unspecified
-    var _decline: DRRequestDecline? = nil
-    var _mergedIntoRequestID: String = String()
     var _voteCount: Int32 = 0
     var _commentCount: Int32 = 0
     var _viewer: DRViewerState? = nil
     var _createdAt: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
     var _updatedAt: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
-    var _statusChangedAt: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
+    var _state: DRFeatureRequest.OneOf_State?
+    var _enteredStateAt: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -1189,15 +1396,13 @@ extension DRFeatureRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
       _author = source._author
       _title = source._title
       _body = source._body
-      _status = source._status
-      _decline = source._decline
-      _mergedIntoRequestID = source._mergedIntoRequestID
       _voteCount = source._voteCount
       _commentCount = source._commentCount
       _viewer = source._viewer
       _createdAt = source._createdAt
       _updatedAt = source._updatedAt
-      _statusChangedAt = source._statusChangedAt
+      _state = source._state
+      _enteredStateAt = source._enteredStateAt
     }
   }
 
@@ -1221,15 +1426,90 @@ extension DRFeatureRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
         case 3: try { try decoder.decodeSingularMessageField(value: &_storage._author) }()
         case 4: try { try decoder.decodeSingularStringField(value: &_storage._title) }()
         case 5: try { try decoder.decodeSingularStringField(value: &_storage._body) }()
-        case 6: try { try decoder.decodeSingularEnumField(value: &_storage._status) }()
-        case 7: try { try decoder.decodeSingularMessageField(value: &_storage._decline) }()
-        case 8: try { try decoder.decodeSingularStringField(value: &_storage._mergedIntoRequestID) }()
         case 9: try { try decoder.decodeSingularInt32Field(value: &_storage._voteCount) }()
         case 10: try { try decoder.decodeSingularInt32Field(value: &_storage._commentCount) }()
         case 11: try { try decoder.decodeSingularMessageField(value: &_storage._viewer) }()
         case 12: try { try decoder.decodeSingularMessageField(value: &_storage._createdAt) }()
         case 13: try { try decoder.decodeSingularMessageField(value: &_storage._updatedAt) }()
-        case 14: try { try decoder.decodeSingularMessageField(value: &_storage._statusChangedAt) }()
+        case 15: try {
+          var v: DRRequestOpen?
+          var hadOneofValue = false
+          if let current = _storage._state {
+            hadOneofValue = true
+            if case .open(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._state = .open(v)
+          }
+        }()
+        case 16: try {
+          var v: DRRequestPlanned?
+          var hadOneofValue = false
+          if let current = _storage._state {
+            hadOneofValue = true
+            if case .planned(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._state = .planned(v)
+          }
+        }()
+        case 17: try {
+          var v: DRRequestInProgress?
+          var hadOneofValue = false
+          if let current = _storage._state {
+            hadOneofValue = true
+            if case .inProgress(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._state = .inProgress(v)
+          }
+        }()
+        case 18: try {
+          var v: DRRequestShipped?
+          var hadOneofValue = false
+          if let current = _storage._state {
+            hadOneofValue = true
+            if case .shipped(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._state = .shipped(v)
+          }
+        }()
+        case 19: try {
+          var v: DRRequestDecline?
+          var hadOneofValue = false
+          if let current = _storage._state {
+            hadOneofValue = true
+            if case .declined(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._state = .declined(v)
+          }
+        }()
+        case 20: try {
+          var v: DRRequestMerged?
+          var hadOneofValue = false
+          if let current = _storage._state {
+            hadOneofValue = true
+            if case .merged(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._state = .merged(v)
+          }
+        }()
+        case 21: try { try decoder.decodeSingularMessageField(value: &_storage._enteredStateAt) }()
         default: break
         }
       }
@@ -1257,15 +1537,6 @@ extension DRFeatureRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
       if !_storage._body.isEmpty {
         try visitor.visitSingularStringField(value: _storage._body, fieldNumber: 5)
       }
-      if _storage._status != .unspecified {
-        try visitor.visitSingularEnumField(value: _storage._status, fieldNumber: 6)
-      }
-      try { if let v = _storage._decline {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
-      } }()
-      if !_storage._mergedIntoRequestID.isEmpty {
-        try visitor.visitSingularStringField(value: _storage._mergedIntoRequestID, fieldNumber: 8)
-      }
       if _storage._voteCount != 0 {
         try visitor.visitSingularInt32Field(value: _storage._voteCount, fieldNumber: 9)
       }
@@ -1281,8 +1552,35 @@ extension DRFeatureRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
       try { if let v = _storage._updatedAt {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 13)
       } }()
-      try { if let v = _storage._statusChangedAt {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 14)
+      switch _storage._state {
+      case .open?: try {
+        guard case .open(let v)? = _storage._state else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 15)
+      }()
+      case .planned?: try {
+        guard case .planned(let v)? = _storage._state else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 16)
+      }()
+      case .inProgress?: try {
+        guard case .inProgress(let v)? = _storage._state else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 17)
+      }()
+      case .shipped?: try {
+        guard case .shipped(let v)? = _storage._state else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 18)
+      }()
+      case .declined?: try {
+        guard case .declined(let v)? = _storage._state else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 19)
+      }()
+      case .merged?: try {
+        guard case .merged(let v)? = _storage._state else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 20)
+      }()
+      case nil: break
+      }
+      try { if let v = _storage._enteredStateAt {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 21)
       } }()
     }
     try unknownFields.traverse(visitor: &visitor)
@@ -1298,15 +1596,13 @@ extension DRFeatureRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
         if _storage._author != rhs_storage._author {return false}
         if _storage._title != rhs_storage._title {return false}
         if _storage._body != rhs_storage._body {return false}
-        if _storage._status != rhs_storage._status {return false}
-        if _storage._decline != rhs_storage._decline {return false}
-        if _storage._mergedIntoRequestID != rhs_storage._mergedIntoRequestID {return false}
         if _storage._voteCount != rhs_storage._voteCount {return false}
         if _storage._commentCount != rhs_storage._commentCount {return false}
         if _storage._viewer != rhs_storage._viewer {return false}
         if _storage._createdAt != rhs_storage._createdAt {return false}
         if _storage._updatedAt != rhs_storage._updatedAt {return false}
-        if _storage._statusChangedAt != rhs_storage._statusChangedAt {return false}
+        if _storage._state != rhs_storage._state {return false}
+        if _storage._enteredStateAt != rhs_storage._enteredStateAt {return false}
         return true
       }
       if !storagesAreEqual {return false}
