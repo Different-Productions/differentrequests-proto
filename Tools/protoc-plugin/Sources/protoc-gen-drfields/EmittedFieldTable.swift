@@ -2,18 +2,24 @@ import ContractGeneration
 import Foundation
 import SwiftProtobufPluginLibrary
 
-/// One message's field names, ready to be written as a Swift extension.
+/// One message's field names, ready to be written as a Swift extension, plus a name for each arm
+/// of every `oneof` it declares.
 struct EmittedFieldTable {
   let typeName: String
   let fieldNames: [String]
+  let oneofs: [EmittedOneof]
 
   /// A message that declares no fields has no table to emit, so it is not one of these.
   init?(message: Descriptor, namer: SwiftProtobufNamer) {
     if message.fields.isEmpty {
       return nil
     }
-    typeName = namer.fullName(message: message)
+    let name = namer.fullName(message: message)
+    typeName = name
     fieldNames = message.fields.map(\.name)
+    oneofs = message.realOneofs.map { oneof in
+      EmittedOneof(oneof: oneof, messageTypeName: name, namer: namer)
+    }
   }
 
   var swiftSource: String {
@@ -33,6 +39,9 @@ struct EmittedFieldTable {
       }
 
       """
+    for oneof in oneofs {
+      out += oneof.swiftSource(messageTypeName: typeName)
+    }
     return out
   }
 }

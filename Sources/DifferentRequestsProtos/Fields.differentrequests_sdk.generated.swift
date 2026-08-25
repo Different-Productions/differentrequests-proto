@@ -36,6 +36,27 @@ extension DRApiError {
   }
 }
 
+extension DRApiError.OneOf_Reason {
+  /// Which arm this is, spelled as the schema spells the field it stands for.
+  ///
+  /// For a log line or a diagnostic. Never for a caller to branch on — the arm itself is
+  /// what a caller branches on, and the compiler is what makes that exhaustive.
+  public var fieldName: String {
+    switch self {
+    case .invalidArgument: return DRApiError.Field.invalidArgument
+    case .malformed: return DRApiError.Field.malformed
+    case .unauthenticated: return DRApiError.Field.unauthenticated
+    case .permissionDenied: return DRApiError.Field.permissionDenied
+    case .notFound: return DRApiError.Field.notFound
+    case .failedPrecondition: return DRApiError.Field.failedPrecondition
+    case .conflict: return DRApiError.Field.conflict
+    case .planRequired: return DRApiError.Field.planRequired
+    case .rateLimited: return DRApiError.Field.rateLimited
+    case .internalFailure: return DRApiError.Field.internalFailure
+    }
+  }
+}
+
 extension DRAppConfig {
   /// This message's field names, as the schema spells them. What a query key or a form field
   /// has to be called.

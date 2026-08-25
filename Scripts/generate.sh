@@ -75,15 +75,21 @@ rm -rf "$OUTPUT_PATH/Vocabulary"
 # The endpoint table: one Swift case per rpc, carrying the path it is called at and the audience it
 # declared. Generated so that no consumer — client or server — ever hand-writes a path string, which
 # would be a copy of the service definition that nothing checks.
-#
-# Field names as the schema spells them, so a query key is never a literal typed twice.
 "$PROTOC" --proto_path="$PROTO_PATH" \
     --proto_path="$PROTOC_INCLUDE" \
     --plugin=protoc-gen-drendpoints="$ENDPOINTS_BIN" \
-    --plugin=protoc-gen-drfields="$FIELDS_BIN" \
     --drendpoints_out="$OUTPUT_PATH" \
-    --drfields_out="$OUTPUT_PATH" \
     "$PROTO_PATH/differentrequests_sdk.proto"
+
+# Field names as the schema spells them, so a query key is never a literal typed twice — and a name
+# for each arm of every oneof, so nothing has to keep a hand-written list of the schema's arms in
+# step with the schema.
+"$PROTOC" --proto_path="$PROTO_PATH" \
+    --proto_path="$PROTOC_INCLUDE" \
+    --plugin=protoc-gen-drfields="$FIELDS_BIN" \
+    --drfields_out="$OUTPUT_PATH" \
+    "$PROTO_PATH/differentrequests_sdk.proto" \
+    "$PROTO_PATH/differentrequests_domain.proto"
 
 # How an enum value is spelled in a URL, so the client that sends `?sort=top` and the server that
 # matches on it read one fact rather than two copies of it.
