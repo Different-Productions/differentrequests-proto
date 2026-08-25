@@ -319,18 +319,29 @@ message Comment {
 // Why someone is being told something. The kinds are the events worth
 // interrupting a person for — nothing here fires on a vote, because a request
 // gaining its fortieth vote is not news to its author.
-enum NotificationKind {
-  NOTIFICATION_KIND_UNSPECIFIED = 0;
+// What a notification is about, carrying exactly what that news needs.
+//
+// These are the arms of `Notification.news`. Before them a notification held a
+// kind *and* a status *and* a merge target as three free fields, with the rule
+// between them in a comment — so a COMMENT_ADDED carrying a merge target was a
+// legal message, and a client that tapped it went somewhere the news never
+// mentioned.
 
-  // A request you authored, voted for, or follow changed status.
-  NOTIFICATION_KIND_STATUS_CHANGED = 1;
+// A request you authored, voted for, or follow changed state.
+message StatusChangedNews {
+  // The status it moved to. A tag, not the request's whole state: an inbox row
+  // says "moved to Planned" and taps through for the rest.
+  RequestStatus new_status = 1;
+}
 
-  // Someone commented on a request you follow.
-  NOTIFICATION_KIND_COMMENT_ADDED = 2;
+// Someone commented on a request you follow.
+message CommentAddedNews {}
 
-  // A request you followed was folded into another. Carries the target so a tap
-  // lands on the request that now holds your vote.
-  NOTIFICATION_KIND_REQUEST_MERGED = 3;
+// A request you followed was folded into another.
+message RequestMergedNews {
+  // Where the vote went, so a tap lands on the request that now holds it.
+  // Required by this shape rather than by a comment.
+  string into_request_id = 1;
 }
 
 // One item in an end user's inbox.
@@ -340,22 +351,31 @@ enum NotificationKind {
 message Notification {
   string id = 1;
   string user_id = 2;
-  NotificationKind kind = 3;
+
+  // A kind, a status and a merge target as three independent fields, with "for
+  // STATUS_CHANGED" and "for REQUEST_MERGED" written between them in prose.
+  // `news` below is the same information as one arm, where a kind cannot carry
+  // another kind's payload.
+  reserved 3, 6, 7;
+  reserved "kind", "new_status", "merged_into_request_id";
 
   string request_id = 4;
   string request_title = 5;
-
-  // The status the request moved to, for STATUS_CHANGED.
-  RequestStatus new_status = 6;
-
-  // Where the vote went, for REQUEST_MERGED.
-  string merged_into_request_id = 7;
 
   // Absent while unread. A timestamp rather than a bool so "mark all read"
   // records when, and so an unread badge is a count of absences.
   google.protobuf.Timestamp read_at = 8;
 
   google.protobuf.Timestamp created_at = 9;
+
+  // What happened. Unset is a row written before this field existed, or by a
+  // server newer than this client: an inbox draws the title it already has and
+  // says nothing it cannot support.
+  oneof news {
+    StatusChangedNews status_changed = 10;
+    CommentAddedNews comment_added = 11;
+    RequestMergedNews request_merged = 12;
+  }
 }
 
 // Which APNs environment a device token was minted in. A sandbox token pushed to

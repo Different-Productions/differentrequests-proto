@@ -186,58 +186,6 @@ public enum DRCommentAuthorRole: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 }
 
-/// Why someone is being told something. The kinds are the events worth
-/// interrupting a person for — nothing here fires on a vote, because a request
-/// gaining its fortieth vote is not news to its author.
-public enum DRNotificationKind: SwiftProtobuf.Enum, Swift.CaseIterable {
-  public typealias RawValue = Int
-  case unspecified // = 0
-
-  /// A request you authored, voted for, or follow changed status.
-  case statusChanged // = 1
-
-  /// Someone commented on a request you follow.
-  case commentAdded // = 2
-
-  /// A request you followed was folded into another. Carries the target so a tap
-  /// lands on the request that now holds your vote.
-  case requestMerged // = 3
-  case UNRECOGNIZED(Int)
-
-  public init() {
-    self = .unspecified
-  }
-
-  public init?(rawValue: Int) {
-    switch rawValue {
-    case 0: self = .unspecified
-    case 1: self = .statusChanged
-    case 2: self = .commentAdded
-    case 3: self = .requestMerged
-    default: self = .UNRECOGNIZED(rawValue)
-    }
-  }
-
-  public var rawValue: Int {
-    switch self {
-    case .unspecified: return 0
-    case .statusChanged: return 1
-    case .commentAdded: return 2
-    case .requestMerged: return 3
-    case .UNRECOGNIZED(let i): return i
-    }
-  }
-
-  // The compiler won't synthesize support with the UNRECOGNIZED case.
-  public static let allCases: [DRNotificationKind] = [
-    .unspecified,
-    .statusChanged,
-    .commentAdded,
-    .requestMerged,
-  ]
-
-}
-
 /// Which APNs environment a device token was minted in. A sandbox token pushed to
 /// production fails per-token with no useful error, so the client states it.
 public enum DRPushEnvironment: SwiftProtobuf.Enum, Swift.CaseIterable {
@@ -765,6 +713,47 @@ public struct DRComment: Sendable {
   fileprivate var _createdAt: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
 }
 
+/// A request you authored, voted for, or follow changed state.
+public struct DRStatusChangedNews: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// The status it moved to. A tag, not the request's whole state: an inbox row
+  /// says "moved to Planned" and taps through for the rest.
+  public var newStatus: DRRequestStatus = .unspecified
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// Someone commented on a request you follow.
+public struct DRCommentAddedNews: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// A request you followed was folded into another.
+public struct DRRequestMergedNews: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Where the vote went, so a tap lands on the request that now holds it.
+  /// Required by this shape rather than by a comment.
+  public var intoRequestID: String = String()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
 /// One item in an end user's inbox.
 ///
 /// Carries the request title rather than only its id, so an inbox renders in one
@@ -778,17 +767,9 @@ public struct DRNotification: Sendable {
 
   public var userID: String = String()
 
-  public var kind: DRNotificationKind = .unspecified
-
   public var requestID: String = String()
 
   public var requestTitle: String = String()
-
-  /// The status the request moved to, for STATUS_CHANGED.
-  public var newStatus: DRRequestStatus = .unspecified
-
-  /// Where the vote went, for REQUEST_MERGED.
-  public var mergedIntoRequestID: String = String()
 
   /// Absent while unread. A timestamp rather than a bool so "mark all read"
   /// records when, and so an unread badge is a count of absences.
@@ -810,7 +791,46 @@ public struct DRNotification: Sendable {
   /// Clears the value of `createdAt`. Subsequent reads from it will return its default value.
   public mutating func clearCreatedAt() {self._createdAt = nil}
 
+  /// What happened. Unset is a row written before this field existed, or by a
+  /// server newer than this client: an inbox draws the title it already has and
+  /// says nothing it cannot support.
+  public var news: DRNotification.OneOf_News? = nil
+
+  public var statusChanged: DRStatusChangedNews {
+    get {
+      if case .statusChanged(let v)? = news {return v}
+      return DRStatusChangedNews()
+    }
+    set {news = .statusChanged(newValue)}
+  }
+
+  public var commentAdded: DRCommentAddedNews {
+    get {
+      if case .commentAdded(let v)? = news {return v}
+      return DRCommentAddedNews()
+    }
+    set {news = .commentAdded(newValue)}
+  }
+
+  public var requestMerged: DRRequestMergedNews {
+    get {
+      if case .requestMerged(let v)? = news {return v}
+      return DRRequestMergedNews()
+    }
+    set {news = .requestMerged(newValue)}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  /// What happened. Unset is a row written before this field existed, or by a
+  /// server newer than this client: an inbox draws the title it already has and
+  /// says nothing it cannot support.
+  public enum OneOf_News: Equatable, Sendable {
+    case statusChanged(DRStatusChangedNews)
+    case commentAdded(DRCommentAddedNews)
+    case requestMerged(DRRequestMergedNews)
+
+  }
 
   public init() {}
 
@@ -932,10 +952,6 @@ extension DRRequestStatus: SwiftProtobuf._ProtoNameProviding {
 
 extension DRCommentAuthorRole: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0COMMENT_AUTHOR_ROLE_UNSPECIFIED\0\u{1}COMMENT_AUTHOR_ROLE_USER\0\u{1}COMMENT_AUTHOR_ROLE_TEAM\0")
-}
-
-extension DRNotificationKind: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0NOTIFICATION_KIND_UNSPECIFIED\0\u{1}NOTIFICATION_KIND_STATUS_CHANGED\0\u{1}NOTIFICATION_KIND_COMMENT_ADDED\0\u{1}NOTIFICATION_KIND_REQUEST_MERGED\0")
 }
 
 extension DRPushEnvironment: SwiftProtobuf._ProtoNameProviding {
@@ -1676,9 +1692,88 @@ extension DRComment: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
   }
 }
 
+extension DRStatusChangedNews: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".StatusChangedNews"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}new_status\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.newStatus) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.newStatus != .unspecified {
+      try visitor.visitSingularEnumField(value: self.newStatus, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DRStatusChangedNews, rhs: DRStatusChangedNews) -> Bool {
+    if lhs.newStatus != rhs.newStatus {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension DRCommentAddedNews: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".CommentAddedNews"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DRCommentAddedNews, rhs: DRCommentAddedNews) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension DRRequestMergedNews: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".RequestMergedNews"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}into_request_id\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.intoRequestID) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.intoRequestID.isEmpty {
+      try visitor.visitSingularStringField(value: self.intoRequestID, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DRRequestMergedNews, rhs: DRRequestMergedNews) -> Bool {
+    if lhs.intoRequestID != rhs.intoRequestID {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension DRNotification: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Notification"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}user_id\0\u{1}kind\0\u{3}request_id\0\u{3}request_title\0\u{3}new_status\0\u{3}merged_into_request_id\0\u{3}read_at\0\u{3}created_at\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}user_id\0\u{4}\u{2}request_id\0\u{3}request_title\0\u{4}\u{3}read_at\0\u{3}created_at\0\u{3}status_changed\0\u{3}comment_added\0\u{3}request_merged\0\u{b}kind\0\u{b}new_status\0\u{b}merged_into_request_id\0\u{c}\u{3}\u{1}\u{c}\u{6}\u{1}\u{c}\u{7}\u{1}")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1688,13 +1783,49 @@ extension DRNotification: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.id) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self.userID) }()
-      case 3: try { try decoder.decodeSingularEnumField(value: &self.kind) }()
       case 4: try { try decoder.decodeSingularStringField(value: &self.requestID) }()
       case 5: try { try decoder.decodeSingularStringField(value: &self.requestTitle) }()
-      case 6: try { try decoder.decodeSingularEnumField(value: &self.newStatus) }()
-      case 7: try { try decoder.decodeSingularStringField(value: &self.mergedIntoRequestID) }()
       case 8: try { try decoder.decodeSingularMessageField(value: &self._readAt) }()
       case 9: try { try decoder.decodeSingularMessageField(value: &self._createdAt) }()
+      case 10: try {
+        var v: DRStatusChangedNews?
+        var hadOneofValue = false
+        if let current = self.news {
+          hadOneofValue = true
+          if case .statusChanged(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.news = .statusChanged(v)
+        }
+      }()
+      case 11: try {
+        var v: DRCommentAddedNews?
+        var hadOneofValue = false
+        if let current = self.news {
+          hadOneofValue = true
+          if case .commentAdded(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.news = .commentAdded(v)
+        }
+      }()
+      case 12: try {
+        var v: DRRequestMergedNews?
+        var hadOneofValue = false
+        if let current = self.news {
+          hadOneofValue = true
+          if case .requestMerged(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.news = .requestMerged(v)
+        }
+      }()
       default: break
       }
     }
@@ -1711,20 +1842,11 @@ extension DRNotification: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if !self.userID.isEmpty {
       try visitor.visitSingularStringField(value: self.userID, fieldNumber: 2)
     }
-    if self.kind != .unspecified {
-      try visitor.visitSingularEnumField(value: self.kind, fieldNumber: 3)
-    }
     if !self.requestID.isEmpty {
       try visitor.visitSingularStringField(value: self.requestID, fieldNumber: 4)
     }
     if !self.requestTitle.isEmpty {
       try visitor.visitSingularStringField(value: self.requestTitle, fieldNumber: 5)
-    }
-    if self.newStatus != .unspecified {
-      try visitor.visitSingularEnumField(value: self.newStatus, fieldNumber: 6)
-    }
-    if !self.mergedIntoRequestID.isEmpty {
-      try visitor.visitSingularStringField(value: self.mergedIntoRequestID, fieldNumber: 7)
     }
     try { if let v = self._readAt {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
@@ -1732,19 +1854,32 @@ extension DRNotification: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     try { if let v = self._createdAt {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
     } }()
+    switch self.news {
+    case .statusChanged?: try {
+      guard case .statusChanged(let v)? = self.news else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 10)
+    }()
+    case .commentAdded?: try {
+      guard case .commentAdded(let v)? = self.news else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
+    }()
+    case .requestMerged?: try {
+      guard case .requestMerged(let v)? = self.news else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
+    }()
+    case nil: break
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: DRNotification, rhs: DRNotification) -> Bool {
     if lhs.id != rhs.id {return false}
     if lhs.userID != rhs.userID {return false}
-    if lhs.kind != rhs.kind {return false}
     if lhs.requestID != rhs.requestID {return false}
     if lhs.requestTitle != rhs.requestTitle {return false}
-    if lhs.newStatus != rhs.newStatus {return false}
-    if lhs.mergedIntoRequestID != rhs.mergedIntoRequestID {return false}
     if lhs._readAt != rhs._readAt {return false}
     if lhs._createdAt != rhs._createdAt {return false}
+    if lhs.news != rhs.news {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
