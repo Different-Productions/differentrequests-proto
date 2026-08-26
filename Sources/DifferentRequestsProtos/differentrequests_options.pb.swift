@@ -20,6 +20,69 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
+/// Route metadata attached to an rpc: the verb and path it is served at, and the
+/// credential it requires.
+///
+/// endpoint-gen reads these and emits one endpoint table, which both the server's
+/// router and the SDK's client are built from. Neither side writes a path, so
+/// neither can spell one the other does not serve.
+///
+/// The audience is here because it is the one thing HTTP cannot state, and getting
+/// it wrong is what leaks one tenant's board into another's app.
+///
+/// Three scalar options rather than one `Route` message at 51240, which is retired.
+/// A message-typed option can only be read by decoding it, and decoding needs the
+/// generated Swift for this file — which would make the generator that produces
+/// that Swift depend on its own output. Scalars are read as the numbers they are
+/// and their names resolved through the descriptor, so the generator needs no
+/// generated type at all.
+/// A surface a tenant's plan may or may not include.
+///
+/// Named on the rpc it gates rather than checked inside the handler that serves it.
+/// A guard written in a handler is a fact about the product kept in the one place
+/// nothing else looks: an rpc added to a paid surface without one answers for every
+/// tenant, and nothing says so until somebody notices they are getting it free.
+///
+/// There is no value for a surface every plan includes. An rpc that names no gate
+/// is not gated, which is the same statement made by saying nothing.
+public enum DRPlanSurface: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+  case unspecified // = 0
+  case roadmap // = 1
+  case changelog // = 2
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .unspecified
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .unspecified
+    case 1: self = .roadmap
+    case 2: self = .changelog
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .unspecified: return 0
+    case .roadmap: return 1
+    case .changelog: return 2
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [DRPlanSurface] = [
+    .unspecified,
+    .roadmap,
+    .changelog,
+  ]
+
+}
+
 /// The *minimum* credential a caller must present. Every rpc names exactly one;
 /// there is no "any" and no default, so an rpc that forgets to say is a generator
 /// error rather than an open endpoint.
@@ -229,6 +292,23 @@ extension SwiftProtobuf.Google_Protobuf_MethodOptions {
     clearExtensionValue(ext: DRExtensions_route_audience)
   }
 
+  /// The surface a tenant's plan must include for this rpc to answer. Absent on an
+  /// rpc every plan includes.
+  public var DRplanGate: DRPlanSurface {
+    get {return getExtensionValue(ext: DRExtensions_plan_gate) ?? .unspecified}
+    set {setExtensionValue(ext: DRExtensions_plan_gate, value: newValue)}
+  }
+  /// Returns true if extension `DRExtensions_plan_gate`
+  /// has been explicitly set.
+  public var hasDRplanGate: Bool {
+    return hasExtensionValue(ext: DRExtensions_plan_gate)
+  }
+  /// Clears the value of extension `DRExtensions_plan_gate`.
+  /// Subsequent reads from it will return its default value.
+  public mutating func clearDRplanGate() {
+    clearExtensionValue(ext: DRExtensions_plan_gate)
+  }
+
 }
 
 // MARK: - File's ExtensionMap: DRDifferentrequestsOptions_Extensions
@@ -241,6 +321,7 @@ public let DRDifferentrequestsOptions_Extensions: SwiftProtobuf.SimpleExtensionM
   DRExtensions_route_method,
   DRExtensions_route_path,
   DRExtensions_route_audience,
+  DRExtensions_plan_gate,
   DRExtensions_url_token,
   DRExtensions_token
 ]
@@ -268,6 +349,13 @@ public let DRExtensions_route_audience = SwiftProtobuf.MessageExtension<SwiftPro
   fieldName: "differentrequests.v1.route_audience"
 )
 
+/// The surface a tenant's plan must include for this rpc to answer. Absent on an
+/// rpc every plan includes.
+public let DRExtensions_plan_gate = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalEnumExtensionField<DRPlanSurface>, SwiftProtobuf.Google_Protobuf_MethodOptions>(
+  _protobuf_fieldNumber: 51246,
+  fieldName: "differentrequests.v1.plan_gate"
+)
+
 public let DRExtensions_url_token = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalExtensionField<SwiftProtobuf.ProtobufString>, SwiftProtobuf.Google_Protobuf_EnumValueOptions>(
   _protobuf_fieldNumber: 51241,
   fieldName: "differentrequests.v1.url_token"
@@ -279,6 +367,10 @@ public let DRExtensions_token = SwiftProtobuf.MessageExtension<SwiftProtobuf.Opt
 )
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
+
+extension DRPlanSurface: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0PLAN_SURFACE_UNSPECIFIED\0\u{1}PLAN_SURFACE_ROADMAP\0\u{1}PLAN_SURFACE_CHANGELOG\0")
+}
 
 extension DRAudience: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0AUDIENCE_UNSPECIFIED\0\u{1}AUDIENCE_APP_KEY\0\u{1}AUDIENCE_END_USER\0")

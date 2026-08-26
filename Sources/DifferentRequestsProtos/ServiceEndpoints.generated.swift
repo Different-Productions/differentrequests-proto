@@ -103,6 +103,35 @@ public enum DRRequestsServiceRPC: String, Sendable, CaseIterable {
     }
   }
 
+  /// The surface a tenant's plan must include for this rpc to answer.
+  ///
+  /// Nil for an rpc every plan includes. Declared on the rpc rather than checked inside the
+  /// handler, so an rpc added to a paid surface without a gate is a gap in the schema
+  /// rather than a surface quietly answering for everyone.
+  public var planGate: DRPlanSurface? {
+    switch self {
+    case .getConfig: return nil
+    case .createSession: return nil
+    case .listRequests: return nil
+    case .createRequest: return nil
+    case .getRequest: return nil
+    case .vote: return nil
+    case .clearVote: return nil
+    case .follow: return nil
+    case .unfollow: return nil
+    case .listComments: return nil
+    case .createComment: return nil
+    case .listNotifications: return nil
+    case .getUnreadCount: return nil
+    case .markAllNotificationsRead: return nil
+    case .markNotificationRead: return nil
+    case .registerDevice: return nil
+    case .unregisterDevice: return nil
+    case .getRoadmap: return .roadmap
+    case .listChangelog: return .changelog
+    }
+  }
+
   /// The `{brace}` names in this rpc's template, in the order they appear.
   ///
   /// Empty for a path that takes none. Anything filling a template walks this rather than

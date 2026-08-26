@@ -10,10 +10,19 @@ struct EmittedMethod {
   let pathTemplate: String
   let audienceCaseName: String
 
+  /// Absent for an rpc every plan includes. Unlike a route, saying nothing is a complete answer
+  /// here — it is the same statement as naming no surface.
+  let planGateCaseName: String?
+
   /// An rpc with an incomplete route is refused rather than defaulted: one with no audience would
   /// otherwise be served to anyone holding an app key, and one with no path would be served
   /// nowhere.
-  init(method: MethodDescriptor, verbs: EnumCaseNames, audiences: EnumCaseNames) throws {
+  init(
+    method: MethodDescriptor,
+    verbs: EnumCaseNames,
+    audiences: EnumCaseNames,
+    planSurfaces: EnumCaseNames
+  ) throws {
     guard
       let verb = method.options.getExtensionValue(ext: contractRouteMethodExtension),
       let path = method.options.getExtensionValue(ext: contractRoutePathExtension),
@@ -29,6 +38,12 @@ struct EmittedMethod {
     verbCaseName = try verbs.caseName(forValue: verb)
     pathTemplate = path
     audienceCaseName = try audiences.caseName(forValue: audience)
+
+    if let gate = method.options.getExtensionValue(ext: contractPlanGateExtension) {
+      planGateCaseName = try planSurfaces.caseName(forValue: gate)
+    } else {
+      planGateCaseName = nil
+    }
   }
 
   /// The `{brace}` parameters in the template, in the order they appear — which is the order the

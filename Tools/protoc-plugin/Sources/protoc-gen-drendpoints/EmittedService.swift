@@ -8,20 +8,28 @@ struct EmittedService {
   let typePrefix: String
   let verbTypeName: String
   let audienceTypeName: String
+  let planSurfaceTypeName: String
   let methods: [EmittedMethod]
 
   init(
     service: ServiceDescriptor,
     namer: SwiftProtobufNamer,
     verbs: EnumCaseNames,
-    audiences: EnumCaseNames
+    audiences: EnumCaseNames,
+    planSurfaces: EnumCaseNames
   ) throws {
     name = service.name
     typePrefix = service.file.options.swiftPrefix
     verbTypeName = verbs.typeName
     audienceTypeName = audiences.typeName
+    planSurfaceTypeName = planSurfaces.typeName
     methods = try service.methods.map { method in
-      try EmittedMethod(method: method, verbs: verbs, audiences: audiences)
+      try EmittedMethod(
+        method: method,
+        verbs: verbs,
+        audiences: audiences,
+        planSurfaces: planSurfaces
+      )
     }
   }
 
@@ -104,6 +112,23 @@ struct EmittedService {
           public var audience: \(audienceTypeName)
         """,
       body: { ".\($0.audienceCaseName)" }
+    )
+
+    out += switchSource(
+      signature: """
+          /// The surface a tenant's plan must include for this rpc to answer.
+          ///
+          /// Nil for an rpc every plan includes. Declared on the rpc rather than checked inside the
+          /// handler, so an rpc added to a paid surface without a gate is a gap in the schema
+          /// rather than a surface quietly answering for everyone.
+          public var planGate: \(planSurfaceTypeName)?
+        """,
+      body: { method in
+        guard let gate = method.planGateCaseName else {
+          return "nil"
+        }
+        return ".\(gate)"
+      }
     )
 
     out += switchSource(

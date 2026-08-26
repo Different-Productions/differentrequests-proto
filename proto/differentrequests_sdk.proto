@@ -527,11 +527,13 @@ service RequestsService {
     option (route_method) = HTTP_METHOD_GET;
     option (route_path) = "/roadmap";
     option (route_audience) = AUDIENCE_APP_KEY;
+    option (plan_gate) = PLAN_SURFACE_ROADMAP;
   }
 
   rpc ListChangelog(ListChangelogRequest) returns (ListChangelogResponse) {
     option (route_method) = HTTP_METHOD_GET;
     option (route_path) = "/changelog";
     option (route_audience) = AUDIENCE_APP_KEY;
+    option (plan_gate) = PLAN_SURFACE_CHANGELOG;
   }
 }

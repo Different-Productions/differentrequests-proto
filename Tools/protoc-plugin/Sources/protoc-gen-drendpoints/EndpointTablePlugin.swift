@@ -54,6 +54,11 @@ struct EndpointTablePlugin: CodeGenerator {
         reachableFrom: file,
         namer: namer
       )
+      let planSurfaces = try EnumCaseNames(
+        typing: contractPlanGateExtension,
+        reachableFrom: file,
+        namer: namer
+      )
       var services: [EmittedService] = []
       for service in file.services {
         services.append(
@@ -61,7 +66,8 @@ struct EndpointTablePlugin: CodeGenerator {
             service: service,
             namer: namer,
             verbs: verbs,
-            audiences: audiences
+            audiences: audiences,
+            planSurfaces: planSurfaces
           )
         )
       }

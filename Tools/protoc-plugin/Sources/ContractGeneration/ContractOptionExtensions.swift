@@ -43,11 +43,19 @@ public let contractRouteAudienceExtension = SwiftProtobuf.MessageExtension<
   SwiftProtobuf.Google_Protobuf_MethodOptions
 >(_protobuf_fieldNumber: 51245, fieldName: "differentrequests.v1.route_audience")
 
+/// Absent on an rpc every plan includes, which is why nothing here treats a missing value as an
+/// error the way an absent route is one.
+public let contractPlanGateExtension = SwiftProtobuf.MessageExtension<
+  SwiftProtobuf.OptionalExtensionField<SwiftProtobuf.ProtobufInt32>,
+  SwiftProtobuf.Google_Protobuf_MethodOptions
+>(_protobuf_fieldNumber: 51246, fieldName: "differentrequests.v1.plan_gate")
+
 /// Every custom option in the contract, for a generator's `customOptionExtensions`.
 public let contractOptionExtensions: [any AnyMessageExtension] = [
   contractURLTokenExtension,
   contractTokenExtension,
   contractRouteMethodExtension,
   contractRoutePathExtension,
-  contractRouteAudienceExtension
+  contractRouteAudienceExtension,
+  contractPlanGateExtension
 ]
