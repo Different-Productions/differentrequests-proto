@@ -356,7 +356,10 @@ public struct DRAppConfig: Sendable {
 
   /// Whether the roadmap and changelog surfaces are enabled for this app. Both
   /// are Pro anchors, so both are absent on Free — and the SDK hides the tab
-  /// rather than showing one that returns PLAN_REQUIRED.
+  /// rather than showing one that is refused when tapped.
+  ///
+  /// These are the flags the rpcs declaring `(plan_gate)` are answered against, so
+  /// what this advertises and what those rpcs do cannot disagree.
   public var roadmapEnabled: Bool = false
 
   public var changelogEnabled: Bool = false
