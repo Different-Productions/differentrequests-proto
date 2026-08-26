@@ -1,5 +1,6 @@
 import ContractGeneration
 import Foundation
+import SwiftProtobuf
 import SwiftProtobufPluginLibrary
 
 /// One enum's spellings, ready to be written as a Swift extension.
@@ -19,7 +20,7 @@ struct EmittedTokenEnum {
 
     let inURLs = Self.cases(
       of: enumDescriptor,
-      spelledBy: contractURLTokenExtension,
+      spelledBy: DRExtensions_url_token,
       namer: namer
     )
     if inURLs.isEmpty == false {
@@ -35,7 +36,7 @@ struct EmittedTokenEnum {
 
     let onTheWire = Self.cases(
       of: enumDescriptor,
-      spelledBy: contractTokenExtension,
+      spelledBy: DRExtensions_token,
       namer: namer
     )
     if onTheWire.isEmpty == false {
@@ -58,7 +59,10 @@ struct EmittedTokenEnum {
 
   private static func cases(
     of enumDescriptor: EnumDescriptor,
-    spelledBy option: ContractStringOption,
+    spelledBy option: MessageExtension<
+      OptionalExtensionField<ProtobufString>,
+      Google_Protobuf_EnumValueOptions
+    >,
     namer: SwiftProtobufNamer
   ) -> [EmittedTokenValue] {
     var found: [EmittedTokenValue] = []

@@ -24,9 +24,9 @@ struct EmittedMethod {
     planSurfaces: EnumCaseNames
   ) throws {
     guard
-      let verb = method.options.getExtensionValue(ext: contractRouteMethodExtension),
-      let path = method.options.getExtensionValue(ext: contractRoutePathExtension),
-      let audience = method.options.getExtensionValue(ext: contractRouteAudienceExtension)
+      let verb = method.options.getExtensionValue(ext: DRExtensions_route_method),
+      let path = method.options.getExtensionValue(ext: DRExtensions_route_path),
+      let audience = method.options.getExtensionValue(ext: DRExtensions_route_audience)
     else {
       throw EndpointTableError.incompleteRoute(
         service: method.service.name,
@@ -35,12 +35,12 @@ struct EmittedMethod {
     }
     protoName = method.name
     caseName = method.name.lowerCasedFirstCharacter
-    verbCaseName = try verbs.caseName(forValue: verb)
+    verbCaseName = try verbs.caseName(forValue: Int32(verb.rawValue))
     pathTemplate = path
-    audienceCaseName = try audiences.caseName(forValue: audience)
+    audienceCaseName = try audiences.caseName(forValue: Int32(audience.rawValue))
 
-    if let gate = method.options.getExtensionValue(ext: contractPlanGateExtension) {
-      planGateCaseName = try planSurfaces.caseName(forValue: gate)
+    if let gate = method.options.getExtensionValue(ext: DRExtensions_plan_gate) {
+      planGateCaseName = try planSurfaces.caseName(forValue: Int32(gate.rawValue))
     } else {
       planGateCaseName = nil
     }

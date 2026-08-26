@@ -45,17 +45,17 @@ struct EndpointTablePlugin: CodeGenerator {
       // them. An option retyped in the schema is followed here rather than searched for by a
       // spelling that would have to be changed to match.
       let verbs = try EnumCaseNames(
-        typing: contractRouteMethodExtension,
+        typing: DRExtensions_route_method,
         reachableFrom: file,
         namer: namer
       )
       let audiences = try EnumCaseNames(
-        typing: contractRouteAudienceExtension,
+        typing: DRExtensions_route_audience,
         reachableFrom: file,
         namer: namer
       )
       let planSurfaces = try EnumCaseNames(
-        typing: contractPlanGateExtension,
+        typing: DRExtensions_plan_gate,
         reachableFrom: file,
         namer: namer
       )

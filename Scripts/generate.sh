@@ -50,6 +50,27 @@ plugin_binary() {
 }
 
 SWIFT_BIN=$(plugin_binary protoc-gen-swift)
+
+# The options schema, generated into the generators' own module.
+#
+# A plugin has to declare which custom options it reads before protoc parses anything, so it needs
+# the Swift for differentrequests_options.proto — and it cannot import the package it generates
+# that Swift into. So it gets its own, from the same .proto. This is what grpc-gateway does: its
+# plugin module ships the generated code for its own annotations.
+#
+# The alternative is what was here before: six field numbers and six field names typed by hand
+# beside the generated symbols already holding them, where a renumbering in the schema reads as
+# every option being absent rather than as an error.
+#
+# Generated first, because the plugins below are built from a module that contains it.
+CONTRACT_GENERATION="$PLUGIN_PKG/Sources/ContractGeneration"
+"$PROTOC" --proto_path="$PROTO_PATH" \
+    --proto_path="$PROTOC_INCLUDE" \
+    --plugin=protoc-gen-swift="$SWIFT_BIN" \
+    --swift_opt=Visibility=Public \
+    --swift_out="$CONTRACT_GENERATION" \
+    "$PROTO_PATH/differentrequests_options.proto"
+
 ENDPOINTS_BIN=$(plugin_binary protoc-gen-drendpoints)
 TOKENS_BIN=$(plugin_binary protoc-gen-drtokens)
 FIELDS_BIN=$(plugin_binary protoc-gen-drfields)

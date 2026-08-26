@@ -82,7 +82,7 @@ struct VocabularyPlugin: CodeGenerator {
     var valueNameForToken: [String: String] = [:]
     var valueNameForCaseName: [String: String] = [:]
     for value in enumDescriptor.values {
-      guard let token = value.options.getExtensionValue(ext: contractTokenExtension) else {
+      guard let token = value.options.getExtensionValue(ext: DRExtensions_token) else {
         throw VocabularyError.tokenAbsent(enumName: name, valueName: value.name)
       }
       if let owner = valueNameForToken[token] {

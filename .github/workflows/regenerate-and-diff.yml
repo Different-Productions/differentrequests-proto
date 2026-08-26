@@ -48,8 +48,14 @@ jobs:
       # usable git, so there is no .git here to diff against. Snapshot the
       # committed output instead — which also means this check never depends on
       # the container's git version.
+      # Two directories, because generate.sh writes two. The generators need the Swift for
+      # differentrequests_options.proto to declare which options they read, and cannot import the
+      # package they generate it into — so they carry their own copy, generated from the same
+      # .proto. Unchecked, that copy is the one thing here that could quietly stop matching.
       - name: Snapshot committed output
-        run: cp -a Sources/DifferentRequestsProtos "${RUNNER_TEMP}/committed"
+        run: |
+          cp -a Sources/DifferentRequestsProtos "${RUNNER_TEMP}/committed"
+          cp -a Tools/protoc-plugin/Sources/ContractGeneration "${RUNNER_TEMP}/committed-generators"
 
       # One script and one step: every generator is a protoc plugin, so protoc drives all
       # of them from a single parse. The vocabulary needed its own script and its own
@@ -61,6 +67,10 @@ jobs:
         run: |
           if ! diff -ru "${RUNNER_TEMP}/committed" Sources/DifferentRequestsProtos; then
             echo "::error::Sources/DifferentRequestsProtos is stale. Run ./Scripts/generate.sh and commit the result."
+            exit 1
+          fi
+          if ! diff -ru "${RUNNER_TEMP}/committed-generators" Tools/protoc-plugin/Sources/ContractGeneration; then
+            echo "::error::The generators' copy of the options schema is stale. Run ./Scripts/generate.sh and commit the result."
             exit 1
           fi
           echo "Committed output matches a fresh run."
