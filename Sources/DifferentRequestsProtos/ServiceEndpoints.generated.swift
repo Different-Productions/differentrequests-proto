@@ -120,7 +120,7 @@ public enum DRRequestsServiceRPC: String, Sendable, CaseIterable {
     case .follow: return nil
     case .unfollow: return nil
     case .listComments: return nil
-    case .createComment: return nil
+    case .createComment: return .comments
     case .listNotifications: return nil
     case .getUnreadCount: return nil
     case .markAllNotificationsRead: return nil

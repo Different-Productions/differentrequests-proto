@@ -50,6 +50,13 @@ public enum DRPlanSurface: SwiftProtobuf.Enum, Swift.CaseIterable {
   case unspecified // = 0
   case roadmap // = 1
   case changelog // = 2
+
+  /// Not a paid anchor: comments are free on every plan and absent when the tenant
+  /// has chosen not to moderate a discussion. It is here because the gate is the
+  /// same gate — an AppConfig flag the server answers against before a handler
+  /// runs — and a second mechanism for "this app does not have that" would be a
+  /// second place to forget one.
+  case comments // = 3
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -61,6 +68,7 @@ public enum DRPlanSurface: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 0: self = .unspecified
     case 1: self = .roadmap
     case 2: self = .changelog
+    case 3: self = .comments
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -70,6 +78,7 @@ public enum DRPlanSurface: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .unspecified: return 0
     case .roadmap: return 1
     case .changelog: return 2
+    case .comments: return 3
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -79,6 +88,7 @@ public enum DRPlanSurface: SwiftProtobuf.Enum, Swift.CaseIterable {
     .unspecified,
     .roadmap,
     .changelog,
+    .comments,
   ]
 
 }
@@ -369,7 +379,7 @@ public let DRExtensions_token = SwiftProtobuf.MessageExtension<SwiftProtobuf.Opt
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 extension DRPlanSurface: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0PLAN_SURFACE_UNSPECIFIED\0\u{1}PLAN_SURFACE_ROADMAP\0\u{1}PLAN_SURFACE_CHANGELOG\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0PLAN_SURFACE_UNSPECIFIED\0\u{1}PLAN_SURFACE_ROADMAP\0\u{1}PLAN_SURFACE_CHANGELOG\0\u{1}PLAN_SURFACE_COMMENTS\0")
 }
 
 extension DRAudience: SwiftProtobuf._ProtoNameProviding {

@@ -485,6 +485,7 @@ service RequestsService {
     option (route_method) = HTTP_METHOD_POST;
     option (route_path) = "/requests/{requestId}/comments";
     option (route_audience) = AUDIENCE_END_USER;
+    option (plan_gate) = PLAN_SURFACE_COMMENTS;
   }
 
   rpc ListNotifications(ListNotificationsRequest) returns (ListNotificationsResponse) {
