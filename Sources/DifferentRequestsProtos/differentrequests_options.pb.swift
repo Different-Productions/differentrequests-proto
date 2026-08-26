@@ -80,6 +80,16 @@ public enum DRAudience: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 }
 
+/// The verb an rpc is served at.
+///
+/// Each value spells itself, because a client has to put the verb on the wire and
+/// the spelling is what goes there. Spelled in Swift instead, it was a switch that
+/// mapped four values to four strings and answered GET for the two it could not
+/// map — so an rpc whose route was incomplete would have been sent as a read.
+///
+/// HTTP_METHOD_UNSPECIFIED carries no spelling. There is nothing to send for it,
+/// and a value with no spelling cannot be sent rather than being sent as something
+/// else.
 public enum DRHttpMethod: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
   case unspecified // = 0

@@ -91,14 +91,20 @@ rm -rf "$OUTPUT_PATH/Vocabulary"
     "$PROTO_PATH/differentrequests_sdk.proto" \
     "$PROTO_PATH/differentrequests_domain.proto"
 
-# How an enum value is spelled in a URL, so the client that sends `?sort=top` and the server that
-# matches on it read one fact rather than two copies of it.
+# How an enum value is spelled when it leaves Swift: inside a URL, so the client that sends
+# `?sort=top` and the server that matches on it read one fact rather than two copies; and on the
+# wire, so an HTTP verb is the one the schema declares rather than a switch mapping four values to
+# four strings.
+#
+# The options file is here for the verbs. It is the one file passed to two generators, because
+# protoc-gen-swift owns the enum and this only adds a spelling to it.
 "$PROTOC" --proto_path="$PROTO_PATH" \
     --proto_path="$PROTOC_INCLUDE" \
     --plugin=protoc-gen-drtokens="$TOKENS_BIN" \
     --drtokens_out="$OUTPUT_PATH" \
     "$PROTO_PATH/differentrequests_sdk.proto" \
-    "$PROTO_PATH/differentrequests_domain.proto"
+    "$PROTO_PATH/differentrequests_domain.proto" \
+    "$PROTO_PATH/differentrequests_options.proto"
 
 # The vocabulary: values whose contract *is* their spelling — an HTTP header, an authorization
 # scheme, a media type. Every one of them was a literal in the server and the SDK both until it was

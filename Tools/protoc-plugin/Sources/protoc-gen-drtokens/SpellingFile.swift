@@ -1,7 +1,7 @@
 import Foundation
 
 /// One generated Swift file: the do-not-edit banner and every enum's spellings in it.
-struct URLTokenFile {
+struct SpellingFile {
   let sourceFileName: String
   let spelledEnums: [EmittedTokenEnum]
 

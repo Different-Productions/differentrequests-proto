@@ -2,22 +2,53 @@ import ContractGeneration
 import Foundation
 import SwiftProtobufPluginLibrary
 
-/// One enum's URL spellings, ready to be written as a Swift extension.
+/// One enum's spellings, ready to be written as a Swift extension.
+///
+/// Two options declare a spelling and they mean different things. `(url_token)` is how a value is
+/// written inside a URL this API already serves — a query parameter's value. `(token)` is the exact
+/// string a value becomes when it leaves Swift for anything else: a verb on the wire, a header
+/// name. An enum may declare either, or both, and each becomes its own property.
 struct EmittedTokenEnum {
   let typeName: String
-  let spellings: [EmittedTokenValue]
+  let spellings: [EmittedSpelling]
 
-  /// An enum where no value declares a spelling has nothing to emit, so it is not one of these.
+  /// An enum where no value declares either spelling has nothing to emit, so it is not one of
+  /// these.
   init?(enumDescriptor: EnumDescriptor, namer: SwiftProtobufNamer) {
-    var found: [EmittedTokenValue] = []
-    for value in enumDescriptor.values {
-      guard let token = value.options.getExtensionValue(ext: contractURLTokenExtension) else {
-        continue
-      }
+    var found: [EmittedSpelling] = []
+
+    let inURLs = Self.cases(
+      of: enumDescriptor,
+      spelledBy: contractURLTokenExtension,
+      namer: namer
+    )
+    if inURLs.isEmpty == false {
       found.append(
-        EmittedTokenValue(caseName: namer.relativeName(enumValue: value), token: token)
+        EmittedSpelling(
+          propertyName: "urlToken",
+          documentation: "How this value is spelled in a URL.",
+          readBackDocumentation: "Reads a value back from its spelling in a URL.",
+          cases: inURLs
+        )
       )
     }
+
+    let onTheWire = Self.cases(
+      of: enumDescriptor,
+      spelledBy: contractTokenExtension,
+      namer: namer
+    )
+    if onTheWire.isEmpty == false {
+      found.append(
+        EmittedSpelling(
+          propertyName: "token",
+          documentation: "The exact string this value becomes when it leaves Swift.",
+          readBackDocumentation: "Reads a value back from the string it becomes.",
+          cases: onTheWire
+        )
+      )
+    }
+
     if found.isEmpty {
       return nil
     }
@@ -25,39 +56,32 @@ struct EmittedTokenEnum {
     spellings = found
   }
 
+  private static func cases(
+    of enumDescriptor: EnumDescriptor,
+    spelledBy option: ContractStringOption,
+    namer: SwiftProtobufNamer
+  ) -> [EmittedTokenValue] {
+    var found: [EmittedTokenValue] = []
+    for value in enumDescriptor.values {
+      guard let token = value.options.getExtensionValue(ext: option) else {
+        continue
+      }
+      found.append(
+        EmittedTokenValue(caseName: namer.relativeName(enumValue: value), token: token)
+      )
+    }
+    return found
+  }
+
   var swiftSource: String {
     var out = """
 
       extension \(typeName) {
-        /// How this value is spelled in a URL.
-        ///
-        /// Absent for a value with no declared spelling, which is what makes an unsendable value
-        /// impossible to put in a query string rather than merely discouraged.
-        public var urlToken: String? {
-          switch self {
-
       """
     for spelling in spellings {
-      out += "    case .\(spelling.caseName): return \"\(spelling.token)\"\n"
+      out += spelling.swiftSource
     }
     out += """
-          default: return nil
-          }
-        }
-
-        /// Reads a value back from its spelling. Nil for anything not in the contract, so an
-        /// unrecognized token is rejected by the caller rather than silently becoming a default.
-        public init?(urlToken: String) {
-          switch urlToken {
-
-      """
-    for spelling in spellings {
-      out += "    case \"\(spelling.token)\": self = .\(spelling.caseName)\n"
-    }
-    out += """
-          default: return nil
-          }
-        }
       }
 
       """

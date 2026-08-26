@@ -8,6 +8,13 @@ import SwiftProtobufPluginLibrary
 /// every option as absent — a vocabulary that declares nothing, rather than an error — which is why
 /// each generator fails loudly on a value it expected an option for.
 
+/// A string option on an enum value. Both spellings the contract declares have this shape, so a
+/// generator can take either as an argument rather than being written twice.
+public typealias ContractStringOption = SwiftProtobuf.MessageExtension<
+  SwiftProtobuf.OptionalExtensionField<SwiftProtobuf.ProtobufString>,
+  SwiftProtobuf.Google_Protobuf_EnumValueOptions
+>
+
 public let contractURLTokenExtension = SwiftProtobuf.MessageExtension<
   SwiftProtobuf.OptionalExtensionField<SwiftProtobuf.ProtobufString>,
   SwiftProtobuf.Google_Protobuf_EnumValueOptions

@@ -3,17 +3,20 @@ import Foundation
 import SwiftProtobuf
 import SwiftProtobufPluginLibrary
 
-/// Emits, for every enum value carrying a `(url_token)` option, the spelling it takes in a URL and
-/// an initializer that reads one back.
+/// Emits, for every enum value that declares a spelling, the string it becomes and an initializer
+/// that reads one back.
+///
+/// Two options declare one. `(url_token)` is how a value is written inside a URL this API serves;
+/// `(token)` is the exact string a value becomes when it leaves Swift for anything else — an HTTP
+/// verb, a header name. Each becomes its own property, and an enum may carry both.
 ///
 /// The client that writes `?sort=top` and the server that matches on it have to agree, and the only
 /// way for that to be one fact is for both to read it from the schema. Hand-typed on either side it
 /// is a copy, and the day they disagree the server answers a default nobody asked for.
 ///
-/// A value with no token has no spelling and cannot be sent, which is what keeps a zero sentinel
-/// out of a query string.
+/// A value with no spelling cannot be sent, which is what keeps a zero sentinel off the wire.
 @main
-struct URLTokenPlugin: CodeGenerator {
+struct SpellingPlugin: CodeGenerator {
 
   var version: String? { "1.0.0" }
 
@@ -25,7 +28,7 @@ struct URLTokenPlugin: CodeGenerator {
     [.proto3Optional]
   }
 
-  /// protoc surfaces `(url_token)` as a decoded value only because it is declared here.
+  /// protoc surfaces the spelling options as decoded values only because they are declared here.
   var customOptionExtensions: [any AnyMessageExtension] {
     contractOptionExtensions
   }
@@ -45,8 +48,8 @@ struct URLTokenPlugin: CodeGenerator {
         continue
       }
       try generatorOutputs.add(
-        fileName: "URLTokens.\(file.baseName).generated.swift",
-        contents: URLTokenFile(sourceFileName: file.name, spelledEnums: spelled).swiftSource
+        fileName: "Spellings.\(file.baseName).generated.swift",
+        contents: SpellingFile(sourceFileName: file.name, spelledEnums: spelled).swiftSource
       )
     }
   }

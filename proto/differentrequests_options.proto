@@ -86,11 +86,21 @@ enum Audience {
   AUDIENCE_END_USER = 2;
 }
 
+// The verb an rpc is served at.
+//
+// Each value spells itself, because a client has to put the verb on the wire and
+// the spelling is what goes there. Spelled in Swift instead, it was a switch that
+// mapped four values to four strings and answered GET for the two it could not
+// map — so an rpc whose route was incomplete would have been sent as a read.
+//
+// HTTP_METHOD_UNSPECIFIED carries no spelling. There is nothing to send for it,
+// and a value with no spelling cannot be sent rather than being sent as something
+// else.
 enum HttpMethod {
   HTTP_METHOD_UNSPECIFIED = 0;
-  HTTP_METHOD_GET = 1;
-  HTTP_METHOD_POST = 2;
-  HTTP_METHOD_PUT = 3;
-  HTTP_METHOD_DELETE = 4;
+  HTTP_METHOD_GET = 1 [(token) = "GET"];
+  HTTP_METHOD_POST = 2 [(token) = "POST"];
+  HTTP_METHOD_PUT = 3 [(token) = "PUT"];
+  HTTP_METHOD_DELETE = 4 [(token) = "DELETE"];
 }
 

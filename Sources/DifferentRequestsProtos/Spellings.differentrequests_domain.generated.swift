@@ -5,8 +5,8 @@
 extension DRPlan {
   /// How this value is spelled in a URL.
   ///
-  /// Absent for a value with no declared spelling, which is what makes an unsendable value
-  /// impossible to put in a query string rather than merely discouraged.
+  /// Absent for a value with no declared spelling, which is what makes an unspellable value
+  /// impossible to send rather than merely discouraged.
   public var urlToken: String? {
     switch self {
     case .free: return "free"
@@ -15,8 +15,10 @@ extension DRPlan {
     }
   }
 
-  /// Reads a value back from its spelling. Nil for anything not in the contract, so an
-  /// unrecognized token is rejected by the caller rather than silently becoming a default.
+  /// Reads a value back from its spelling in a URL.
+  ///
+  /// Nil for anything not in the contract, so an unrecognized spelling is rejected by the
+  /// caller rather than silently becoming a default.
   public init?(urlToken: String) {
     switch urlToken {
     case "free": self = .free
@@ -29,8 +31,8 @@ extension DRPlan {
 extension DRRequestStatus {
   /// How this value is spelled in a URL.
   ///
-  /// Absent for a value with no declared spelling, which is what makes an unsendable value
-  /// impossible to put in a query string rather than merely discouraged.
+  /// Absent for a value with no declared spelling, which is what makes an unspellable value
+  /// impossible to send rather than merely discouraged.
   public var urlToken: String? {
     switch self {
     case .`open`: return "open"
@@ -43,8 +45,10 @@ extension DRRequestStatus {
     }
   }
 
-  /// Reads a value back from its spelling. Nil for anything not in the contract, so an
-  /// unrecognized token is rejected by the caller rather than silently becoming a default.
+  /// Reads a value back from its spelling in a URL.
+  ///
+  /// Nil for anything not in the contract, so an unrecognized spelling is rejected by the
+  /// caller rather than silently becoming a default.
   public init?(urlToken: String) {
     switch urlToken {
     case "open": self = .`open`
