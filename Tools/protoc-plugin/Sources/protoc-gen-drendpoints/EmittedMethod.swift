@@ -13,7 +13,7 @@ struct EmittedMethod {
   /// An rpc with an incomplete route is refused rather than defaulted: one with no audience would
   /// otherwise be served to anyone holding an app key, and one with no path would be served
   /// nowhere.
-  init(method: MethodDescriptor, caseNames: EnumCaseNames) throws {
+  init(method: MethodDescriptor, verbs: EnumCaseNames, audiences: EnumCaseNames) throws {
     guard
       let verb = method.options.getExtensionValue(ext: contractRouteMethodExtension),
       let path = method.options.getExtensionValue(ext: contractRoutePathExtension),
@@ -26,9 +26,9 @@ struct EmittedMethod {
     }
     protoName = method.name
     caseName = method.name.lowerCasedFirstCharacter
-    verbCaseName = try caseNames.caseName(forValue: verb, ofEnumNamed: "HttpMethod")
+    verbCaseName = try verbs.caseName(forValue: verb)
     pathTemplate = path
-    audienceCaseName = try caseNames.caseName(forValue: audience, ofEnumNamed: "Audience")
+    audienceCaseName = try audiences.caseName(forValue: audience)
   }
 
   /// The `{brace}` parameters in the template, in the order they appear — which is the order the

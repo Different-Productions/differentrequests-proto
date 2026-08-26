@@ -41,11 +41,28 @@ struct EndpointTablePlugin: CodeGenerator {
   ) throws {
     let namer = SwiftProtobufNamer()
     for file in files where file.services.isEmpty == false {
-      let caseNames = EnumCaseNames(reachableFrom: file, namer: namer)
+      // Both enums are found through the options they type, so this generator names neither of
+      // them. An option retyped in the schema is followed here rather than searched for by a
+      // spelling that would have to be changed to match.
+      let verbs = try EnumCaseNames(
+        typing: contractRouteMethodExtension,
+        reachableFrom: file,
+        namer: namer
+      )
+      let audiences = try EnumCaseNames(
+        typing: contractRouteAudienceExtension,
+        reachableFrom: file,
+        namer: namer
+      )
       var services: [EmittedService] = []
       for service in file.services {
         services.append(
-          try EmittedService(service: service, namer: namer, caseNames: caseNames)
+          try EmittedService(
+            service: service,
+            namer: namer,
+            verbs: verbs,
+            audiences: audiences
+          )
         )
       }
       try generatorOutputs.add(

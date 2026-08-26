@@ -3,20 +3,26 @@
 /// `CustomStringConvertible` because protoc reports a plugin's failure by calling
 /// `String(describing:)` on whatever it throws.
 public enum EnumCaseNameError: Error, CustomStringConvertible {
-  case enumAbsent(enumName: String)
+  case optionAbsent(fieldName: String, protoFileName: String)
+  case optionIsNotEnumTyped(fieldName: String)
   case valueAbsent(enumName: String, number: Int32)
 
   public var description: String {
     switch self {
-    case .enumAbsent(let enumName):
+    case .optionAbsent(let fieldName, let protoFileName):
       return """
-        no enum named \(enumName) is declared by this file or imported by it. An option \
-        typed by an enum can only be resolved where that enum is reachable.
+        \(protoFileName) neither declares \(fieldName) nor imports the file that does. An option \
+        can only be resolved where the file declaring it is reachable.
+        """
+    case .optionIsNotEnumTyped(let fieldName):
+      return """
+        \(fieldName) is not typed by an enum, so there is no set of values to resolve a number \
+        against. This generator reads it as one.
         """
     case .valueAbsent(let enumName, let number):
       return """
-        \(enumName) declares no value numbered \(number). The option holds a number this \
-        enum has never assigned.
+        \(enumName) declares no value numbered \(number). The option holds a number this enum \
+        has never assigned.
         """
     }
   }

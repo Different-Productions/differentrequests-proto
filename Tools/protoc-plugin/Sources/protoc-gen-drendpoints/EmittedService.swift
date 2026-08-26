@@ -10,13 +10,18 @@ struct EmittedService {
   let audienceTypeName: String
   let methods: [EmittedMethod]
 
-  init(service: ServiceDescriptor, namer: SwiftProtobufNamer, caseNames: EnumCaseNames) throws {
+  init(
+    service: ServiceDescriptor,
+    namer: SwiftProtobufNamer,
+    verbs: EnumCaseNames,
+    audiences: EnumCaseNames
+  ) throws {
     name = service.name
     typePrefix = service.file.options.swiftPrefix
-    verbTypeName = try caseNames.typeName(ofEnumNamed: "HttpMethod")
-    audienceTypeName = try caseNames.typeName(ofEnumNamed: "Audience")
+    verbTypeName = verbs.typeName
+    audienceTypeName = audiences.typeName
     methods = try service.methods.map { method in
-      try EmittedMethod(method: method, caseNames: caseNames)
+      try EmittedMethod(method: method, verbs: verbs, audiences: audiences)
     }
   }
 
