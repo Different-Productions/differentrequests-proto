@@ -26,15 +26,61 @@ struct EmittedService {
     methods = try service.methods.map { method in
       try EmittedMethod(
         method: method,
+        namer: namer,
         verbs: verbs,
         audiences: audiences,
         planSurfaces: planSurfaces
       )
     }
+
+    var rpcAnsweringWith: [String: String] = [:]
+    for method in methods {
+      if let already = rpcAnsweringWith[method.answerTypeName] {
+        throw EndpointTableError.oneAnswerForTwoRPCs(
+          service: service.name,
+          answer: method.answerTypeName,
+          first: already,
+          second: method.protoName
+        )
+      }
+      rpcAnsweringWith[method.answerTypeName] = method.protoName
+    }
   }
 
   var swiftSource: String {
-    rpcEnumSource + pathParameterEnumSource + endpointEnumSource
+    rpcEnumSource + answerProtocolSource + pathParameterEnumSource + endpointEnumSource
+  }
+
+  /// What ties a response message to the one rpc that returns it.
+  ///
+  /// A server registers a handler by the message it answers with, so there is no second thing to
+  /// name and nothing to pair wrongly. Wiring Follow's route to Unfollow's code was a matter of
+  /// typing before this, caught by no test, and is a type error after it.
+  private var answerProtocolSource: String {
+    var out = """
+
+      /// The response to one rpc on `\(name)`.
+      ///
+      /// Every rpc returns its own message, and the message says which rpc it answers. A server
+      /// registers a handler by its return type and reads the verb, the path, the audience and
+      /// the plan gate from here, so no route is paired with the code answering it by hand.
+      public protocol \(typePrefix)\(name)Answer: SwiftProtobuf.Message {
+
+        /// The rpc this message is the response to.
+        static var rpc: \(typePrefix)\(name)RPC { get }
+      }
+
+      """
+    for method in methods {
+      out += """
+
+        extension \(method.answerTypeName): \(typePrefix)\(name)Answer {
+          public static var rpc: \(typePrefix)\(name)RPC { .\(method.caseName) }
+        }
+
+        """
+    }
+    return out
   }
 
   /// Every `{brace}` name any rpc on this service declares, in the order they first appear.

@@ -10,6 +10,12 @@ struct EmittedMethod {
   let pathTemplate: String
   let audienceCaseName: String
 
+  /// The generated Swift type this rpc returns.
+  ///
+  /// What makes the pairing of an rpc to the code answering it checkable: a handler is registered
+  /// by the message it returns, and that message names one rpc.
+  let answerTypeName: String
+
   /// Absent for an rpc every plan includes. Unlike a route, saying nothing is a complete answer
   /// here — it is the same statement as naming no surface.
   let planGateCaseName: String?
@@ -19,6 +25,7 @@ struct EmittedMethod {
   /// nowhere.
   init(
     method: MethodDescriptor,
+    namer: SwiftProtobufNamer,
     verbs: EnumCaseNames,
     audiences: EnumCaseNames,
     planSurfaces: EnumCaseNames
@@ -33,11 +40,18 @@ struct EmittedMethod {
         method: method.name
       )
     }
+    guard let answer = method.outputType else {
+      throw EndpointTableError.answerlessRPC(
+        service: method.service.name,
+        method: method.name
+      )
+    }
     protoName = method.name
     caseName = method.name.lowerCasedFirstCharacter
     verbCaseName = try verbs.caseName(forValue: Int32(verb.rawValue))
     pathTemplate = path
     audienceCaseName = try audiences.caseName(forValue: Int32(audience.rawValue))
+    answerTypeName = namer.fullName(message: answer)
 
     if let gate = method.options.getExtensionValue(ext: DRExtensions_plan_gate) {
       planGateCaseName = try planSurfaces.caseName(forValue: Int32(gate.rawValue))
