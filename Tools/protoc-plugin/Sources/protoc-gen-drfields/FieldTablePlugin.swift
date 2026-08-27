@@ -28,6 +28,13 @@ struct FieldTablePlugin: CodeGenerator {
     [.proto3Optional]
   }
 
+  /// protoc surfaces `(gates)` as a decoded value only because it is declared here. Undeclared, a
+  /// field naming its surface reads as a field naming nothing, and what this emits from it is
+  /// simply not emitted — which is what happened the first time.
+  var customOptionExtensions: [any AnyMessageExtension] {
+    contractOptionExtensions
+  }
+
   func generate(
     files: [FileDescriptor],
     parameter: any CodeGeneratorParameter,
@@ -36,8 +43,11 @@ struct FieldTablePlugin: CodeGenerator {
   ) throws {
     let namer = SwiftProtobufNamer()
     for file in files {
-      let tables = file.messages.compactMap { message in
-        EmittedFieldTable(message: message, namer: namer)
+      var tables: [EmittedFieldTable] = []
+      for message in file.messages {
+        if let table = try EmittedFieldTable(message: message, namer: namer) {
+          tables.append(table)
+        }
       }
       if tables.isEmpty {
         continue

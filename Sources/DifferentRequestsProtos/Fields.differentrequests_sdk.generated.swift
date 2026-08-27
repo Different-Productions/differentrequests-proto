@@ -69,6 +69,25 @@ extension DRAppConfig {
   }
 }
 
+extension DRAppConfig {
+  /// Whether this config includes a surface.
+  ///
+  /// Generated from the fields that name one, so the flag a surface is answered against is
+  /// the flag the schema says answers for it — on every side that asks.
+  ///
+  /// An unspecified or unrecognized surface is not included. A tenant whose entitlement
+  /// cannot be identified is served the tier that costs them nothing rather than handed a
+  /// surface, which is the same reading an unknown plan gets.
+  public func includes(_ surface: DRPlanSurface) -> Bool {
+    switch surface {
+    case .roadmap: return roadmapEnabled
+    case .changelog: return changelogEnabled
+    case .comments: return commentsEnabled
+    case .unspecified, .UNRECOGNIZED: return false
+    }
+  }
+}
+
 extension DRGetConfigResponse {
   /// This message's field names, as the schema spells them. What a query key or a form field
   /// has to be called.

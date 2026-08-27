@@ -60,6 +60,17 @@ extend google.protobuf.MethodOptions {
   PlanSurface plan_gate = 51246;
 }
 
+// Which surface an AppConfig flag decides.
+//
+// The rpc names a surface and the flag names the same surface, so the question
+// "does this tenant have it" has one answer generated from both halves rather than
+// a switch written once in the server and again in the SDK — which is what was
+// there, and which had already drifted: the server's covered two surfaces and the
+// SDK's covered three.
+extend google.protobuf.FieldOptions {
+  PlanSurface gates = 51247;
+}
+
 // How an enum value is spelled when it appears in a URL.
 //
 // A value that rides in a query parameter needs a spelling, and that spelling has

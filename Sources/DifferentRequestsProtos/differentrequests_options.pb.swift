@@ -251,6 +251,24 @@ extension SwiftProtobuf.Google_Protobuf_EnumValueOptions {
   }
 }
 
+extension SwiftProtobuf.Google_Protobuf_FieldOptions {
+
+  public var DRgates: DRPlanSurface {
+    get {return getExtensionValue(ext: DRExtensions_gates) ?? .unspecified}
+    set {setExtensionValue(ext: DRExtensions_gates, value: newValue)}
+  }
+  /// Returns true if extension `DRExtensions_gates`
+  /// has been explicitly set.
+  public var hasDRgates: Bool {
+    return hasExtensionValue(ext: DRExtensions_gates)
+  }
+  /// Clears the value of extension `DRExtensions_gates`.
+  /// Subsequent reads from it will return its default value.
+  public mutating func clearDRgates() {
+    clearExtensionValue(ext: DRExtensions_gates)
+  }
+}
+
 extension SwiftProtobuf.Google_Protobuf_MethodOptions {
 
   public var DRrouteMethod: DRHttpMethod {
@@ -332,6 +350,7 @@ public let DRDifferentrequestsOptions_Extensions: SwiftProtobuf.SimpleExtensionM
   DRExtensions_route_path,
   DRExtensions_route_audience,
   DRExtensions_plan_gate,
+  DRExtensions_gates,
   DRExtensions_url_token,
   DRExtensions_token
 ]
@@ -364,6 +383,11 @@ public let DRExtensions_route_audience = SwiftProtobuf.MessageExtension<SwiftPro
 public let DRExtensions_plan_gate = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalEnumExtensionField<DRPlanSurface>, SwiftProtobuf.Google_Protobuf_MethodOptions>(
   _protobuf_fieldNumber: 51246,
   fieldName: "differentrequests.v1.plan_gate"
+)
+
+public let DRExtensions_gates = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalEnumExtensionField<DRPlanSurface>, SwiftProtobuf.Google_Protobuf_FieldOptions>(
+  _protobuf_fieldNumber: 51247,
+  fieldName: "differentrequests.v1.gates"
 )
 
 public let DRExtensions_url_token = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalExtensionField<SwiftProtobuf.ProtobufString>, SwiftProtobuf.Google_Protobuf_EnumValueOptions>(

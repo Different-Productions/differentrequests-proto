@@ -9,9 +9,12 @@ name: Regenerate and diff
 # is fetched at a fixed version here. protoc renders the descriptors the plugin
 # consumes, so an unpinned protoc moves the output on its own.
 #
-# Runs on GitHub-hosted Linux rather than the arvis runners: this repo builds no
-# Apple-platform product and deploys nothing, so it has no reason to take a slot
-# on a serial macOS runner that the server and the CMS queue behind.
+# Runs on the arvis pool, like everything else in this org. It was on GitHub-hosted
+# Linux to keep off a serial runner the server and the CMS queue behind — but the
+# pool is not the serial lane: `arvis-pool` is both machines, and `backlog-serial`
+# is the label that actually serializes. Off the pool this repo burnt hosted
+# minutes for a check that a machine we already own was sitting idle to run, and
+# when those minutes ran out the job did not fail — it simply never queued.
 
 on:
   push:
@@ -23,23 +26,26 @@ env:
 
 jobs:
   regenerate-and-diff:
-    runs-on: ubuntu-latest
-    container: swift:6.3
-    # The container's default shell is dash, which has no `set -o pipefail`.
-    defaults:
-      run:
-        shell: bash
+    runs-on: [self-hosted, macOS, ARM64, arvis-pool]
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install pinned protoc
+      # Fetched at a pinned version into the workspace rather than installed: protoc renders the
+      # descriptors every plugin here consumes, so an ambient one moves the committed output on its
+      # own. Kept out of the runner's shared PATH for the same reason the toolchain is pinned —
+      # this repo's check must not depend on what another job left installed.
+      - name: Fetch pinned protoc
         run: |
           set -euo pipefail
-          apt-get update && apt-get install -y --no-install-recommends unzip curl
-          curl -fsSL -o /tmp/protoc.zip \
-            "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip"
-          unzip -q /tmp/protoc.zip -d /usr/local
+          curl -fsSL -o "${RUNNER_TEMP}/protoc.zip" \
+            "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-osx-aarch_64.zip"
+          unzip -oq "${RUNNER_TEMP}/protoc.zip" -d "${RUNNER_TEMP}/protoc"
+          echo "${RUNNER_TEMP}/protoc/bin" >> "$GITHUB_PATH"
+
+      - name: Report the toolchain this run pinned
+        run: |
           protoc --version
+          swift --version
 
       - name: Build the library
         run: swift build
@@ -60,7 +66,12 @@ jobs:
       # One script and one step: every generator is a protoc plugin, so protoc drives all
       # of them from a single parse. The vocabulary needed its own script and its own
       # descriptor set while it read one; it is a plugin now and comes out of this run.
+      # PROTOC names the pinned binary outright. generate.sh prepends /opt/homebrew/bin to PATH, so
+      # a `protoc` resolved by name would be whichever one this machine happens to carry — which is
+      # the thing the pin exists to stop.
       - name: Regenerate
+        env:
+          PROTOC: ${{ runner.temp }}/protoc/bin/protoc
         run: ./Scripts/generate.sh
 
       - name: Fail if committed output differs from a fresh run

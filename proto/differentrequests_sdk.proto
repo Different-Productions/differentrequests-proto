@@ -156,12 +156,12 @@ message AppConfig {
   //
   // These are the flags the rpcs declaring `(plan_gate)` are answered against, so
   // what this advertises and what those rpcs do cannot disagree.
-  bool roadmap_enabled = 2;
-  bool changelog_enabled = 3;
+  bool roadmap_enabled = 2 [(gates) = PLAN_SURFACE_ROADMAP];
+  bool changelog_enabled = 3 [(gates) = PLAN_SURFACE_CHANGELOG];
 
   // Whether comments are accepted on this app's requests. Free on every plan;
   // off when the tenant has chosen not to moderate a discussion.
-  bool comments_enabled = 4;
+  bool comments_enabled = 4 [(gates) = PLAN_SURFACE_COMMENTS];
 
   // Whether the SDK renders "Powered by DifferentRequests". True on Free.
   bool show_badge = 5;

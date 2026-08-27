@@ -9,11 +9,15 @@ struct EmittedFieldTable {
   let fieldNames: [String]
   let oneofs: [EmittedOneof]
 
+  /// Absent unless a field names the surface it decides.
+  let gates: EmittedGates?
+
   /// A message that declares no fields has no table to emit, so it is not one of these.
-  init?(message: Descriptor, namer: SwiftProtobufNamer) {
+  init?(message: Descriptor, namer: SwiftProtobufNamer) throws {
     if message.fields.isEmpty {
       return nil
     }
+    gates = try EmittedGates(message: message, namer: namer)
     let name = namer.fullName(message: message)
     typeName = name
     fieldNames = message.fields.map(\.name)
@@ -41,6 +45,9 @@ struct EmittedFieldTable {
       """
     for oneof in oneofs {
       out += oneof.swiftSource(messageTypeName: typeName)
+    }
+    if let gates {
+      out += gates.swiftSource
     }
     return out
   }
