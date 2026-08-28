@@ -244,8 +244,8 @@ message FeatureRequest {
   string title = 4;
   string body = 5;
 
-  // A status, a decline and a duplicate target as three independent fields, with
-  // "set only when" written between them in prose. Every disagreement was a
+  // A status, a decline and a `merged_into_request_id` as three independent fields,
+  // with "set only when" written between them in prose. Every disagreement was a
   // legal message: shipped carrying a refusal, declined carrying no reason at
   // all, open pointing at a request it had been folded into. `state` below is
   // the same information as one arm, where none of those can be spelled.
@@ -389,8 +389,8 @@ message Notification {
   string id = 1;
   string user_id = 2;
 
-  // A kind, a status and a duplicate target as three independent fields, with
-  // "for STATUS_CHANGED" and "for REQUEST_DUPLICATE" written between them in prose.
+  // A kind, a status and a `merged_into_request_id` as three independent fields,
+  // with "for STATUS_CHANGED" and "for REQUEST_MERGED" written between them in prose.
   // `news` below is the same information as one arm, where a kind cannot carry
   // another kind's payload.
   reserved 3, 6, 7;
