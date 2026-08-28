@@ -150,6 +150,7 @@ extension DRGetRequestResponse {
   /// has to be called.
   public enum Field {
     public static let request = "request"
+    public static let duplicates = "duplicates"
   }
 }
 

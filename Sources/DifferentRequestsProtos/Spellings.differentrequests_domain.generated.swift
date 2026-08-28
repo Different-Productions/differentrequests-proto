@@ -40,7 +40,7 @@ extension DRRequestStatus {
     case .inProgress: return "in-progress"
     case .shipped: return "shipped"
     case .declined: return "declined"
-    case .merged: return "merged"
+    case .duplicate: return "duplicate"
     default: return nil
     }
   }
@@ -56,7 +56,7 @@ extension DRRequestStatus {
     case "in-progress": self = .inProgress
     case "shipped": self = .shipped
     case "declined": self = .declined
-    case "merged": self = .merged
+    case "duplicate": self = .duplicate
     default: return nil
     }
   }

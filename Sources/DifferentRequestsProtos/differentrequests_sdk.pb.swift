@@ -134,7 +134,7 @@ public struct DRNotFound: Sendable {
 }
 
 /// The request exists and its current state does not allow what was asked — moving
-/// a request that has been merged away.
+/// a request already marked a duplicate of another.
 ///
 /// Not InvalidArgument: every argument was well formed and the caller is not the one
 /// who is wrong. Not Conflict: nothing raced, and asking again changes nothing.
@@ -475,8 +475,8 @@ public struct DRListRequestsRequest: Sendable {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  /// Empty means every status except MERGED — a merged request is not a board
-  /// item. Passing MERGED explicitly is an INVALID_ARGUMENT rather than an empty
+  /// Empty means every status except DUPLICATE — a duplicate is not a board
+  /// item. Passing DUPLICATE explicitly is an INVALID_ARGUMENT rather than an empty
   /// page, because a caller asking for it has misunderstood the model.
   public var statuses: [DRRequestStatus] = []
 
@@ -543,6 +543,11 @@ public struct DRGetRequestResponse: Sendable {
   public var hasRequest: Bool {return self._request != nil}
   /// Clears the value of `request`. Subsequent reads from it will return its default value.
   public mutating func clearRequest() {self._request = nil}
+
+  /// Every request folded into this one, newest first. Present on the detail read
+  /// and nowhere else: a board row says how many there are, and the list of them
+  /// is only worth a read when somebody has opened the thing they point at.
+  public var duplicates: [DRFeatureRequest] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1744,7 +1749,7 @@ extension DRGetRequestRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
 
 extension DRGetRequestResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GetRequestResponse"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}request\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}request\0\u{1}duplicates\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1753,6 +1758,7 @@ extension DRGetRequestResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularMessageField(value: &self._request) }()
+      case 2: try { try decoder.decodeRepeatedMessageField(value: &self.duplicates) }()
       default: break
       }
     }
@@ -1766,11 +1772,15 @@ extension DRGetRequestResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     try { if let v = self._request {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
     } }()
+    if !self.duplicates.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.duplicates, fieldNumber: 2)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: DRGetRequestResponse, rhs: DRGetRequestResponse) -> Bool {
     if lhs._request != rhs._request {return false}
+    if lhs.duplicates != rhs.duplicates {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

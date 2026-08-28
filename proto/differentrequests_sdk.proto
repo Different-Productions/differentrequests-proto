@@ -65,7 +65,7 @@ message PermissionDenied {}
 message NotFound {}
 
 // The request exists and its current state does not allow what was asked — moving
-// a request that has been merged away.
+// a request already marked a duplicate of another.
 //
 // Not InvalidArgument: every argument was well formed and the caller is not the one
 // who is wrong. Not Conflict: nothing raced, and asking again changes nothing.
@@ -217,8 +217,8 @@ enum RequestSort {
 }
 
 message ListRequestsRequest {
-  // Empty means every status except MERGED — a merged request is not a board
-  // item. Passing MERGED explicitly is an INVALID_ARGUMENT rather than an empty
+  // Empty means every status except DUPLICATE — a duplicate is not a board
+  // item. Passing DUPLICATE explicitly is an INVALID_ARGUMENT rather than an empty
   // page, because a caller asking for it has misunderstood the model.
   repeated RequestStatus statuses = 1;
 
@@ -254,6 +254,11 @@ message GetRequestRequest {
 
 message GetRequestResponse {
   FeatureRequest request = 1;
+
+  // Every request folded into this one, newest first. Present on the detail read
+  // and nowhere else: a board row says how many there are, and the list of them
+  // is only worth a read when somebody has opened the thing they point at.
+  repeated FeatureRequest duplicates = 2;
 }
 
 message CreateRequestRequest {

@@ -140,12 +140,13 @@ enum RequestStatus {
   // reason reads as being ignored, so `decline` below is required in this state.
   REQUEST_STATUS_DECLINED = 5 [(url_token) = "declined"];
 
-  // Folded into another request, which now carries this one's votes.
-  // `merged_into_request_id` is required in this state and meaningless in every
-  // other. A merged request leaves the board but keeps answering on its own
-  // detail route, because someone holding a link to it should be told where
-  // their vote went rather than shown a 404.
-  REQUEST_STATUS_MERGED = 6 [(url_token) = "merged"];
+  // The same ask, already on the board. Its votes move to the request it
+  // duplicates, which is the whole point of saying so rather than declining it.
+  // `duplicate_of_request_id` is required in this state and meaningless in every
+  // other. A duplicate leaves the board but keeps answering on its own detail
+  // route, because someone holding a link to it should be told where their vote
+  // went rather than shown a 404.
+  REQUEST_STATUS_DUPLICATE = 6 [(url_token) = "duplicate"];
 }
 
 // A reusable reason a tenant declines things, defined once in the console.
@@ -207,12 +208,12 @@ message RequestInProgress {}
 // Built and released.
 message RequestShipped {}
 
-// Folded into another request, which now carries this one's votes.
-message RequestMerged {
-  // Required by this shape rather than by a comment, so a merge that names
-  // nowhere cannot be written. A merged request keeps answering on its own
-  // detail route so somebody holding a link is told where their vote went.
-  string into_request_id = 1;
+// The same ask as another request, which now carries this one's votes.
+message RequestDuplicate {
+  // Required by this shape rather than by a comment, so a duplicate that names
+  // nowhere cannot be written. A duplicate keeps answering on its own detail
+  // route so somebody holding a link is told where their vote went.
+  string duplicate_of_request_id = 1;
 }
 
 // The calling end user's own relationship to a request.
@@ -243,7 +244,7 @@ message FeatureRequest {
   string title = 4;
   string body = 5;
 
-  // A status, a decline and a merge target as three independent fields, with
+  // A status, a decline and a duplicate target as three independent fields, with
   // "set only when" written between them in prose. Every disagreement was a
   // legal message: shipped carrying a refusal, declined carrying no reason at
   // all, open pointing at a request it had been folded into. `state` below is
@@ -279,13 +280,19 @@ message FeatureRequest {
     RequestInProgress in_progress = 17;
     RequestShipped shipped = 18;
     RequestDecline declined = 19;
-    RequestMerged merged = 20;
+    RequestDuplicate duplicate = 20;
   }
 
   // When the request entered the state above. What "recently triaged" sorts on
   // and what the changelog reads. Distinct from updated_at, which also moves
   // when a vote lands.
   google.protobuf.Timestamp entered_state_at = 21;
+
+  // How many other requests were folded into this one, so a list can say a row
+  // answers for more people than its own vote count suggests. Counted rather
+  // than summed from a returned list, the same as the two counts above; the
+  // duplicates themselves come back on the detail read.
+  int32 duplicate_count = 22;
 }
 
 // Who wrote a comment, in the sense that decides how it is presented.
@@ -367,11 +374,11 @@ message StatusChangedNews {
 // Someone commented on a request you follow.
 message CommentAddedNews {}
 
-// A request you followed was folded into another.
-message RequestMergedNews {
+// A request you followed turned out to already be on the board.
+message RequestDuplicateNews {
   // Where the vote went, so a tap lands on the request that now holds it.
   // Required by this shape rather than by a comment.
-  string into_request_id = 1;
+  string duplicate_of_request_id = 1;
 }
 
 // One item in an end user's inbox.
@@ -382,8 +389,8 @@ message Notification {
   string id = 1;
   string user_id = 2;
 
-  // A kind, a status and a merge target as three independent fields, with "for
-  // STATUS_CHANGED" and "for REQUEST_MERGED" written between them in prose.
+  // A kind, a status and a duplicate target as three independent fields, with
+  // "for STATUS_CHANGED" and "for REQUEST_DUPLICATE" written between them in prose.
   // `news` below is the same information as one arm, where a kind cannot carry
   // another kind's payload.
   reserved 3, 6, 7;
@@ -404,7 +411,7 @@ message Notification {
   oneof news {
     StatusChangedNews status_changed = 10;
     CommentAddedNews comment_added = 11;
-    RequestMergedNews request_merged = 12;
+    RequestDuplicateNews request_duplicated = 12;
   }
 }
 

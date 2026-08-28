@@ -66,11 +66,11 @@ extension DRRequestDecline {
   }
 }
 
-extension DRRequestMerged {
+extension DRRequestDuplicate {
   /// This message's field names, as the schema spells them. What a query key or a form field
   /// has to be called.
   public enum Field {
-    public static let intoRequestId = "into_request_id"
+    public static let duplicateOfRequestId = "duplicate_of_request_id"
   }
 }
 
@@ -103,8 +103,9 @@ extension DRFeatureRequest {
     public static let inProgress = "in_progress"
     public static let shipped = "shipped"
     public static let declined = "declined"
-    public static let merged = "merged"
+    public static let duplicate = "duplicate"
     public static let enteredStateAt = "entered_state_at"
+    public static let duplicateCount = "duplicate_count"
   }
 }
 
@@ -120,7 +121,7 @@ extension DRFeatureRequest.OneOf_State {
     case .inProgress: return DRFeatureRequest.Field.inProgress
     case .shipped: return DRFeatureRequest.Field.shipped
     case .declined: return DRFeatureRequest.Field.declined
-    case .merged: return DRFeatureRequest.Field.merged
+    case .duplicate: return DRFeatureRequest.Field.duplicate
     }
   }
 }
@@ -168,11 +169,11 @@ extension DRStatusChangedNews {
   }
 }
 
-extension DRRequestMergedNews {
+extension DRRequestDuplicateNews {
   /// This message's field names, as the schema spells them. What a query key or a form field
   /// has to be called.
   public enum Field {
-    public static let intoRequestId = "into_request_id"
+    public static let duplicateOfRequestId = "duplicate_of_request_id"
   }
 }
 
@@ -188,7 +189,7 @@ extension DRNotification {
     public static let createdAt = "created_at"
     public static let statusChanged = "status_changed"
     public static let commentAdded = "comment_added"
-    public static let requestMerged = "request_merged"
+    public static let requestDuplicated = "request_duplicated"
   }
 }
 
@@ -201,7 +202,7 @@ extension DRNotification.OneOf_News {
     switch self {
     case .statusChanged: return DRNotification.Field.statusChanged
     case .commentAdded: return DRNotification.Field.commentAdded
-    case .requestMerged: return DRNotification.Field.requestMerged
+    case .requestDuplicated: return DRNotification.Field.requestDuplicated
     }
   }
 }

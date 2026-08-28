@@ -93,12 +93,13 @@ public enum DRRequestStatus: SwiftProtobuf.Enum, Swift.CaseIterable {
   /// reason reads as being ignored, so `decline` below is required in this state.
   case declined // = 5
 
-  /// Folded into another request, which now carries this one's votes.
-  /// `merged_into_request_id` is required in this state and meaningless in every
-  /// other. A merged request leaves the board but keeps answering on its own
-  /// detail route, because someone holding a link to it should be told where
-  /// their vote went rather than shown a 404.
-  case merged // = 6
+  /// The same ask, already on the board. Its votes move to the request it
+  /// duplicates, which is the whole point of saying so rather than declining it.
+  /// `duplicate_of_request_id` is required in this state and meaningless in every
+  /// other. A duplicate leaves the board but keeps answering on its own detail
+  /// route, because someone holding a link to it should be told where their vote
+  /// went rather than shown a 404.
+  case duplicate // = 6
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -113,7 +114,7 @@ public enum DRRequestStatus: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 3: self = .inProgress
     case 4: self = .shipped
     case 5: self = .declined
-    case 6: self = .merged
+    case 6: self = .duplicate
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -126,7 +127,7 @@ public enum DRRequestStatus: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .inProgress: return 3
     case .shipped: return 4
     case .declined: return 5
-    case .merged: return 6
+    case .duplicate: return 6
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -139,7 +140,7 @@ public enum DRRequestStatus: SwiftProtobuf.Enum, Swift.CaseIterable {
     .inProgress,
     .shipped,
     .declined,
-    .merged,
+    .duplicate,
   ]
 
 }
@@ -463,16 +464,16 @@ public struct DRRequestShipped: Sendable {
   public init() {}
 }
 
-/// Folded into another request, which now carries this one's votes.
-public struct DRRequestMerged: Sendable {
+/// The same ask as another request, which now carries this one's votes.
+public struct DRRequestDuplicate: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  /// Required by this shape rather than by a comment, so a merge that names
-  /// nowhere cannot be written. A merged request keeps answering on its own
-  /// detail route so somebody holding a link is told where their vote went.
-  public var intoRequestID: String = String()
+  /// Required by this shape rather than by a comment, so a duplicate that names
+  /// nowhere cannot be written. A duplicate keeps answering on its own detail
+  /// route so somebody holding a link is told where their vote went.
+  public var duplicateOfRequestID: String = String()
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -630,12 +631,12 @@ public struct DRFeatureRequest: @unchecked Sendable {
     set {_uniqueStorage()._state = .declined(newValue)}
   }
 
-  public var merged: DRRequestMerged {
+  public var duplicate: DRRequestDuplicate {
     get {
-      if case .merged(let v)? = _storage._state {return v}
-      return DRRequestMerged()
+      if case .duplicate(let v)? = _storage._state {return v}
+      return DRRequestDuplicate()
     }
-    set {_uniqueStorage()._state = .merged(newValue)}
+    set {_uniqueStorage()._state = .duplicate(newValue)}
   }
 
   /// When the request entered the state above. What "recently triaged" sorts on
@@ -650,6 +651,15 @@ public struct DRFeatureRequest: @unchecked Sendable {
   /// Clears the value of `enteredStateAt`. Subsequent reads from it will return its default value.
   public mutating func clearEnteredStateAt() {_uniqueStorage()._enteredStateAt = nil}
 
+  /// How many other requests were folded into this one, so a list can say a row
+  /// answers for more people than its own vote count suggests. Counted rather
+  /// than summed from a returned list, the same as the two counts above; the
+  /// duplicates themselves come back on the detail read.
+  public var duplicateCount: Int32 {
+    get {return _storage._duplicateCount}
+    set {_uniqueStorage()._duplicateCount = newValue}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   /// Where this request sits, carrying what that answer means.
@@ -663,7 +673,7 @@ public struct DRFeatureRequest: @unchecked Sendable {
     case inProgress(DRRequestInProgress)
     case shipped(DRRequestShipped)
     case declined(DRRequestDecline)
-    case merged(DRRequestMerged)
+    case duplicate(DRRequestDuplicate)
 
   }
 
@@ -800,15 +810,15 @@ public struct DRCommentAddedNews: Sendable {
   public init() {}
 }
 
-/// A request you followed was folded into another.
-public struct DRRequestMergedNews: Sendable {
+/// A request you followed turned out to already be on the board.
+public struct DRRequestDuplicateNews: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   /// Where the vote went, so a tap lands on the request that now holds it.
   /// Required by this shape rather than by a comment.
-  public var intoRequestID: String = String()
+  public var duplicateOfRequestID: String = String()
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -873,12 +883,12 @@ public struct DRNotification: Sendable {
     set {news = .commentAdded(newValue)}
   }
 
-  public var requestMerged: DRRequestMergedNews {
+  public var requestDuplicated: DRRequestDuplicateNews {
     get {
-      if case .requestMerged(let v)? = news {return v}
-      return DRRequestMergedNews()
+      if case .requestDuplicated(let v)? = news {return v}
+      return DRRequestDuplicateNews()
     }
-    set {news = .requestMerged(newValue)}
+    set {news = .requestDuplicated(newValue)}
   }
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -889,7 +899,7 @@ public struct DRNotification: Sendable {
   public enum OneOf_News: Equatable, Sendable {
     case statusChanged(DRStatusChangedNews)
     case commentAdded(DRCommentAddedNews)
-    case requestMerged(DRRequestMergedNews)
+    case requestDuplicated(DRRequestDuplicateNews)
 
   }
 
@@ -1008,7 +1018,7 @@ extension DRPlan: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension DRRequestStatus: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0REQUEST_STATUS_UNSPECIFIED\0\u{1}REQUEST_STATUS_OPEN\0\u{1}REQUEST_STATUS_PLANNED\0\u{1}REQUEST_STATUS_IN_PROGRESS\0\u{1}REQUEST_STATUS_SHIPPED\0\u{1}REQUEST_STATUS_DECLINED\0\u{1}REQUEST_STATUS_MERGED\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0REQUEST_STATUS_UNSPECIFIED\0\u{1}REQUEST_STATUS_OPEN\0\u{1}REQUEST_STATUS_PLANNED\0\u{1}REQUEST_STATUS_IN_PROGRESS\0\u{1}REQUEST_STATUS_SHIPPED\0\u{1}REQUEST_STATUS_DECLINED\0\u{1}REQUEST_STATUS_DUPLICATE\0")
 }
 
 extension DRCommentAuthorRole: SwiftProtobuf._ProtoNameProviding {
@@ -1371,9 +1381,9 @@ extension DRRequestShipped: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
   }
 }
 
-extension DRRequestMerged: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  public static let protoMessageName: String = _protobuf_package + ".RequestMerged"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}into_request_id\0")
+extension DRRequestDuplicate: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".RequestDuplicate"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}duplicate_of_request_id\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1381,21 +1391,21 @@ extension DRRequestMerged: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularStringField(value: &self.intoRequestID) }()
+      case 1: try { try decoder.decodeSingularStringField(value: &self.duplicateOfRequestID) }()
       default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if !self.intoRequestID.isEmpty {
-      try visitor.visitSingularStringField(value: self.intoRequestID, fieldNumber: 1)
+    if !self.duplicateOfRequestID.isEmpty {
+      try visitor.visitSingularStringField(value: self.duplicateOfRequestID, fieldNumber: 1)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: DRRequestMerged, rhs: DRRequestMerged) -> Bool {
-    if lhs.intoRequestID != rhs.intoRequestID {return false}
+  public static func ==(lhs: DRRequestDuplicate, rhs: DRRequestDuplicate) -> Bool {
+    if lhs.duplicateOfRequestID != rhs.duplicateOfRequestID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1443,7 +1453,7 @@ extension DRViewerState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
 
 extension DRFeatureRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".FeatureRequest"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}app_id\0\u{1}author\0\u{1}title\0\u{1}body\0\u{4}\u{4}vote_count\0\u{3}comment_count\0\u{1}viewer\0\u{3}created_at\0\u{3}updated_at\0\u{2}\u{2}open\0\u{1}planned\0\u{3}in_progress\0\u{1}shipped\0\u{1}declined\0\u{1}merged\0\u{3}entered_state_at\0\u{b}status\0\u{b}decline\0\u{b}merged_into_request_id\0\u{b}status_changed_at\0\u{c}\u{6}\u{1}\u{c}\u{7}\u{1}\u{c}\u{8}\u{1}\u{c}\u{e}\u{1}")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}app_id\0\u{1}author\0\u{1}title\0\u{1}body\0\u{4}\u{4}vote_count\0\u{3}comment_count\0\u{1}viewer\0\u{3}created_at\0\u{3}updated_at\0\u{2}\u{2}open\0\u{1}planned\0\u{3}in_progress\0\u{1}shipped\0\u{1}declined\0\u{1}duplicate\0\u{3}entered_state_at\0\u{3}duplicate_count\0\u{b}status\0\u{b}decline\0\u{b}merged_into_request_id\0\u{b}status_changed_at\0\u{c}\u{6}\u{1}\u{c}\u{7}\u{1}\u{c}\u{8}\u{1}\u{c}\u{e}\u{1}")
 
   fileprivate class _StorageClass {
     var _id: String = String()
@@ -1458,6 +1468,7 @@ extension DRFeatureRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
     var _updatedAt: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
     var _state: DRFeatureRequest.OneOf_State?
     var _enteredStateAt: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
+    var _duplicateCount: Int32 = 0
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -1480,6 +1491,7 @@ extension DRFeatureRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
       _updatedAt = source._updatedAt
       _state = source._state
       _enteredStateAt = source._enteredStateAt
+      _duplicateCount = source._duplicateCount
     }
   }
 
@@ -1574,19 +1586,20 @@ extension DRFeatureRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
           }
         }()
         case 20: try {
-          var v: DRRequestMerged?
+          var v: DRRequestDuplicate?
           var hadOneofValue = false
           if let current = _storage._state {
             hadOneofValue = true
-            if case .merged(let m) = current {v = m}
+            if case .duplicate(let m) = current {v = m}
           }
           try decoder.decodeSingularMessageField(value: &v)
           if let v = v {
             if hadOneofValue {try decoder.handleConflictingOneOf()}
-            _storage._state = .merged(v)
+            _storage._state = .duplicate(v)
           }
         }()
         case 21: try { try decoder.decodeSingularMessageField(value: &_storage._enteredStateAt) }()
+        case 22: try { try decoder.decodeSingularInt32Field(value: &_storage._duplicateCount) }()
         default: break
         }
       }
@@ -1650,8 +1663,8 @@ extension DRFeatureRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
         guard case .declined(let v)? = _storage._state else { preconditionFailure() }
         try visitor.visitSingularMessageField(value: v, fieldNumber: 19)
       }()
-      case .merged?: try {
-        guard case .merged(let v)? = _storage._state else { preconditionFailure() }
+      case .duplicate?: try {
+        guard case .duplicate(let v)? = _storage._state else { preconditionFailure() }
         try visitor.visitSingularMessageField(value: v, fieldNumber: 20)
       }()
       case nil: break
@@ -1659,6 +1672,9 @@ extension DRFeatureRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
       try { if let v = _storage._enteredStateAt {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 21)
       } }()
+      if _storage._duplicateCount != 0 {
+        try visitor.visitSingularInt32Field(value: _storage._duplicateCount, fieldNumber: 22)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -1680,6 +1696,7 @@ extension DRFeatureRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
         if _storage._updatedAt != rhs_storage._updatedAt {return false}
         if _storage._state != rhs_storage._state {return false}
         if _storage._enteredStateAt != rhs_storage._enteredStateAt {return false}
+        if _storage._duplicateCount != rhs_storage._duplicateCount {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -1859,9 +1876,9 @@ extension DRCommentAddedNews: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
   }
 }
 
-extension DRRequestMergedNews: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  public static let protoMessageName: String = _protobuf_package + ".RequestMergedNews"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}into_request_id\0")
+extension DRRequestDuplicateNews: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".RequestDuplicateNews"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}duplicate_of_request_id\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1869,21 +1886,21 @@ extension DRRequestMergedNews: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularStringField(value: &self.intoRequestID) }()
+      case 1: try { try decoder.decodeSingularStringField(value: &self.duplicateOfRequestID) }()
       default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if !self.intoRequestID.isEmpty {
-      try visitor.visitSingularStringField(value: self.intoRequestID, fieldNumber: 1)
+    if !self.duplicateOfRequestID.isEmpty {
+      try visitor.visitSingularStringField(value: self.duplicateOfRequestID, fieldNumber: 1)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: DRRequestMergedNews, rhs: DRRequestMergedNews) -> Bool {
-    if lhs.intoRequestID != rhs.intoRequestID {return false}
+  public static func ==(lhs: DRRequestDuplicateNews, rhs: DRRequestDuplicateNews) -> Bool {
+    if lhs.duplicateOfRequestID != rhs.duplicateOfRequestID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1891,7 +1908,7 @@ extension DRRequestMergedNews: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
 
 extension DRNotification: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Notification"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}user_id\0\u{4}\u{2}request_id\0\u{3}request_title\0\u{4}\u{3}read_at\0\u{3}created_at\0\u{3}status_changed\0\u{3}comment_added\0\u{3}request_merged\0\u{b}kind\0\u{b}new_status\0\u{b}merged_into_request_id\0\u{c}\u{3}\u{1}\u{c}\u{6}\u{1}\u{c}\u{7}\u{1}")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}user_id\0\u{4}\u{2}request_id\0\u{3}request_title\0\u{4}\u{3}read_at\0\u{3}created_at\0\u{3}status_changed\0\u{3}comment_added\0\u{3}request_duplicated\0\u{b}kind\0\u{b}new_status\0\u{b}merged_into_request_id\0\u{c}\u{3}\u{1}\u{c}\u{6}\u{1}\u{c}\u{7}\u{1}")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1932,16 +1949,16 @@ extension DRNotification: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
         }
       }()
       case 12: try {
-        var v: DRRequestMergedNews?
+        var v: DRRequestDuplicateNews?
         var hadOneofValue = false
         if let current = self.news {
           hadOneofValue = true
-          if case .requestMerged(let m) = current {v = m}
+          if case .requestDuplicated(let m) = current {v = m}
         }
         try decoder.decodeSingularMessageField(value: &v)
         if let v = v {
           if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.news = .requestMerged(v)
+          self.news = .requestDuplicated(v)
         }
       }()
       default: break
@@ -1981,8 +1998,8 @@ extension DRNotification: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
       guard case .commentAdded(let v)? = self.news else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
     }()
-    case .requestMerged?: try {
-      guard case .requestMerged(let v)? = self.news else { preconditionFailure() }
+    case .requestDuplicated?: try {
+      guard case .requestDuplicated(let v)? = self.news else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 12)
     }()
     case nil: break
