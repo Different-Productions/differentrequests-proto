@@ -9,12 +9,10 @@ name: Regenerate and diff
 # is fetched at a fixed version here. protoc renders the descriptors the plugin
 # consumes, so an unpinned protoc moves the output on its own.
 #
-# Runs on the arvis pool, like everything else in this org. It was on GitHub-hosted
-# Linux to keep off a serial runner the server and the CMS queue behind — but the
-# pool is not the serial lane: `arvis-pool` is both machines, and `backlog-serial`
-# is the label that actually serializes. Off the pool this repo burnt hosted
-# minutes for a check that a machine we already own was sitting idle to run, and
-# when those minutes ran out the job did not fail — it simply never queued.
+# This repository is public, so it cannot run on the machines we own: anyone may open a
+# pull request, and a self-hosted runner would execute it. Standard GitHub-hosted runners
+# are free for public repositories. The runner must be Apple Silicon, because the protoc
+# pinned below is the osx-aarch_64 build.
 
 on:
   push:
@@ -26,7 +24,7 @@ env:
 
 jobs:
   regenerate-and-diff:
-    runs-on: [self-hosted, macOS, ARM64, arvis-pool]
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
 
