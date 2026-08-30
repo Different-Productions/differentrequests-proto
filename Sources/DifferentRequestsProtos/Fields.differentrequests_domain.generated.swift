@@ -8,7 +8,6 @@ extension DRTenant {
   public enum Field {
     public static let id = "id"
     public static let name = "name"
-    public static let plan = "plan"
     public static let createdAt = "created_at"
   }
 }
@@ -21,6 +20,7 @@ extension DRApp {
     public static let tenantId = "tenant_id"
     public static let name = "name"
     public static let createdAt = "created_at"
+    public static let plan = "plan"
   }
 }
 

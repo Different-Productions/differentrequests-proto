@@ -20,14 +20,14 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
-/// What a tenant is entitled to. Two tiers, deliberately: the intermediate tiers
+/// What an app is entitled to. Two tiers, deliberately: the intermediate tiers
 /// tracked previously described a product with no buyers.
 public enum DRPlan: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
   case unspecified // = 0
 
   /// Spelled because an operator names a plan on the command line when provisioning
-  /// a tenant. A value with no spelling cannot be named, which is what keeps the
+  /// an app. A value with no spelling cannot be named, which is what keeps the
   /// zero sentinel off the console.
   case free // = 1
   case pro // = 2
@@ -234,9 +234,10 @@ public enum DRPushEnvironment: SwiftProtobuf.Enum, Swift.CaseIterable {
 /// A billing and team boundary — one developer, or one company, who may own
 /// several apps.
 ///
-/// The plan lives here rather than on App because the customer relationship is
-/// with the developer: someone who ships three apps buys Pro once, and metering
-/// per app would make shipping a second app a pricing event.
+/// What is bought is an app, not the tenant. The price tapers with each app a
+/// tenant adds, so a second app costs less than the first rather than the same
+/// again, and the entitlement lives on App for that reason. A tenant holds any
+/// mix of paid and free apps.
 public struct DRTenant: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -245,8 +246,6 @@ public struct DRTenant: Sendable {
   public var id: String = String()
 
   public var name: String = String()
-
-  public var plan: DRPlan = .unspecified
 
   public var createdAt: SwiftProtobuf.Google_Protobuf_Timestamp {
     get {return _createdAt ?? SwiftProtobuf.Google_Protobuf_Timestamp()}
@@ -290,6 +289,12 @@ public struct DRApp: Sendable {
   public var hasCreatedAt: Bool {return self._createdAt != nil}
   /// Clears the value of `createdAt`. Subsequent reads from it will return its default value.
   public mutating func clearCreatedAt() {self._createdAt = nil}
+
+  /// What this app is entitled to, and the only thing GetConfig consults. An app
+  /// is both the unit of isolation and the unit of purchase, so both questions an
+  /// app key answers — which board, and which surfaces — are answered by the row
+  /// the key already resolves to.
+  public var plan: DRPlan = .unspecified
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1031,7 +1036,7 @@ extension DRPushEnvironment: SwiftProtobuf._ProtoNameProviding {
 
 extension DRTenant: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Tenant"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}name\0\u{1}plan\0\u{3}created_at\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}name\0\u{4}\u{2}created_at\0\u{b}plan\0\u{c}\u{3}\u{1}")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1041,7 +1046,6 @@ extension DRTenant: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.id) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self.name) }()
-      case 3: try { try decoder.decodeSingularEnumField(value: &self.plan) }()
       case 4: try { try decoder.decodeSingularMessageField(value: &self._createdAt) }()
       default: break
       }
@@ -1059,9 +1063,6 @@ extension DRTenant: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
     if !self.name.isEmpty {
       try visitor.visitSingularStringField(value: self.name, fieldNumber: 2)
     }
-    if self.plan != .unspecified {
-      try visitor.visitSingularEnumField(value: self.plan, fieldNumber: 3)
-    }
     try { if let v = self._createdAt {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
     } }()
@@ -1071,7 +1072,6 @@ extension DRTenant: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
   public static func ==(lhs: DRTenant, rhs: DRTenant) -> Bool {
     if lhs.id != rhs.id {return false}
     if lhs.name != rhs.name {return false}
-    if lhs.plan != rhs.plan {return false}
     if lhs._createdAt != rhs._createdAt {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
@@ -1080,7 +1080,7 @@ extension DRTenant: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
 
 extension DRApp: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".App"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}tenant_id\0\u{1}name\0\u{3}created_at\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}tenant_id\0\u{1}name\0\u{3}created_at\0\u{1}plan\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1092,6 +1092,7 @@ extension DRApp: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase
       case 2: try { try decoder.decodeSingularStringField(value: &self.tenantID) }()
       case 3: try { try decoder.decodeSingularStringField(value: &self.name) }()
       case 4: try { try decoder.decodeSingularMessageField(value: &self._createdAt) }()
+      case 5: try { try decoder.decodeSingularEnumField(value: &self.plan) }()
       default: break
       }
     }
@@ -1114,6 +1115,9 @@ extension DRApp: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase
     try { if let v = self._createdAt {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
     } }()
+    if self.plan != .unspecified {
+      try visitor.visitSingularEnumField(value: self.plan, fieldNumber: 5)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1122,6 +1126,7 @@ extension DRApp: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase
     if lhs.tenantID != rhs.tenantID {return false}
     if lhs.name != rhs.name {return false}
     if lhs._createdAt != rhs._createdAt {return false}
+    if lhs.plan != rhs.plan {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

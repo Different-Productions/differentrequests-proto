@@ -35,23 +35,26 @@ option swift_prefix = "DR";
 // A billing and team boundary — one developer, or one company, who may own
 // several apps.
 //
-// The plan lives here rather than on App because the customer relationship is
-// with the developer: someone who ships three apps buys Pro once, and metering
-// per app would make shipping a second app a pricing event.
+// What is bought is an app, not the tenant. The price tapers with each app a
+// tenant adds, so a second app costs less than the first rather than the same
+// again, and the entitlement lives on App for that reason. A tenant holds any
+// mix of paid and free apps.
 message Tenant {
+  reserved 3;
+  reserved "plan";
+
   string id = 1;
   string name = 2;
-  Plan plan = 3;
   google.protobuf.Timestamp created_at = 4;
 }
 
-// What a tenant is entitled to. Two tiers, deliberately: the intermediate tiers
+// What an app is entitled to. Two tiers, deliberately: the intermediate tiers
 // tracked previously described a product with no buyers.
 enum Plan {
   PLAN_UNSPECIFIED = 0;
 
   // Spelled because an operator names a plan on the command line when provisioning
-  // a tenant. A value with no spelling cannot be named, which is what keeps the
+  // an app. A value with no spelling cannot be named, which is what keeps the
   // zero sentinel off the console.
   PLAN_FREE = 1 [(url_token) = "free"];
   PLAN_PRO = 2 [(url_token) = "pro"];
@@ -69,6 +72,12 @@ message App {
   string tenant_id = 2;
   string name = 3;
   google.protobuf.Timestamp created_at = 4;
+
+  // What this app is entitled to, and the only thing GetConfig consults. An app
+  // is both the unit of isolation and the unit of purchase, so both questions an
+  // app key answers — which board, and which surfaces — are answered by the row
+  // the key already resolves to.
+  Plan plan = 5;
 }
 
 // A person inside a host app, identified without ever signing up.
