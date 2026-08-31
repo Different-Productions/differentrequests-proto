@@ -96,23 +96,6 @@ extend google.protobuf.EnumValueOptions {
   string token = 51242;
 }
 
-// What one step of the price costs per month, in cents.
-//
-// Cents rather than dollars, because money in a floating-point number is money
-// that eventually does not add up, and price-gen emits an Int.
-//
-// *Marginal*, not cumulative: each step is what that app adds, so a total is a sum
-// and there is no step to add when a tenant buys a seventh app. Cumulative totals
-// would need one value per count forever, and the day one of them disagreed with
-// the sum nothing would say which was right.
-//
-// It is here, on the value, for the reason every other option is: the server that
-// charges, the console that quotes and the page that advertises are three copies of
-// one number the moment it is typed anywhere but the schema.
-extend google.protobuf.EnumValueOptions {
-  int32 monthly_cents = 51248;
-}
-
 // The *minimum* credential a caller must present. Every rpc names exactly one;
 // there is no "any" and no default, so an rpc that forgets to say is a generator
 // error rather than an open endpoint.

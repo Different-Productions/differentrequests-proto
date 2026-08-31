@@ -64,73 +64,6 @@ public enum DRPlan: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 }
 
-/// What each paid app a tenant owns adds to their monthly bill.
-///
-/// The customer is a one-person studio with several apps. Charging per app is how
-/// they already think about it, and the taper is what stops the second app being
-/// the same decision as the first: it costs less than the one before, and by the
-/// fifth it is a rounding error. Six apps is $69 here against $174 at Nolt.
-///
-/// Each value is what *that* app adds, so a tenant's bill is a sum and there is
-/// nothing to add to this list when somebody buys a seventh app. Free apps are not
-/// steps — they cost nothing and a tenant may hold any mix.
-///
-/// The zero sentinel carries no price, which is what keeps it out of a total: a
-/// step with no `monthly_cents` cannot be charged, rather than charging nothing.
-public enum DRPriceStep: SwiftProtobuf.Enum, Swift.CaseIterable {
-  public typealias RawValue = Int
-  case unspecified // = 0
-  case first // = 1
-  case second // = 2
-  case third // = 3
-  case fourth // = 4
-
-  /// Every paid app past the fourth, at the price the fourth settled on. One value
-  /// rather than a run of them, because the taper has stopped: a fifth value equal
-  /// to the fourth would be the first of an infinite list.
-  case eachAfter // = 5
-  case UNRECOGNIZED(Int)
-
-  public init() {
-    self = .unspecified
-  }
-
-  public init?(rawValue: Int) {
-    switch rawValue {
-    case 0: self = .unspecified
-    case 1: self = .first
-    case 2: self = .second
-    case 3: self = .third
-    case 4: self = .fourth
-    case 5: self = .eachAfter
-    default: self = .UNRECOGNIZED(rawValue)
-    }
-  }
-
-  public var rawValue: Int {
-    switch self {
-    case .unspecified: return 0
-    case .first: return 1
-    case .second: return 2
-    case .third: return 3
-    case .fourth: return 4
-    case .eachAfter: return 5
-    case .UNRECOGNIZED(let i): return i
-    }
-  }
-
-  // The compiler won't synthesize support with the UNRECOGNIZED case.
-  public static let allCases: [DRPriceStep] = [
-    .unspecified,
-    .first,
-    .second,
-    .third,
-    .fourth,
-    .eachAfter,
-  ]
-
-}
-
 /// Which kind of state a request is in, as a tag with nothing attached.
 ///
 /// This is what a caller *filters* by and what a roadmap groups by:
@@ -1087,10 +1020,6 @@ fileprivate let _protobuf_package = "differentrequests.v1"
 
 extension DRPlan: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0PLAN_UNSPECIFIED\0\u{1}PLAN_FREE\0\u{1}PLAN_PRO\0")
-}
-
-extension DRPriceStep: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0PRICE_STEP_UNSPECIFIED\0\u{1}PRICE_STEP_FIRST\0\u{1}PRICE_STEP_SECOND\0\u{1}PRICE_STEP_THIRD\0\u{1}PRICE_STEP_FOURTH\0\u{1}PRICE_STEP_EACH_AFTER\0")
 }
 
 extension DRRequestStatus: SwiftProtobuf._ProtoNameProviding {

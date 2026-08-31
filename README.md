@@ -108,7 +108,7 @@ The package identity is `differentrequests-proto`, so the product reference is
 ./Scripts/generate.sh        # rewrites Sources/DifferentRequestsProtos/
 ```
 
-Six generators run, all of them in `Tools/protoc-plugin`, and each emits something
+Five generators run, all of them in `Tools/protoc-plugin`, and each emits something
 `protoc-gen-swift` does not.
 
 - `protoc-gen-swift` — the message types.
@@ -123,12 +123,6 @@ Six generators run, all of them in `Tools/protoc-plugin`, and each emits somethi
 - `protoc-gen-drvocab` — values whose contract *is* their spelling: an HTTP header, an
   authorization scheme, a media type. protoc emits Int-backed enums, so the string a value
   carries when it leaves Swift has nowhere else to live.
-- `protoc-gen-drprices` — what each step of the price costs per month, in cents. Its own
-  generator rather than a third property on tokens-gen, because what a value is *called* and
-  what it *costs* change for different reasons: the server that charges, the console that
-  quotes and the page that advertises are three copies of one number the moment it is typed
-  anywhere but the schema, and the copy that drifts is found by a customer on their card.
-  The total is not emitted — summing a taper is behaviour, and belongs to whoever owns the bill.
 
 Every one of them is a protoc plugin, the shape `protoc-gen-swift` itself is: protoc parses
 the schema once and hands each of them descriptors. None opens a `.proto` file. A generator

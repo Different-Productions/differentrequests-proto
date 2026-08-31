@@ -75,7 +75,6 @@ ENDPOINTS_BIN=$(plugin_binary protoc-gen-drendpoints)
 TOKENS_BIN=$(plugin_binary protoc-gen-drtokens)
 FIELDS_BIN=$(plugin_binary protoc-gen-drfields)
 VOCAB_BIN=$(plugin_binary protoc-gen-drvocab)
-PRICES_BIN=$(plugin_binary protoc-gen-drprices)
 
 mkdir -p "$OUTPUT_PATH"
 
@@ -136,13 +135,5 @@ rm -rf "$OUTPUT_PATH/Vocabulary"
     --plugin=protoc-gen-drvocab="$VOCAB_BIN" \
     --drvocab_out="$OUTPUT_PATH" \
     "$PROTO_PATH/differentrequests_vocabulary.proto"
-
-# What each step of the price costs. The server that charges, the console that quotes and the page
-# that advertises are three copies of one number the moment it is typed anywhere but the schema.
-"$PROTOC" --proto_path="$PROTO_PATH" \
-    --proto_path="$PROTOC_INCLUDE" \
-    --plugin=protoc-gen-drprices="$PRICES_BIN" \
-    --drprices_out="$OUTPUT_PATH" \
-    "$PROTO_PATH/differentrequests_domain.proto"
 
 echo "Generated to $OUTPUT_PATH"
