@@ -29,7 +29,8 @@ let package = Package(
     .executable(name: "protoc-gen-drendpoints", targets: ["protoc-gen-drendpoints"]),
     .executable(name: "protoc-gen-drtokens", targets: ["protoc-gen-drtokens"]),
     .executable(name: "protoc-gen-drfields", targets: ["protoc-gen-drfields"]),
-    .executable(name: "protoc-gen-drvocab", targets: ["protoc-gen-drvocab"])
+    .executable(name: "protoc-gen-drvocab", targets: ["protoc-gen-drvocab"]),
+    .executable(name: "protoc-gen-drprices", targets: ["protoc-gen-drprices"])
   ],
   dependencies: [
     .package(url: "https://github.com/apple/swift-protobuf.git", exact: "1.33.3")
@@ -70,6 +71,14 @@ let package = Package(
     ),
     .executableTarget(
       name: "protoc-gen-drvocab",
+      dependencies: [
+        "ContractGeneration",
+        .product(name: "SwiftProtobuf", package: "swift-protobuf"),
+        .product(name: "SwiftProtobufPluginLibrary", package: "swift-protobuf")
+      ]
+    ),
+    .executableTarget(
+      name: "protoc-gen-drprices",
       dependencies: [
         "ContractGeneration",
         .product(name: "SwiftProtobuf", package: "swift-protobuf"),

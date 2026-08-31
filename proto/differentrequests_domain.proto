@@ -60,6 +60,33 @@ enum Plan {
   PLAN_PRO = 2 [(url_token) = "pro"];
 }
 
+// What each paid app a tenant owns adds to their monthly bill.
+//
+// The customer is a one-person studio with several apps. Charging per app is how
+// they already think about it, and the taper is what stops the second app being
+// the same decision as the first: it costs less than the one before, and by the
+// fifth it is a rounding error. Six apps is $69 here against $174 at Nolt.
+//
+// Each value is what *that* app adds, so a tenant's bill is a sum and there is
+// nothing to add to this list when somebody buys a seventh app. Free apps are not
+// steps — they cost nothing and a tenant may hold any mix.
+//
+// The zero sentinel carries no price, which is what keeps it out of a total: a
+// step with no `monthly_cents` cannot be charged, rather than charging nothing.
+enum PriceStep {
+  PRICE_STEP_UNSPECIFIED = 0;
+
+  PRICE_STEP_FIRST = 1 [(monthly_cents) = 2900];
+  PRICE_STEP_SECOND = 2 [(monthly_cents) = 1500];
+  PRICE_STEP_THIRD = 3 [(monthly_cents) = 1000];
+  PRICE_STEP_FOURTH = 4 [(monthly_cents) = 500];
+
+  // Every paid app past the fourth, at the price the fourth settled on. One value
+  // rather than a run of them, because the taper has stopped: a fifth value equal
+  // to the fourth would be the first of an infinite list.
+  PRICE_STEP_EACH_AFTER = 5 [(monthly_cents) = 500];
+}
+
 // One board, belonging to one tenant, embedded in one iOS app.
 //
 // The unit of isolation. Every request, user, vote, and comment below is scoped

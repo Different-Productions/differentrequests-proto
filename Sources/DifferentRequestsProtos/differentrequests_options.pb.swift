@@ -249,6 +249,21 @@ extension SwiftProtobuf.Google_Protobuf_EnumValueOptions {
   public mutating func clearDRtoken() {
     clearExtensionValue(ext: DRExtensions_token)
   }
+
+  public var DRmonthlyCents: Int32 {
+    get {return getExtensionValue(ext: DRExtensions_monthly_cents) ?? 0}
+    set {setExtensionValue(ext: DRExtensions_monthly_cents, value: newValue)}
+  }
+  /// Returns true if extension `DRExtensions_monthly_cents`
+  /// has been explicitly set.
+  public var hasDRmonthlyCents: Bool {
+    return hasExtensionValue(ext: DRExtensions_monthly_cents)
+  }
+  /// Clears the value of extension `DRExtensions_monthly_cents`.
+  /// Subsequent reads from it will return its default value.
+  public mutating func clearDRmonthlyCents() {
+    clearExtensionValue(ext: DRExtensions_monthly_cents)
+  }
 }
 
 extension SwiftProtobuf.Google_Protobuf_FieldOptions {
@@ -352,7 +367,8 @@ public let DRDifferentrequestsOptions_Extensions: SwiftProtobuf.SimpleExtensionM
   DRExtensions_plan_gate,
   DRExtensions_gates,
   DRExtensions_url_token,
-  DRExtensions_token
+  DRExtensions_token,
+  DRExtensions_monthly_cents
 ]
 
 // Extension Objects - The only reason these might be needed is when manually
@@ -398,6 +414,11 @@ public let DRExtensions_url_token = SwiftProtobuf.MessageExtension<SwiftProtobuf
 public let DRExtensions_token = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalExtensionField<SwiftProtobuf.ProtobufString>, SwiftProtobuf.Google_Protobuf_EnumValueOptions>(
   _protobuf_fieldNumber: 51242,
   fieldName: "differentrequests.v1.token"
+)
+
+public let DRExtensions_monthly_cents = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalExtensionField<SwiftProtobuf.ProtobufInt32>, SwiftProtobuf.Google_Protobuf_EnumValueOptions>(
+  _protobuf_fieldNumber: 51248,
+  fieldName: "differentrequests.v1.monthly_cents"
 )
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
