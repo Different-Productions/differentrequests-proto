@@ -32,22 +32,6 @@ option swift_prefix = "DR";
 // Ids are opaque strings. Their internal shape belongs to storage; a consumer
 // may only compare them for equality and echo them back.
 
-// A billing and team boundary — one developer, or one company, who may own
-// several apps.
-//
-// What is bought is an app, not the tenant. The price tapers with each app a
-// tenant adds, so a second app costs less than the first rather than the same
-// again, and the entitlement lives on App for that reason. A tenant holds any
-// mix of paid and free apps.
-message Tenant {
-  reserved 3;
-  reserved "plan";
-
-  string id = 1;
-  string name = 2;
-  google.protobuf.Timestamp created_at = 4;
-}
-
 // What an app is entitled to. Two tiers, deliberately: the intermediate tiers
 // tracked previously described a product with no buyers.
 enum Plan {
