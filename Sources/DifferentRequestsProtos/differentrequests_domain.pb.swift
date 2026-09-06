@@ -949,11 +949,24 @@ public struct DRChangelogEntry: Sendable {
   /// Clears the value of `publishedAt`. Subsequent reads from it will return its default value.
   public mutating func clearPublishedAt() {self._publishedAt = nil}
 
+  /// When the entry came into existence, which for a draft is when the request
+  /// it answers shipped. Always present, unlike published_at, so an entry can
+  /// be ordered and addressed before anybody has published it.
+  public var createdAt: SwiftProtobuf.Google_Protobuf_Timestamp {
+    get {return _createdAt ?? SwiftProtobuf.Google_Protobuf_Timestamp()}
+    set {_createdAt = newValue}
+  }
+  /// Returns true if `createdAt` has been explicitly set.
+  public var hasCreatedAt: Bool {return self._createdAt != nil}
+  /// Clears the value of `createdAt`. Subsequent reads from it will return its default value.
+  public mutating func clearCreatedAt() {self._createdAt = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _publishedAt: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
+  fileprivate var _createdAt: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
 }
 
 /// One column of the public roadmap.
@@ -2000,7 +2013,7 @@ extension DRDeviceRegistration: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
 
 extension DRChangelogEntry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ChangelogEntry"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}app_id\0\u{1}title\0\u{1}body\0\u{1}version\0\u{3}request_ids\0\u{3}published_at\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}app_id\0\u{1}title\0\u{1}body\0\u{1}version\0\u{3}request_ids\0\u{3}published_at\0\u{3}created_at\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2015,6 +2028,7 @@ extension DRChangelogEntry: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
       case 5: try { try decoder.decodeSingularStringField(value: &self.version) }()
       case 6: try { try decoder.decodeRepeatedStringField(value: &self.requestIds) }()
       case 7: try { try decoder.decodeSingularMessageField(value: &self._publishedAt) }()
+      case 8: try { try decoder.decodeSingularMessageField(value: &self._createdAt) }()
       default: break
       }
     }
@@ -2046,6 +2060,9 @@ extension DRChangelogEntry: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
     try { if let v = self._publishedAt {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
     } }()
+    try { if let v = self._createdAt {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2057,6 +2074,7 @@ extension DRChangelogEntry: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
     if lhs.version != rhs.version {return false}
     if lhs.requestIds != rhs.requestIds {return false}
     if lhs._publishedAt != rhs._publishedAt {return false}
+    if lhs._createdAt != rhs._createdAt {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

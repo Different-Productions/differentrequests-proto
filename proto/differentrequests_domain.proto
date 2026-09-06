@@ -452,6 +452,11 @@ message ChangelogEntry {
   // Absent while a draft. Presence is what makes an entry public, so an
   // unpublished entry is never a filter a caller can spell wrong.
   google.protobuf.Timestamp published_at = 7;
+
+  // When the entry came into existence, which for a draft is when the request
+  // it answers shipped. Always present, unlike published_at, so an entry can
+  // be ordered and addressed before anybody has published it.
+  google.protobuf.Timestamp created_at = 8;
 }
 
 // One column of the public roadmap.

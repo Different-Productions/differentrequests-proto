@@ -219,6 +219,7 @@ extension DRChangelogEntry {
     public static let version = "version"
     public static let requestIds = "request_ids"
     public static let publishedAt = "published_at"
+    public static let createdAt = "created_at"
   }
 }
 
