@@ -1,4 +1,4 @@
-// swift-tools-version:6.0
+// swift-tools-version:6.2
 import PackageDescription
 
 // The swift-protobuf requirement here is a range, not an exact pin: it is the
@@ -11,8 +11,8 @@ import PackageDescription
 let package = Package(
   name: "differentrequests-proto",
   platforms: [
-    .iOS(.v18),
-    .macOS(.v15)
+    .iOS(.v26),
+    .macOS(.v26)
   ],
   products: [
     .library(
