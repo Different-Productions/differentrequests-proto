@@ -96,6 +96,21 @@ extend google.protobuf.EnumValueOptions {
   string token = 51242;
 }
 
+// What a person is shown for this value, in US English.
+//
+// Prose, not an identifier: nothing matches on it, nothing sends it, and there is
+// no reading one back. It exists because two processes draw the same value at the
+// same person — the SDK draws a status badge in an inbox, and the server writes a
+// push alert about the same row — and words that disagree read as two different
+// events.
+//
+// Unlike `url_token`, every value of a labeled enum declares one, the zero value
+// included. A value with no label is an arm missing from an exhaustive switch, so
+// forgetting one fails the build rather than drawing a blank.
+extend google.protobuf.EnumValueOptions {
+  string label = 51248;
+}
+
 // The *minimum* credential a caller must present. Every rpc names exactly one;
 // there is no "any" and no default, so an rpc that forgets to say is a generator
 // error rather than an open endpoint.

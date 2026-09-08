@@ -5,10 +5,11 @@ import SwiftProtobufPluginLibrary
 
 /// One enum's spellings, ready to be written as a Swift extension.
 ///
-/// Two options declare a spelling and they mean different things. `(url_token)` is how a value is
+/// Three options declare a spelling and they mean different things. `(url_token)` is how a value is
 /// written inside a URL this API already serves — a query parameter's value. `(token)` is the exact
 /// string a value becomes when it leaves Swift for anything else: a verb on the wire, a header
-/// name. An enum may declare either, or both, and each becomes its own property.
+/// name. `(label)` is the word a person is shown. An enum may declare any of them, and each becomes
+/// its own property.
 struct EmittedTokenEnum {
   let typeName: String
   let spellings: [EmittedSpelling]
@@ -28,7 +29,7 @@ struct EmittedTokenEnum {
         EmittedSpelling(
           propertyName: "urlToken",
           documentation: "How this value is spelled in a URL.",
-          readBackDocumentation: "Reads a value back from its spelling in a URL.",
+          kind: .identifier(readBackDocumentation: "Reads a value back from its spelling in a URL."),
           cases: inURLs
         )
       )
@@ -44,8 +45,24 @@ struct EmittedTokenEnum {
         EmittedSpelling(
           propertyName: "token",
           documentation: "The exact string this value becomes when it leaves Swift.",
-          readBackDocumentation: "Reads a value back from the string it becomes.",
+          kind: .identifier(readBackDocumentation: "Reads a value back from the string it becomes."),
           cases: onTheWire
+        )
+      )
+    }
+
+    let shownToPeople = Self.cases(
+      of: enumDescriptor,
+      spelledBy: DRExtensions_label,
+      namer: namer
+    )
+    if let unknown = Self.labelOfZeroValue(in: enumDescriptor) {
+      found.append(
+        EmittedSpelling(
+          propertyName: "label",
+          documentation: "What a person is shown for this value.",
+          kind: .prose(whenUnrecognized: unknown),
+          cases: shownToPeople
         )
       )
     }
@@ -55,6 +72,17 @@ struct EmittedTokenEnum {
     }
     typeName = namer.fullName(enum: enumDescriptor)
     spellings = found
+  }
+
+  /// The word the zero value is drawn as, which is what an enum declares to be a labeled one.
+  ///
+  /// It is also the word a value this build has never heard of is drawn as: a status from a newer
+  /// server is, to this build, exactly the unspecified one.
+  private static func labelOfZeroValue(in enumDescriptor: EnumDescriptor) -> String? {
+    for value in enumDescriptor.values where value.number == 0 {
+      return value.options.getExtensionValue(ext: DRExtensions_label)
+    }
+    return nil
   }
 
   private static func cases(

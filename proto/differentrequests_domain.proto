@@ -115,23 +115,26 @@ message UserRef {
 // that fills up: "under review" is what an untriaged board looks like, and OPEN
 // already says that honestly.
 enum RequestStatus {
-  REQUEST_STATUS_UNSPECIFIED = 0;
+  // Labeled, unlike every other zero sentinel here, because a build that meets a
+  // status newer than itself still has to draw a badge and still has to write a
+  // push alert. This is the word both of them use.
+  REQUEST_STATUS_UNSPECIFIED = 0 [(label) = "Unknown"];
 
   // Submitted, not yet triaged. What every request starts as, and the queue a
   // triager works through.
-  REQUEST_STATUS_OPEN = 1 [(url_token) = "open"];
+  REQUEST_STATUS_OPEN = 1 [(url_token) = "open", (label) = "Open"];
 
   // Accepted, not started.
-  REQUEST_STATUS_PLANNED = 2 [(url_token) = "planned"];
+  REQUEST_STATUS_PLANNED = 2 [(url_token) = "planned", (label) = "Planned"];
 
-  REQUEST_STATUS_IN_PROGRESS = 3 [(url_token) = "in-progress"];
+  REQUEST_STATUS_IN_PROGRESS = 3 [(url_token) = "in-progress", (label) = "In Progress"];
 
   // Built and released. Terminal.
-  REQUEST_STATUS_SHIPPED = 4 [(url_token) = "shipped"];
+  REQUEST_STATUS_SHIPPED = 4 [(url_token) = "shipped", (label) = "Shipped"];
 
   // Refused, with a reason the author can read. Terminal. A decline with no
   // reason reads as being ignored, so `decline` below is required in this state.
-  REQUEST_STATUS_DECLINED = 5 [(url_token) = "declined"];
+  REQUEST_STATUS_DECLINED = 5 [(url_token) = "declined", (label) = "Declined"];
 
   // The same ask, already on the board. Its votes move to the request it
   // duplicates, which is the whole point of saying so rather than declining it.
@@ -139,7 +142,7 @@ enum RequestStatus {
   // other. A duplicate leaves the board but keeps answering on its own detail
   // route, because someone holding a link to it should be told where their vote
   // went rather than shown a 404.
-  REQUEST_STATUS_DUPLICATE = 6 [(url_token) = "duplicate"];
+  REQUEST_STATUS_DUPLICATE = 6 [(url_token) = "duplicate", (label) = "Duplicate"];
 }
 
 // A reusable reason a tenant declines things, defined once in the console.
@@ -372,6 +375,31 @@ message RequestDuplicateNews {
   // Where the vote went, so a tap lands on the request that now holds it.
   // Required by this shape rather than by a comment.
   string duplicate_of_request_id = 1;
+}
+
+// How one piece of news is headlined, in the words a person reads.
+//
+// Declared here because the same news is drawn at the same person twice, by two
+// processes: the SDK draws an inbox row, and the server writes the push alert
+// about that row. Words that disagree read as two separate events, and until this
+// enum existed each repository typed its own list with nothing comparing them.
+//
+// No field carries this value and none ever will — the arm of `Notification.news`
+// is what a reader branches on, and the compiler is what makes that exhaustive.
+// What this enum holds is the words, so that branching in two places still spells
+// them one way.
+//
+// STATUS_CHANGED is the word the headline *opens* with, and the status's own label
+// follows it: "Now Planned". The other three are whole headlines.
+enum NotificationHeadline {
+  // News from a server newer than the reader. It still happened and the request
+  // title still says what it happened to, so the row says that much rather than
+  // nothing.
+  NOTIFICATION_HEADLINE_UNSPECIFIED = 0 [(label) = "Updated"];
+
+  NOTIFICATION_HEADLINE_STATUS_CHANGED = 1 [(label) = "Now"];
+  NOTIFICATION_HEADLINE_COMMENT_ADDED = 2 [(label) = "New comment"];
+  NOTIFICATION_HEADLINE_REQUEST_DUPLICATED = 3 [(label) = "Already on the board"];
 }
 
 // One item in an end user's inbox.

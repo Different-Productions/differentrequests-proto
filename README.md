@@ -116,8 +116,12 @@ Five generators run, all of them in `Tools/protoc-plugin`, and each emits someth
   router from, carrying each rpc's verb, path template, and audience; and one enum whose
   cases carry the path parameters, so a client cannot construct a call without the ids its
   path needs. An rpc declaring no audience is a build failure rather than an open route.
-- `protoc-gen-drtokens` — how an enum value is spelled in a URL, and an initializer that
-  reads one back. A value with no declared spelling cannot be sent.
+- `protoc-gen-drtokens` — the strings an enum value spells. `(url_token)` and `(token)` are
+  identifiers something outside Swift matches on, so each is emitted optional with an
+  initializer that reads one back, and a value with no declared spelling cannot be sent.
+  `(label)` is prose a person reads, so it is emitted total with no initializer: every value
+  of a labeled enum declares one, and forgetting a value's label is a missing arm in an
+  exhaustive switch rather than a blank on somebody's screen.
 - `protoc-gen-drfields` — each message's field names as the schema spells them, so a query
   key is referenced rather than typed.
 - `protoc-gen-drvocab` — values whose contract *is* their spelling: an HTTP header, an

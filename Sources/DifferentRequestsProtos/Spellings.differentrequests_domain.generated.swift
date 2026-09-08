@@ -60,4 +60,37 @@ extension DRRequestStatus {
     default: return nil
     }
   }
+
+  /// What a person is shown for this value.
+  ///
+  /// Total: every value of this enum declares one, so there is nothing to fall back to and
+  /// no caller has to invent a word.
+  public var label: String {
+    switch self {
+    case .unspecified: return "Unknown"
+    case .`open`: return "Open"
+    case .planned: return "Planned"
+    case .inProgress: return "In Progress"
+    case .shipped: return "Shipped"
+    case .declined: return "Declined"
+    case .duplicate: return "Duplicate"
+    case .UNRECOGNIZED: return "Unknown"
+    }
+  }
+}
+
+extension DRNotificationHeadline {
+  /// What a person is shown for this value.
+  ///
+  /// Total: every value of this enum declares one, so there is nothing to fall back to and
+  /// no caller has to invent a word.
+  public var label: String {
+    switch self {
+    case .unspecified: return "Updated"
+    case .statusChanged: return "Now"
+    case .commentAdded: return "New comment"
+    case .requestDuplicated: return "Already on the board"
+    case .UNRECOGNIZED: return "Updated"
+    }
+  }
 }

@@ -76,6 +76,10 @@ public enum DRPlan: SwiftProtobuf.Enum, Swift.CaseIterable {
 /// already says that honestly.
 public enum DRRequestStatus: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
+
+  /// Labeled, unlike every other zero sentinel here, because a build that meets a
+  /// status newer than itself still has to draw a badge and still has to write a
+  /// push alert. This is the word both of them use.
   case unspecified // = 0
 
   /// Submitted, not yet triaged. What every request starts as, and the queue a
@@ -187,6 +191,66 @@ public enum DRCommentAuthorRole: SwiftProtobuf.Enum, Swift.CaseIterable {
     .unspecified,
     .user,
     .team,
+  ]
+
+}
+
+/// How one piece of news is headlined, in the words a person reads.
+///
+/// Declared here because the same news is drawn at the same person twice, by two
+/// processes: the SDK draws an inbox row, and the server writes the push alert
+/// about that row. Words that disagree read as two separate events, and until this
+/// enum existed each repository typed its own list with nothing comparing them.
+///
+/// No field carries this value and none ever will — the arm of `Notification.news`
+/// is what a reader branches on, and the compiler is what makes that exhaustive.
+/// What this enum holds is the words, so that branching in two places still spells
+/// them one way.
+///
+/// STATUS_CHANGED is the word the headline *opens* with, and the status's own label
+/// follows it: "Now Planned". The other three are whole headlines.
+public enum DRNotificationHeadline: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+
+  /// News from a server newer than the reader. It still happened and the request
+  /// title still says what it happened to, so the row says that much rather than
+  /// nothing.
+  case unspecified // = 0
+  case statusChanged // = 1
+  case commentAdded // = 2
+  case requestDuplicated // = 3
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .unspecified
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .unspecified
+    case 1: self = .statusChanged
+    case 2: self = .commentAdded
+    case 3: self = .requestDuplicated
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .unspecified: return 0
+    case .statusChanged: return 1
+    case .commentAdded: return 2
+    case .requestDuplicated: return 3
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [DRNotificationHeadline] = [
+    .unspecified,
+    .statusChanged,
+    .commentAdded,
+    .requestDuplicated,
   ]
 
 }
@@ -1009,6 +1073,10 @@ extension DRRequestStatus: SwiftProtobuf._ProtoNameProviding {
 
 extension DRCommentAuthorRole: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0COMMENT_AUTHOR_ROLE_UNSPECIFIED\0\u{1}COMMENT_AUTHOR_ROLE_USER\0\u{1}COMMENT_AUTHOR_ROLE_TEAM\0")
+}
+
+extension DRNotificationHeadline: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0NOTIFICATION_HEADLINE_UNSPECIFIED\0\u{1}NOTIFICATION_HEADLINE_STATUS_CHANGED\0\u{1}NOTIFICATION_HEADLINE_COMMENT_ADDED\0\u{1}NOTIFICATION_HEADLINE_REQUEST_DUPLICATED\0")
 }
 
 extension DRPushEnvironment: SwiftProtobuf._ProtoNameProviding {
