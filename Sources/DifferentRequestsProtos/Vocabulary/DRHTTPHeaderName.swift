@@ -15,4 +15,15 @@ public enum DRHTTPHeaderName: String, CaseIterable, Sendable {
   /// What a caller will accept back. Every response on this API is a serialized
   /// message, so this is sent on every request and never varies.
   case accept = "Accept"
+  /// Which build of the SDK is calling, and on what. Sent on every rpc.
+  ///
+  /// Shaped `differentrequests-swift/<version> (<platform> <os version>)`. It names the
+  /// library, never the person or the device: no identifier, nothing that survives an
+  /// install, nothing a second request could be joined to a first by.
+  ///
+  /// It exists because a released SDK carries its base URL in the binary, so two
+  /// hostnames are live in the wild at once and a failing request cannot otherwise say
+  /// which build sent it. Answering "you are on 0.4.2, which dials the old name" is the
+  /// difference between a support thread and a sentence.
+  case client = "X-DR-Client"
 }
