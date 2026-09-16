@@ -17,5 +17,6 @@ public let contractOptionExtensions: [any AnyMessageExtension] = [
   DRExtensions_route_audience,
   DRExtensions_plan_gate,
   DRExtensions_gates,
-  DRExtensions_max_characters
+  DRExtensions_max_characters,
+  DRExtensions_shown_on_a_board
 ]

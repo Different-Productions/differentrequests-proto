@@ -235,6 +235,21 @@ extension SwiftProtobuf.Google_Protobuf_EnumValueOptions {
     clearExtensionValue(ext: DRExtensions_url_token)
   }
 
+  public var DRshownOnABoard: Bool {
+    get {return getExtensionValue(ext: DRExtensions_shown_on_a_board) ?? false}
+    set {setExtensionValue(ext: DRExtensions_shown_on_a_board, value: newValue)}
+  }
+  /// Returns true if extension `DRExtensions_shown_on_a_board`
+  /// has been explicitly set.
+  public var hasDRshownOnABoard: Bool {
+    return hasExtensionValue(ext: DRExtensions_shown_on_a_board)
+  }
+  /// Clears the value of extension `DRExtensions_shown_on_a_board`.
+  /// Subsequent reads from it will return its default value.
+  public mutating func clearDRshownOnABoard() {
+    clearExtensionValue(ext: DRExtensions_shown_on_a_board)
+  }
+
   public var DRtoken: String {
     get {return getExtensionValue(ext: DRExtensions_token) ?? String()}
     set {setExtensionValue(ext: DRExtensions_token, value: newValue)}
@@ -393,6 +408,7 @@ public let DRDifferentrequestsOptions_Extensions: SwiftProtobuf.SimpleExtensionM
   DRExtensions_gates,
   DRExtensions_max_characters,
   DRExtensions_url_token,
+  DRExtensions_shown_on_a_board,
   DRExtensions_token,
   DRExtensions_label
 ]
@@ -450,6 +466,11 @@ public let DRExtensions_max_characters = SwiftProtobuf.MessageExtension<SwiftPro
 public let DRExtensions_url_token = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalExtensionField<SwiftProtobuf.ProtobufString>, SwiftProtobuf.Google_Protobuf_EnumValueOptions>(
   _protobuf_fieldNumber: 51241,
   fieldName: "differentrequests.v1.url_token"
+)
+
+public let DRExtensions_shown_on_a_board = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalExtensionField<SwiftProtobuf.ProtobufBool>, SwiftProtobuf.Google_Protobuf_EnumValueOptions>(
+  _protobuf_fieldNumber: 51250,
+  fieldName: "differentrequests.v1.shown_on_a_board"
 )
 
 public let DRExtensions_token = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalExtensionField<SwiftProtobuf.ProtobufString>, SwiftProtobuf.Google_Protobuf_EnumValueOptions>(

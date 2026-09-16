@@ -44,12 +44,19 @@ struct SpellingPlugin: CodeGenerator {
       let spelled = file.enums.compactMap { declared in
         EmittedTokenEnum(enumDescriptor: declared, namer: namer)
       }
-      if spelled.isEmpty {
+      let boards = file.enums.compactMap { declared in
+        EmittedBoardStates(enumDescriptor: declared, namer: namer)
+      }
+      if spelled.isEmpty, boards.isEmpty {
         continue
       }
       try generatorOutputs.add(
         fileName: "Spellings.\(file.baseName).generated.swift",
-        contents: SpellingFile(sourceFileName: file.name, spelledEnums: spelled).swiftSource
+        contents: SpellingFile(
+          sourceFileName: file.name,
+          spelledEnums: spelled,
+          boardStates: boards
+        ).swiftSource
       )
     }
   }

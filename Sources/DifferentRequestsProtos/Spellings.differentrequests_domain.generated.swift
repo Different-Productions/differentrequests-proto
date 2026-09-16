@@ -107,3 +107,34 @@ extension DRNotificationHeadline {
     }
   }
 }
+
+extension DRRequestStatus {
+  /// Whether a board can show requests in this state.
+  ///
+  /// The one fact behind both halves: a server refuses a filter naming a state that is not
+  /// shown, and a client offers exactly the states that are.
+  public var isShownOnABoard: Bool {
+    switch self {
+    case .`open`: return true
+    case .planned: return true
+    case .inProgress: return true
+    case .shipped: return true
+    case .declined: return true
+    case .unspecified: return false
+    case .duplicate: return false
+    case .UNRECOGNIZED: return false
+    }
+  }
+
+  /// Every state a board shows, in the order the schema declares them.
+  ///
+  /// What a filter bar is built from, so a state added to the schema appears without an edit
+  /// anywhere else.
+  public static let shownOnABoard: [DRRequestStatus] = [
+    .`open`,
+    .planned,
+    .inProgress,
+    .shipped,
+    .declined,
+  ]
+}

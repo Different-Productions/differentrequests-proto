@@ -132,19 +132,39 @@ enum RequestStatus {
 
   // Submitted, not yet triaged. What every request starts as, and the queue a
   // triager works through.
-  REQUEST_STATUS_OPEN = 1 [(url_token) = "open", (label) = "Open"];
+  REQUEST_STATUS_OPEN = 1 [
+    (url_token) = "open",
+    (label) = "Open",
+    (shown_on_a_board) = true
+  ];
 
   // Accepted, not started.
-  REQUEST_STATUS_PLANNED = 2 [(url_token) = "planned", (label) = "Planned"];
+  REQUEST_STATUS_PLANNED = 2 [
+    (url_token) = "planned",
+    (label) = "Planned",
+    (shown_on_a_board) = true
+  ];
 
-  REQUEST_STATUS_IN_PROGRESS = 3 [(url_token) = "in-progress", (label) = "In Progress"];
+  REQUEST_STATUS_IN_PROGRESS = 3 [
+    (url_token) = "in-progress",
+    (label) = "In Progress",
+    (shown_on_a_board) = true
+  ];
 
   // Built and released. Terminal.
-  REQUEST_STATUS_SHIPPED = 4 [(url_token) = "shipped", (label) = "Shipped"];
+  REQUEST_STATUS_SHIPPED = 4 [
+    (url_token) = "shipped",
+    (label) = "Shipped",
+    (shown_on_a_board) = true
+  ];
 
   // Refused, with a reason the author can read. Terminal. A decline with no
   // reason reads as being ignored, so `decline` below is required in this state.
-  REQUEST_STATUS_DECLINED = 5 [(url_token) = "declined", (label) = "Declined"];
+  REQUEST_STATUS_DECLINED = 5 [
+    (url_token) = "declined",
+    (label) = "Declined",
+    (shown_on_a_board) = true
+  ];
 
   // The same ask, already on the board. Its votes move to the request it
   // duplicates, which is the whole point of saying so rather than declining it.

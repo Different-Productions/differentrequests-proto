@@ -1,9 +1,13 @@
 import Foundation
 
-/// One generated Swift file: the do-not-edit banner and every enum's spellings in it.
+/// One generated Swift file: the do-not-edit banner, every enum's spellings in it, and what its
+/// values say about boards.
 struct SpellingFile {
   let sourceFileName: String
   let spelledEnums: [EmittedTokenEnum]
+
+  /// The enums whose values say whether a board shows them.
+  let boardStates: [EmittedBoardStates]
 
   var swiftSource: String {
     var out = """
@@ -14,6 +18,9 @@ struct SpellingFile {
       """
     for spelled in spelledEnums {
       out += spelled.swiftSource
+    }
+    for states in boardStates {
+      out += states.swiftSource
     }
     return out
   }

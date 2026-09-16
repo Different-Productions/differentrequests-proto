@@ -93,6 +93,23 @@ extend google.protobuf.EnumValueOptions {
   string url_token = 51241;
 }
 
+// Whether a board can show requests in this state.
+//
+// A board is what a person scrolls, and not every state belongs on one: a
+// duplicate has left the board for the request it was folded into, and asking a
+// board for it is asking for something that is not there. Only the server knew
+// that, so the SDK offered a filter the server refused every time — the filter
+// bar is built from the values that declare a `url_token`, which is deliberate
+// and is how a status added to the schema reaches the bar without an edit.
+//
+// Stated on the value, so the side that refuses and the side that offers read one
+// fact. Absent is false: a state is off the board unless it says otherwise, which
+// is the safer way round — a new state offered by mistake is a filter that fails,
+// and a new state left off is a filter somebody asks for.
+extend google.protobuf.EnumValueOptions {
+  bool shown_on_a_board = 51250;
+}
+
 // The exact token a value takes when it leaves Swift.
 //
 // protoc emits Int-backed enums, so a value whose contract *is* its spelling — an
