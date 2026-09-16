@@ -282,6 +282,31 @@ extension SwiftProtobuf.Google_Protobuf_FieldOptions {
   public mutating func clearDRgates() {
     clearExtensionValue(ext: DRExtensions_gates)
   }
+
+  /// The longest this text may be, in characters, counted the way a person counts.
+  ///
+  /// Declared on the field because both sides need the same number for different
+  /// reasons: the server refuses anything longer, and the SDK stops somebody at the
+  /// keyboard before they lose what they wrote. Written in each repository instead,
+  /// it is one limit with two numbers, and the day they differ a person is refused
+  /// for a length their composer said was fine.
+  ///
+  /// Absent means unbounded by the contract. The 64 KB body cap still stands behind
+  /// every field and bounds what is read at all.
+  public var DRmaxCharacters: UInt32 {
+    get {return getExtensionValue(ext: DRExtensions_max_characters) ?? 0}
+    set {setExtensionValue(ext: DRExtensions_max_characters, value: newValue)}
+  }
+  /// Returns true if extension `DRExtensions_max_characters`
+  /// has been explicitly set.
+  public var hasDRmaxCharacters: Bool {
+    return hasExtensionValue(ext: DRExtensions_max_characters)
+  }
+  /// Clears the value of extension `DRExtensions_max_characters`.
+  /// Subsequent reads from it will return its default value.
+  public mutating func clearDRmaxCharacters() {
+    clearExtensionValue(ext: DRExtensions_max_characters)
+  }
 }
 
 extension SwiftProtobuf.Google_Protobuf_MethodOptions {
@@ -366,6 +391,7 @@ public let DRDifferentrequestsOptions_Extensions: SwiftProtobuf.SimpleExtensionM
   DRExtensions_route_audience,
   DRExtensions_plan_gate,
   DRExtensions_gates,
+  DRExtensions_max_characters,
   DRExtensions_url_token,
   DRExtensions_token,
   DRExtensions_label
@@ -404,6 +430,21 @@ public let DRExtensions_plan_gate = SwiftProtobuf.MessageExtension<SwiftProtobuf
 public let DRExtensions_gates = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalEnumExtensionField<DRPlanSurface>, SwiftProtobuf.Google_Protobuf_FieldOptions>(
   _protobuf_fieldNumber: 51247,
   fieldName: "differentrequests.v1.gates"
+)
+
+/// The longest this text may be, in characters, counted the way a person counts.
+///
+/// Declared on the field because both sides need the same number for different
+/// reasons: the server refuses anything longer, and the SDK stops somebody at the
+/// keyboard before they lose what they wrote. Written in each repository instead,
+/// it is one limit with two numbers, and the day they differ a person is refused
+/// for a length their composer said was fine.
+///
+/// Absent means unbounded by the contract. The 64 KB body cap still stands behind
+/// every field and bounds what is read at all.
+public let DRExtensions_max_characters = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalExtensionField<SwiftProtobuf.ProtobufUInt32>, SwiftProtobuf.Google_Protobuf_FieldOptions>(
+  _protobuf_fieldNumber: 51249,
+  fieldName: "differentrequests.v1.max_characters"
 )
 
 public let DRExtensions_url_token = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalExtensionField<SwiftProtobuf.ProtobufString>, SwiftProtobuf.Google_Protobuf_EnumValueOptions>(

@@ -179,12 +179,15 @@ message GetConfigResponse {
 // display name, and traits refreshed from whatever the host app now knows. That
 // is what lets someone reinstall and still hold their votes.
 message CreateSessionRequest {
-  // Required. See EndUser.external_id — the host app's own stable id.
-  string external_id = 1;
+  // Required. See EndUser.external_id — the host app's own stable id. Theirs, so
+  // it is bounded rather than shaped.
+  string external_id = 1 [(max_characters) = 200];
 
   // Optional, all three. Supplied by the host app, refreshed on every call.
-  string email = 2;
-  string display_name = 3;
+  //
+  // The address limit is the RFC's, not ours to shorten.
+  string email = 2 [(max_characters) = 320];
+  string display_name = 3 [(max_characters) = 200];
   map<string, string> traits = 4;
 }
 
@@ -262,8 +265,12 @@ message GetRequestResponse {
 }
 
 message CreateRequestRequest {
-  string title = 1;
-  string body = 2;
+  // One line, as a board renders it.
+  string title = 1 [(max_characters) = 200];
+
+  // The case somebody is making. Generous on purpose: a limit that refuses real
+  // writing is worse than none, because somebody loses what they typed.
+  string body = 2 [(max_characters) = 5000];
 }
 
 message CreateRequestResponse {
@@ -337,7 +344,9 @@ message ListCommentsResponse {
 
 message CreateCommentRequest {
   string request_id = 1;
-  string body = 2;
+
+  // A reply. Shorter than a request on purpose: a comment that long is a request.
+  string body = 2 [(max_characters) = 2000];
 }
 
 message CreateCommentResponse {

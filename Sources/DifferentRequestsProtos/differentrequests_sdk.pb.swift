@@ -419,10 +419,13 @@ public struct DRCreateSessionRequest: Sendable {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  /// Required. See EndUser.external_id — the host app's own stable id.
+  /// Required. See EndUser.external_id — the host app's own stable id. Theirs, so
+  /// it is bounded rather than shaped.
   public var externalID: String = String()
 
   /// Optional, all three. Supplied by the host app, refreshed on every call.
+  ///
+  /// The address limit is the RFC's, not ours to shorten.
   public var email: String = String()
 
   public var displayName: String = String()
@@ -561,8 +564,11 @@ public struct DRCreateRequestRequest: Sendable {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
+  /// One line, as a board renders it.
   public var title: String = String()
 
+  /// The case somebody is making. Generous on purpose: a limit that refuses real
+  /// writing is worse than none, because somebody loses what they typed.
   public var body: String = String()
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -772,6 +778,7 @@ public struct DRCreateCommentRequest: Sendable {
 
   public var requestID: String = String()
 
+  /// A reply. Shorter than a request on purpose: a comment that long is a request.
   public var body: String = String()
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()

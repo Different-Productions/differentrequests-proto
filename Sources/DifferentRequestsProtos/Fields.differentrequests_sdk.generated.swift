@@ -107,6 +107,19 @@ extension DRCreateSessionRequest {
   }
 }
 
+extension DRCreateSessionRequest {
+  /// The longest each of this message's text fields may be, in characters, counted the way a
+  /// person counts.
+  ///
+  /// The server refuses anything longer and the SDK counts against the same number, so a
+  /// composer stops somebody where the refusal would have.
+  public enum TextLimit {
+    public static let externalID = 200
+    public static let email = 320
+    public static let displayName = 200
+  }
+}
+
 extension DRCreateSessionResponse {
   /// This message's field names, as the schema spells them. What a query key or a form field
   /// has to be called.
@@ -160,6 +173,18 @@ extension DRCreateRequestRequest {
   public enum Field {
     public static let title = "title"
     public static let body = "body"
+  }
+}
+
+extension DRCreateRequestRequest {
+  /// The longest each of this message's text fields may be, in characters, counted the way a
+  /// person counts.
+  ///
+  /// The server refuses anything longer and the SDK counts against the same number, so a
+  /// composer stops somebody where the refusal would have.
+  public enum TextLimit {
+    public static let title = 200
+    public static let body = 5000
   }
 }
 
@@ -259,6 +284,17 @@ extension DRCreateCommentRequest {
   public enum Field {
     public static let requestId = "request_id"
     public static let body = "body"
+  }
+}
+
+extension DRCreateCommentRequest {
+  /// The longest each of this message's text fields may be, in characters, counted the way a
+  /// person counts.
+  ///
+  /// The server refuses anything longer and the SDK counts against the same number, so a
+  /// composer stops somebody where the refusal would have.
+  public enum TextLimit {
+    public static let body = 2000
   }
 }
 

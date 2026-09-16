@@ -69,6 +69,18 @@ extend google.protobuf.MethodOptions {
 // SDK's covered three.
 extend google.protobuf.FieldOptions {
   PlanSurface gates = 51247;
+
+  // The longest this text may be, in characters, counted the way a person counts.
+  //
+  // Declared on the field because both sides need the same number for different
+  // reasons: the server refuses anything longer, and the SDK stops somebody at the
+  // keyboard before they lose what they wrote. Written in each repository instead,
+  // it is one limit with two numbers, and the day they differ a person is refused
+  // for a length their composer said was fine.
+  //
+  // Absent means unbounded by the contract. The 64 KB body cap still stands behind
+  // every field and bounds what is read at all.
+  uint32 max_characters = 51249;
 }
 
 // How an enum value is spelled when it appears in a URL.
