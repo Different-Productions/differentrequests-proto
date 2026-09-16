@@ -61,12 +61,17 @@ the copy stopped at the previous one, hiding a comment became a one-way door, an
 nothing failed loudly. That is the failure this package exists to prevent, and a copy
 one directory over reintroduces it.
 
-## Why this repository is public
+## Where it is published
 
-The consumers are `DifferentRequests-Server` (private) and `DifferentRequestsSDK`
-(public). A public Swift package cannot resolve a private dependency — an external
-developer's `swift build` would fail on authentication — so under *no copies* the
-contract has to be readable by anyone who can read the SDK.
+This repository, `differentrequests-proto-private`, is where the contract is worked on.
+Consumers resolve its public copy, `differentrequests-proto`, which receives nothing but
+releases: a release tag pushed here publishes one commit and the same tag there, through
+`.github/workflows/publish-release-copy.yml`. A published tag never moves.
+
+The copy is public because `DifferentRequestsSDK` is. A public Swift package cannot
+resolve a private dependency — an external developer's `swift build` would fail on
+authentication — so under *no copies* the contract has to be readable by anyone who can
+read the SDK.
 
 That costs nothing. The contract describes messages a third-party app already sends
 and receives; anyone holding the SDK has it. What stays private is

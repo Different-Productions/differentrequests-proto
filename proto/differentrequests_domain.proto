@@ -35,13 +35,23 @@ option swift_prefix = "DR";
 // What an app is entitled to. Two tiers, deliberately: the intermediate tiers
 // tracked previously described a product with no buyers.
 enum Plan {
-  PLAN_UNSPECIFIED = 0;
+  PLAN_UNSPECIFIED = 0 [(label) = "A plan this build does not know"];
 
   // Spelled because an operator names a plan on the command line when provisioning
   // an app. A value with no spelling cannot be named, which is what keeps the
   // zero sentinel off the console.
-  PLAN_FREE = 1 [(url_token) = "free"];
-  PLAN_PRO = 2 [(url_token) = "pro"];
+  //
+  // Labeled because both sides draw the word: the console says what an app is on,
+  // and the SDK carries a badge a free app shows its users. Typed in each repository
+  // it is one word with two spellings and nothing to keep them equal.
+  PLAN_FREE = 1 [
+    (url_token) = "free",
+    (label) = "Free"
+  ];
+  PLAN_PRO = 2 [
+    (url_token) = "pro",
+    (label) = "Pro"
+  ];
 }
 
 // One board, belonging to one tenant, embedded in one iOS app.

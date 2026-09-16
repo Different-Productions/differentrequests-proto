@@ -26,6 +26,19 @@ extension DRPlan {
     default: return nil
     }
   }
+
+  /// What a person is shown for this value.
+  ///
+  /// Total: every value of this enum declares one, so there is nothing to fall back to and
+  /// no caller has to invent a word.
+  public var label: String {
+    switch self {
+    case .unspecified: return "A plan this build does not know"
+    case .free: return "Free"
+    case .pro: return "Pro"
+    case .UNRECOGNIZED: return "A plan this build does not know"
+    }
+  }
 }
 
 extension DRRequestStatus {

@@ -29,6 +29,10 @@ public enum DRPlan: SwiftProtobuf.Enum, Swift.CaseIterable {
   /// Spelled because an operator names a plan on the command line when provisioning
   /// an app. A value with no spelling cannot be named, which is what keeps the
   /// zero sentinel off the console.
+  ///
+  /// Labeled because both sides draw the word: the console says what an app is on,
+  /// and the SDK carries a badge a free app shows its users. Typed in each repository
+  /// it is one word with two spellings and nothing to keep them equal.
   case free // = 1
   case pro // = 2
   case UNRECOGNIZED(Int)
