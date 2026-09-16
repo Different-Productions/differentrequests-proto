@@ -388,7 +388,12 @@ message MarkAllNotificationsReadResponse {
 
 // Upsert, called on every launch. See DeviceRegistration.token.
 message RegisterDeviceRequest {
-  string token = 1;
+  // An APNs token as hex. Apple's is 64 characters today; bounded generously
+  // rather than pinned to that, because the length is Apple's to change and
+  // refusing a valid token would take an app's push away for a reason nobody
+  // could act on.
+  string token = 1 [(max_characters) = 200];
+
   PushEnvironment environment = 2;
 }
 

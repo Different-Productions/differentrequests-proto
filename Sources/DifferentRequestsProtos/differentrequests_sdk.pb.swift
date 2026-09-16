@@ -916,6 +916,10 @@ public struct DRRegisterDeviceRequest: Sendable {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
+  /// An APNs token as hex. Apple's is 64 characters today; bounded generously
+  /// rather than pinned to that, because the length is Apple's to change and
+  /// refusing a valid token would take an app's push away for a reason nobody
+  /// could act on.
   public var token: String = String()
 
   public var environment: DRPushEnvironment = .unspecified

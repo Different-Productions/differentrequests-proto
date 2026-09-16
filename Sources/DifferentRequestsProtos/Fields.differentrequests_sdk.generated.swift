@@ -364,6 +364,17 @@ extension DRRegisterDeviceRequest {
   }
 }
 
+extension DRRegisterDeviceRequest {
+  /// The longest each of this message's text fields may be, in characters, counted the way a
+  /// person counts.
+  ///
+  /// The server refuses anything longer and the SDK counts against the same number, so a
+  /// composer stops somebody where the refusal would have.
+  public enum TextLimit {
+    public static let token = 200
+  }
+}
+
 extension DRRegisterDeviceResponse {
   /// This message's field names, as the schema spells them. What a query key or a form field
   /// has to be called.
