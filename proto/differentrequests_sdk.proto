@@ -178,6 +178,11 @@ message GetConfigResponse {
 // Upsert semantics: the same external_id returns the same user, with email,
 // display name, and traits refreshed from whatever the host app now knows. That
 // is what lets someone reinstall and still hold their votes.
+//
+// **An app key does not say who a person is.** It ships inside the host app's
+// binary and anybody who installs that app can read it, so a call carrying only
+// a key and an external_id is a claim from a stranger. `proof` is how the host
+// developer's own backend says the claim is theirs.
 message CreateSessionRequest {
   // Required. See EndUser.external_id — the host app's own stable id. Theirs, so
   // it is bounded rather than shaped.
@@ -189,6 +194,28 @@ message CreateSessionRequest {
   string email = 2 [(max_characters) = 320];
   string display_name = 3 [(max_characters) = 200];
   map<string, string> traits = 4;
+
+  // The host developer's backend vouching for this person, when their app has a
+  // signing secret. Absent from an app that has none, which is every app until
+  // its developer asks for one.
+  IdentityProof proof = 5;
+}
+
+// A host developer's own backend saying that this person is who the app claims.
+//
+// Signed where the app key is not: on their server, with a secret that never
+// ships in a binary. The phone carries the proof it was given and cannot make
+// one, which is the whole point — a stranger holding the app key can read it off
+// their own device and still cannot sign anything.
+//
+// HMAC-SHA256 over `external_id`, a newline, and `expires_at` as seconds since
+// the epoch, keyed by the app's signing secret, spelled URL-safe base64. Short
+// lived by design: a proof is minted when somebody opens the app, not stored.
+message IdentityProof {
+  string signature = 1 [(max_characters) = 200];
+
+  // When this proof stops being accepted. A proof with no expiry is a password.
+  google.protobuf.Timestamp expires_at = 2;
 }
 
 message CreateSessionResponse {

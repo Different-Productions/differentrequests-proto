@@ -104,6 +104,7 @@ extension DRCreateSessionRequest {
     public static let email = "email"
     public static let displayName = "display_name"
     public static let traits = "traits"
+    public static let proof = "proof"
   }
 }
 
@@ -117,6 +118,26 @@ extension DRCreateSessionRequest {
     public static let externalID = 200
     public static let email = 320
     public static let displayName = 200
+  }
+}
+
+extension DRIdentityProof {
+  /// This message's field names, as the schema spells them. What a query key or a form field
+  /// has to be called.
+  public enum Field {
+    public static let signature = "signature"
+    public static let expiresAt = "expires_at"
+  }
+}
+
+extension DRIdentityProof {
+  /// The longest each of this message's text fields may be, in characters, counted the way a
+  /// person counts.
+  ///
+  /// The server refuses anything longer and the SDK counts against the same number, so a
+  /// composer stops somebody where the refusal would have.
+  public enum TextLimit {
+    public static let signature = 200
   }
 }
 

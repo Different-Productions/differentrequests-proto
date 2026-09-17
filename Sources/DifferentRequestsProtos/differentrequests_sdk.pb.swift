@@ -414,6 +414,11 @@ public struct DRGetConfigResponse: Sendable {
 /// Upsert semantics: the same external_id returns the same user, with email,
 /// display name, and traits refreshed from whatever the host app now knows. That
 /// is what lets someone reinstall and still hold their votes.
+///
+/// **An app key does not say who a person is.** It ships inside the host app's
+/// binary and anybody who installs that app can read it, so a call carrying only
+/// a key and an external_id is a claim from a stranger. `proof` is how the host
+/// developer's own backend says the claim is theirs.
 public struct DRCreateSessionRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -432,9 +437,57 @@ public struct DRCreateSessionRequest: Sendable {
 
   public var traits: Dictionary<String,String> = [:]
 
+  /// The host developer's backend vouching for this person, when their app has a
+  /// signing secret. Absent from an app that has none, which is every app until
+  /// its developer asks for one.
+  public var proof: DRIdentityProof {
+    get {return _proof ?? DRIdentityProof()}
+    set {_proof = newValue}
+  }
+  /// Returns true if `proof` has been explicitly set.
+  public var hasProof: Bool {return self._proof != nil}
+  /// Clears the value of `proof`. Subsequent reads from it will return its default value.
+  public mutating func clearProof() {self._proof = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
+
+  fileprivate var _proof: DRIdentityProof? = nil
+}
+
+/// A host developer's own backend saying that this person is who the app claims.
+///
+/// Signed where the app key is not: on their server, with a secret that never
+/// ships in a binary. The phone carries the proof it was given and cannot make
+/// one, which is the whole point — a stranger holding the app key can read it off
+/// their own device and still cannot sign anything.
+///
+/// HMAC-SHA256 over `external_id`, a newline, and `expires_at` as seconds since
+/// the epoch, keyed by the app's signing secret, spelled URL-safe base64. Short
+/// lived by design: a proof is minted when somebody opens the app, not stored.
+public struct DRIdentityProof: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var signature: String = String()
+
+  /// When this proof stops being accepted. A proof with no expiry is a password.
+  public var expiresAt: SwiftProtobuf.Google_Protobuf_Timestamp {
+    get {return _expiresAt ?? SwiftProtobuf.Google_Protobuf_Timestamp()}
+    set {_expiresAt = newValue}
+  }
+  /// Returns true if `expiresAt` has been explicitly set.
+  public var hasExpiresAt: Bool {return self._expiresAt != nil}
+  /// Clears the value of `expiresAt`. Subsequent reads from it will return its default value.
+  public mutating func clearExpiresAt() {self._expiresAt = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _expiresAt: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
 }
 
 public struct DRCreateSessionResponse: Sendable {
@@ -1561,7 +1614,7 @@ extension DRGetConfigResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
 
 extension DRCreateSessionRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".CreateSessionRequest"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}external_id\0\u{1}email\0\u{3}display_name\0\u{1}traits\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}external_id\0\u{1}email\0\u{3}display_name\0\u{1}traits\0\u{1}proof\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1573,12 +1626,17 @@ extension DRCreateSessionRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageI
       case 2: try { try decoder.decodeSingularStringField(value: &self.email) }()
       case 3: try { try decoder.decodeSingularStringField(value: &self.displayName) }()
       case 4: try { try decoder.decodeMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: &self.traits) }()
+      case 5: try { try decoder.decodeSingularMessageField(value: &self._proof) }()
       default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if !self.externalID.isEmpty {
       try visitor.visitSingularStringField(value: self.externalID, fieldNumber: 1)
     }
@@ -1591,6 +1649,9 @@ extension DRCreateSessionRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageI
     if !self.traits.isEmpty {
       try visitor.visitMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: self.traits, fieldNumber: 4)
     }
+    try { if let v = self._proof {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1599,6 +1660,46 @@ extension DRCreateSessionRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageI
     if lhs.email != rhs.email {return false}
     if lhs.displayName != rhs.displayName {return false}
     if lhs.traits != rhs.traits {return false}
+    if lhs._proof != rhs._proof {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension DRIdentityProof: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".IdentityProof"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}signature\0\u{3}expires_at\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.signature) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._expiresAt) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if !self.signature.isEmpty {
+      try visitor.visitSingularStringField(value: self.signature, fieldNumber: 1)
+    }
+    try { if let v = self._expiresAt {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DRIdentityProof, rhs: DRIdentityProof) -> Bool {
+    if lhs.signature != rhs.signature {return false}
+    if lhs._expiresAt != rhs._expiresAt {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
