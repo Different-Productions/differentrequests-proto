@@ -8,6 +8,7 @@ struct EmittedService {
   let typePrefix: String
   let verbTypeName: String
   let audienceTypeName: String
+  let allowanceTypeName: String
   let planSurfaceTypeName: String
   let methods: [EmittedMethod]
 
@@ -16,12 +17,14 @@ struct EmittedService {
     namer: SwiftProtobufNamer,
     verbs: EnumCaseNames,
     audiences: EnumCaseNames,
+    allowances: EnumCaseNames,
     planSurfaces: EnumCaseNames
   ) throws {
     name = service.name
     typePrefix = service.file.options.swiftPrefix
     verbTypeName = verbs.typeName
     audienceTypeName = audiences.typeName
+    allowanceTypeName = allowances.typeName
     planSurfaceTypeName = planSurfaces.typeName
     methods = try service.methods.map { method in
       try EmittedMethod(
@@ -29,6 +32,7 @@ struct EmittedService {
         namer: namer,
         verbs: verbs,
         audiences: audiences,
+        allowances: allowances,
         planSurfaces: planSurfaces
       )
     }
@@ -62,8 +66,9 @@ struct EmittedService {
       /// The response to one rpc on `\(name)`.
       ///
       /// Every rpc returns its own message, and the message says which rpc it answers. A server
-      /// registers a handler by its return type and reads the verb, the path, the audience and
-      /// the plan gate from here, so no route is paired with the code answering it by hand.
+      /// registers a handler by its return type and reads the verb, the path, the audience, the
+      /// allowance and the plan gate from here, so no route is paired with the code answering it
+      /// by hand.
       public protocol \(typePrefix)\(name)Answer: SwiftProtobuf.Message {
 
         /// The rpc this message is the response to.
@@ -158,6 +163,14 @@ struct EmittedService {
           public var audience: \(audienceTypeName)
         """,
       body: { ".\($0.audienceCaseName)" }
+    )
+
+    out += switchSource(
+      signature: """
+          /// What one call to this rpc is counted against before it is answered.
+          public var allowance: \(allowanceTypeName)
+        """,
+      body: { ".\($0.allowanceCaseName)" }
     )
 
     out += switchSource(

@@ -105,6 +105,31 @@ public enum DRRequestsServiceRPC: String, Sendable, CaseIterable {
     }
   }
 
+  /// What one call to this rpc is counted against before it is answered.
+  public var allowance: DRAllowance {
+    switch self {
+    case .getConfig: return .uncounted
+    case .createSession: return .signIn
+    case .listRequests: return .uncounted
+    case .createRequest: return .write
+    case .getRequest: return .uncounted
+    case .vote: return .write
+    case .clearVote: return .write
+    case .follow: return .write
+    case .unfollow: return .write
+    case .listComments: return .uncounted
+    case .createComment: return .write
+    case .listNotifications: return .uncounted
+    case .getUnreadCount: return .uncounted
+    case .markAllNotificationsRead: return .write
+    case .markNotificationRead: return .write
+    case .registerDevice: return .write
+    case .unregisterDevice: return .write
+    case .getRoadmap: return .uncounted
+    case .listChangelog: return .uncounted
+    }
+  }
+
   /// The surface a tenant's plan must include for this rpc to answer.
   ///
   /// Nil for an rpc every plan includes. Declared on the rpc rather than checked inside the
@@ -167,8 +192,9 @@ public enum DRRequestsServiceRPC: String, Sendable, CaseIterable {
 /// The response to one rpc on `RequestsService`.
 ///
 /// Every rpc returns its own message, and the message says which rpc it answers. A server
-/// registers a handler by its return type and reads the verb, the path, the audience and
-/// the plan gate from here, so no route is paired with the code answering it by hand.
+/// registers a handler by its return type and reads the verb, the path, the audience, the
+/// allowance and the plan gate from here, so no route is paired with the code answering it
+/// by hand.
 public protocol DRRequestsServiceAnswer: SwiftProtobuf.Message {
 
   /// The rpc this message is the response to.

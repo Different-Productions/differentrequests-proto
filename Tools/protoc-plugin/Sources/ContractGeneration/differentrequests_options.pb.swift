@@ -93,6 +93,65 @@ public enum DRPlanSurface: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 }
 
+/// Which allowance a call spends before it is answered.
+///
+/// Declared on the rpc because what a call costs is a fact about the rpc, not about
+/// its verb. Read off the verb, every non-GET was a write, and signing somebody in
+/// spent the same per-app allowance as a vote — so a flood of sign-ins refused the
+/// people voting.
+public enum DRAllowance: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+
+  /// Never valid on an rpc. An rpc that does not say what it costs is a generator
+  /// error rather than a call nothing counts.
+  case unspecified // = 0
+
+  /// Counted against nothing: a read.
+  case uncounted // = 1
+
+  /// A change made by an app or by a person in it, counted against the person and
+  /// their app.
+  case write // = 2
+
+  /// Minting a session, counted against the calling address and the app, and
+  /// against the app's new people when it names somebody for the first time.
+  case signIn // = 3
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .unspecified
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .unspecified
+    case 1: self = .uncounted
+    case 2: self = .write
+    case 3: self = .signIn
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .unspecified: return 0
+    case .uncounted: return 1
+    case .write: return 2
+    case .signIn: return 3
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [DRAllowance] = [
+    .unspecified,
+    .uncounted,
+    .write,
+    .signIn,
+  ]
+
+}
+
 /// The *minimum* credential a caller must present. Every rpc names exactly one;
 /// there is no "any" and no default, so an rpc that forgets to say is a generator
 /// error rather than an open endpoint.
@@ -392,6 +451,22 @@ extension SwiftProtobuf.Google_Protobuf_MethodOptions {
     clearExtensionValue(ext: DRExtensions_plan_gate)
   }
 
+  /// What one call to this rpc is counted against. Every rpc names exactly one.
+  public var DRrouteAllowance: DRAllowance {
+    get {return getExtensionValue(ext: DRExtensions_route_allowance) ?? .unspecified}
+    set {setExtensionValue(ext: DRExtensions_route_allowance, value: newValue)}
+  }
+  /// Returns true if extension `DRExtensions_route_allowance`
+  /// has been explicitly set.
+  public var hasDRrouteAllowance: Bool {
+    return hasExtensionValue(ext: DRExtensions_route_allowance)
+  }
+  /// Clears the value of extension `DRExtensions_route_allowance`.
+  /// Subsequent reads from it will return its default value.
+  public mutating func clearDRrouteAllowance() {
+    clearExtensionValue(ext: DRExtensions_route_allowance)
+  }
+
 }
 
 // MARK: - File's ExtensionMap: DRDifferentrequestsOptions_Extensions
@@ -405,6 +480,7 @@ public let DRDifferentrequestsOptions_Extensions: SwiftProtobuf.SimpleExtensionM
   DRExtensions_route_path,
   DRExtensions_route_audience,
   DRExtensions_plan_gate,
+  DRExtensions_route_allowance,
   DRExtensions_gates,
   DRExtensions_max_characters,
   DRExtensions_url_token,
@@ -441,6 +517,12 @@ public let DRExtensions_route_audience = SwiftProtobuf.MessageExtension<SwiftPro
 public let DRExtensions_plan_gate = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalEnumExtensionField<DRPlanSurface>, SwiftProtobuf.Google_Protobuf_MethodOptions>(
   _protobuf_fieldNumber: 51246,
   fieldName: "differentrequests.v1.plan_gate"
+)
+
+/// What one call to this rpc is counted against. Every rpc names exactly one.
+public let DRExtensions_route_allowance = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalEnumExtensionField<DRAllowance>, SwiftProtobuf.Google_Protobuf_MethodOptions>(
+  _protobuf_fieldNumber: 51251,
+  fieldName: "differentrequests.v1.route_allowance"
 )
 
 public let DRExtensions_gates = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalEnumExtensionField<DRPlanSurface>, SwiftProtobuf.Google_Protobuf_FieldOptions>(
@@ -487,6 +569,10 @@ public let DRExtensions_label = SwiftProtobuf.MessageExtension<SwiftProtobuf.Opt
 
 extension DRPlanSurface: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0PLAN_SURFACE_UNSPECIFIED\0\u{1}PLAN_SURFACE_ROADMAP\0\u{1}PLAN_SURFACE_CHANGELOG\0\u{1}PLAN_SURFACE_COMMENTS\0")
+}
+
+extension DRAllowance: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0ALLOWANCE_UNSPECIFIED\0\u{1}ALLOWANCE_UNCOUNTED\0\u{1}ALLOWANCE_WRITE\0\u{1}ALLOWANCE_SIGN_IN\0")
 }
 
 extension DRAudience: SwiftProtobuf._ProtoNameProviding {

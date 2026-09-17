@@ -9,6 +9,7 @@ struct EmittedMethod {
   let verbCaseName: String
   let pathTemplate: String
   let audienceCaseName: String
+  let allowanceCaseName: String
 
   /// The generated Swift type this rpc returns.
   ///
@@ -21,19 +22,21 @@ struct EmittedMethod {
   let planGateCaseName: String?
 
   /// An rpc with an incomplete route is refused rather than defaulted: one with no audience would
-  /// otherwise be served to anyone holding an app key, and one with no path would be served
-  /// nowhere.
+  /// otherwise be served to anyone holding an app key, one with no path would be served nowhere,
+  /// and one with no allowance would be answered without being counted.
   init(
     method: MethodDescriptor,
     namer: SwiftProtobufNamer,
     verbs: EnumCaseNames,
     audiences: EnumCaseNames,
+    allowances: EnumCaseNames,
     planSurfaces: EnumCaseNames
   ) throws {
     guard
       let verb = method.options.getExtensionValue(ext: DRExtensions_route_method),
       let path = method.options.getExtensionValue(ext: DRExtensions_route_path),
-      let audience = method.options.getExtensionValue(ext: DRExtensions_route_audience)
+      let audience = method.options.getExtensionValue(ext: DRExtensions_route_audience),
+      let allowance = method.options.getExtensionValue(ext: DRExtensions_route_allowance)
     else {
       throw EndpointTableError.incompleteRoute(
         service: method.service.name,
@@ -51,6 +54,7 @@ struct EmittedMethod {
     verbCaseName = try verbs.caseName(forValue: Int32(verb.rawValue))
     pathTemplate = path
     audienceCaseName = try audiences.caseName(forValue: Int32(audience.rawValue))
+    allowanceCaseName = try allowances.caseName(forValue: Int32(allowance.rawValue))
     answerTypeName = namer.fullName(message: answer)
 
     if let gate = method.options.getExtensionValue(ext: DRExtensions_plan_gate) {

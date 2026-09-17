@@ -471,66 +471,77 @@ service RequestsService {
     option (route_method) = HTTP_METHOD_GET;
     option (route_path) = "/config";
     option (route_audience) = AUDIENCE_APP_KEY;
+    option (route_allowance) = ALLOWANCE_UNCOUNTED;
   }
 
   rpc CreateSession(CreateSessionRequest) returns (CreateSessionResponse) {
     option (route_method) = HTTP_METHOD_POST;
     option (route_path) = "/sessions";
     option (route_audience) = AUDIENCE_APP_KEY;
+    option (route_allowance) = ALLOWANCE_SIGN_IN;
   }
 
   rpc ListRequests(ListRequestsRequest) returns (ListRequestsResponse) {
     option (route_method) = HTTP_METHOD_GET;
     option (route_path) = "/requests";
     option (route_audience) = AUDIENCE_APP_KEY;
+    option (route_allowance) = ALLOWANCE_UNCOUNTED;
   }
 
   rpc CreateRequest(CreateRequestRequest) returns (CreateRequestResponse) {
     option (route_method) = HTTP_METHOD_POST;
     option (route_path) = "/requests";
     option (route_audience) = AUDIENCE_END_USER;
+    option (route_allowance) = ALLOWANCE_WRITE;
   }
 
   rpc GetRequest(GetRequestRequest) returns (GetRequestResponse) {
     option (route_method) = HTTP_METHOD_GET;
     option (route_path) = "/requests/{requestId}";
     option (route_audience) = AUDIENCE_APP_KEY;
+    option (route_allowance) = ALLOWANCE_UNCOUNTED;
   }
 
   rpc Vote(VoteRequest) returns (VoteResponse) {
     option (route_method) = HTTP_METHOD_PUT;
     option (route_path) = "/requests/{requestId}/vote";
     option (route_audience) = AUDIENCE_END_USER;
+    option (route_allowance) = ALLOWANCE_WRITE;
   }
 
   rpc ClearVote(ClearVoteRequest) returns (ClearVoteResponse) {
     option (route_method) = HTTP_METHOD_DELETE;
     option (route_path) = "/requests/{requestId}/vote";
     option (route_audience) = AUDIENCE_END_USER;
+    option (route_allowance) = ALLOWANCE_WRITE;
   }
 
   rpc Follow(FollowRequest) returns (FollowResponse) {
     option (route_method) = HTTP_METHOD_PUT;
     option (route_path) = "/requests/{requestId}/follow";
     option (route_audience) = AUDIENCE_END_USER;
+    option (route_allowance) = ALLOWANCE_WRITE;
   }
 
   rpc Unfollow(UnfollowRequest) returns (UnfollowResponse) {
     option (route_method) = HTTP_METHOD_DELETE;
     option (route_path) = "/requests/{requestId}/follow";
     option (route_audience) = AUDIENCE_END_USER;
+    option (route_allowance) = ALLOWANCE_WRITE;
   }
 
   rpc ListComments(ListCommentsRequest) returns (ListCommentsResponse) {
     option (route_method) = HTTP_METHOD_GET;
     option (route_path) = "/requests/{requestId}/comments";
     option (route_audience) = AUDIENCE_APP_KEY;
+    option (route_allowance) = ALLOWANCE_UNCOUNTED;
   }
 
   rpc CreateComment(CreateCommentRequest) returns (CreateCommentResponse) {
     option (route_method) = HTTP_METHOD_POST;
     option (route_path) = "/requests/{requestId}/comments";
     option (route_audience) = AUDIENCE_END_USER;
+    option (route_allowance) = ALLOWANCE_WRITE;
     option (plan_gate) = PLAN_SURFACE_COMMENTS;
   }
 
@@ -538,6 +549,7 @@ service RequestsService {
     option (route_method) = HTTP_METHOD_GET;
     option (route_path) = "/notifications";
     option (route_audience) = AUDIENCE_END_USER;
+    option (route_allowance) = ALLOWANCE_UNCOUNTED;
   }
 
   // The literal segment is declared before the `{notificationId}` template below it. A
@@ -547,36 +559,42 @@ service RequestsService {
     option (route_method) = HTTP_METHOD_GET;
     option (route_path) = "/notifications/unread-count";
     option (route_audience) = AUDIENCE_END_USER;
+    option (route_allowance) = ALLOWANCE_UNCOUNTED;
   }
 
   rpc MarkAllNotificationsRead(MarkAllNotificationsReadRequest) returns (MarkAllNotificationsReadResponse) {
     option (route_method) = HTTP_METHOD_PUT;
     option (route_path) = "/notifications/read-all";
     option (route_audience) = AUDIENCE_END_USER;
+    option (route_allowance) = ALLOWANCE_WRITE;
   }
 
   rpc MarkNotificationRead(MarkNotificationReadRequest) returns (MarkNotificationReadResponse) {
     option (route_method) = HTTP_METHOD_PUT;
     option (route_path) = "/notifications/{notificationId}/read";
     option (route_audience) = AUDIENCE_END_USER;
+    option (route_allowance) = ALLOWANCE_WRITE;
   }
 
   rpc RegisterDevice(RegisterDeviceRequest) returns (RegisterDeviceResponse) {
     option (route_method) = HTTP_METHOD_PUT;
     option (route_path) = "/devices";
     option (route_audience) = AUDIENCE_END_USER;
+    option (route_allowance) = ALLOWANCE_WRITE;
   }
 
   rpc UnregisterDevice(UnregisterDeviceRequest) returns (UnregisterDeviceResponse) {
     option (route_method) = HTTP_METHOD_DELETE;
     option (route_path) = "/devices/{deviceId}";
     option (route_audience) = AUDIENCE_END_USER;
+    option (route_allowance) = ALLOWANCE_WRITE;
   }
 
   rpc GetRoadmap(GetRoadmapRequest) returns (GetRoadmapResponse) {
     option (route_method) = HTTP_METHOD_GET;
     option (route_path) = "/roadmap";
     option (route_audience) = AUDIENCE_APP_KEY;
+    option (route_allowance) = ALLOWANCE_UNCOUNTED;
     option (plan_gate) = PLAN_SURFACE_ROADMAP;
   }
 
@@ -584,6 +602,7 @@ service RequestsService {
     option (route_method) = HTTP_METHOD_GET;
     option (route_path) = "/changelog";
     option (route_audience) = AUDIENCE_APP_KEY;
+    option (route_allowance) = ALLOWANCE_UNCOUNTED;
     option (plan_gate) = PLAN_SURFACE_CHANGELOG;
   }
 }

@@ -58,6 +58,32 @@ extend google.protobuf.MethodOptions {
   // The surface a tenant's plan must include for this rpc to answer. Absent on an
   // rpc every plan includes.
   PlanSurface plan_gate = 51246;
+
+  // What one call to this rpc is counted against. Every rpc names exactly one.
+  Allowance route_allowance = 51251;
+}
+
+// Which allowance a call spends before it is answered.
+//
+// Declared on the rpc because what a call costs is a fact about the rpc, not about
+// its verb. Read off the verb, every non-GET was a write, and signing somebody in
+// spent the same per-app allowance as a vote — so a flood of sign-ins refused the
+// people voting.
+enum Allowance {
+  // Never valid on an rpc. An rpc that does not say what it costs is a generator
+  // error rather than a call nothing counts.
+  ALLOWANCE_UNSPECIFIED = 0;
+
+  // Counted against nothing: a read.
+  ALLOWANCE_UNCOUNTED = 1;
+
+  // A change made by an app or by a person in it, counted against the person and
+  // their app.
+  ALLOWANCE_WRITE = 2;
+
+  // Minting a session, counted against the calling address and the app, and
+  // against the app's new people when it names somebody for the first time.
+  ALLOWANCE_SIGN_IN = 3;
 }
 
 // Which surface an AppConfig flag decides.

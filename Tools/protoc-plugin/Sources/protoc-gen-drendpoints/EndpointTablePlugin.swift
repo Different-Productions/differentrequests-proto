@@ -54,6 +54,11 @@ struct EndpointTablePlugin: CodeGenerator {
         reachableFrom: file,
         namer: namer
       )
+      let allowances = try EnumCaseNames(
+        typing: DRExtensions_route_allowance,
+        reachableFrom: file,
+        namer: namer
+      )
       let planSurfaces = try EnumCaseNames(
         typing: DRExtensions_plan_gate,
         reachableFrom: file,
@@ -67,6 +72,7 @@ struct EndpointTablePlugin: CodeGenerator {
             namer: namer,
             verbs: verbs,
             audiences: audiences,
+            allowances: allowances,
             planSurfaces: planSurfaces
           )
         )
