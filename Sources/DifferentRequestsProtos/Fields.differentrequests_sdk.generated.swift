@@ -65,7 +65,13 @@ extension DRAppConfig {
     public static let roadmapEnabled = "roadmap_enabled"
     public static let changelogEnabled = "changelog_enabled"
     public static let commentsEnabled = "comments_enabled"
-    public static let showBadge = "show_badge"
+    public static let pushEnabled = "push_enabled"
+    public static let developerRepliesEnabled = "developer_replies_enabled"
+    public static let foldingEnabled = "folding_enabled"
+    public static let appearanceEnabled = "appearance_enabled"
+    public static let planningEnabled = "planning_enabled"
+    public static let traitRankingEnabled = "trait_ranking_enabled"
+    public static let badgeRemoved = "badge_removed"
   }
 }
 
@@ -83,6 +89,13 @@ extension DRAppConfig {
     case .roadmap: return roadmapEnabled
     case .changelog: return changelogEnabled
     case .comments: return commentsEnabled
+    case .push: return pushEnabled
+    case .developerReplies: return developerRepliesEnabled
+    case .folding: return foldingEnabled
+    case .appearance: return appearanceEnabled
+    case .planning: return planningEnabled
+    case .traitRanking: return traitRankingEnabled
+    case .badgeRemoval: return badgeRemoved
     case .unspecified, .UNRECOGNIZED: return false
     }
   }

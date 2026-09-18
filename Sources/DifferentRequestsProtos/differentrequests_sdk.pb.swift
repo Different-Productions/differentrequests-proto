@@ -368,8 +368,31 @@ public struct DRAppConfig: Sendable {
   /// off when the tenant has chosen not to moderate a discussion.
   public var commentsEnabled: Bool = false
 
-  /// Whether the SDK renders "Powered by DifferentRequests". True on Free.
-  public var showBadge: Bool = false
+  /// Whether the server sends this app's people push notifications. A device
+  /// registers either way, so an app that gains the surface reaches phones that
+  /// are already registered.
+  public var pushEnabled: Bool = false
+
+  /// Whether the developer can answer in a request's thread. Replies already
+  /// written stay in their threads either way.
+  public var developerRepliesEnabled: Bool = false
+
+  /// Whether the developer can fold several requests into one.
+  public var foldingEnabled: Bool = false
+
+  /// Whether the SDK draws the board in the host app's accent color and font.
+  /// Absent, it draws its own, whatever appearance the host app passes.
+  public var appearanceEnabled: Bool = false
+
+  /// Whether the developer can file a request of their own.
+  public var planningEnabled: Bool = false
+
+  /// Whether requests can be ranked by a trait the people asking carry.
+  public var traitRankingEnabled: Bool = false
+
+  /// Whether the SDK draws the board without "Powered by Different Requests".
+  /// Absent on Free, so a Free app carries the badge.
+  public var badgeRemoved: Bool = false
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1507,7 +1530,7 @@ extension DRApiError: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
 
 extension DRAppConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".AppConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}app\0\u{3}roadmap_enabled\0\u{3}changelog_enabled\0\u{3}comments_enabled\0\u{3}show_badge\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}app\0\u{3}roadmap_enabled\0\u{3}changelog_enabled\0\u{3}comments_enabled\0\u{4}\u{2}push_enabled\0\u{3}developer_replies_enabled\0\u{3}folding_enabled\0\u{3}appearance_enabled\0\u{3}planning_enabled\0\u{3}trait_ranking_enabled\0\u{3}badge_removed\0\u{b}show_badge\0\u{c}\u{5}\u{1}")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1519,7 +1542,13 @@ extension DRAppConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       case 2: try { try decoder.decodeSingularBoolField(value: &self.roadmapEnabled) }()
       case 3: try { try decoder.decodeSingularBoolField(value: &self.changelogEnabled) }()
       case 4: try { try decoder.decodeSingularBoolField(value: &self.commentsEnabled) }()
-      case 5: try { try decoder.decodeSingularBoolField(value: &self.showBadge) }()
+      case 6: try { try decoder.decodeSingularBoolField(value: &self.pushEnabled) }()
+      case 7: try { try decoder.decodeSingularBoolField(value: &self.developerRepliesEnabled) }()
+      case 8: try { try decoder.decodeSingularBoolField(value: &self.foldingEnabled) }()
+      case 9: try { try decoder.decodeSingularBoolField(value: &self.appearanceEnabled) }()
+      case 10: try { try decoder.decodeSingularBoolField(value: &self.planningEnabled) }()
+      case 11: try { try decoder.decodeSingularBoolField(value: &self.traitRankingEnabled) }()
+      case 12: try { try decoder.decodeSingularBoolField(value: &self.badgeRemoved) }()
       default: break
       }
     }
@@ -1542,8 +1571,26 @@ extension DRAppConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     if self.commentsEnabled != false {
       try visitor.visitSingularBoolField(value: self.commentsEnabled, fieldNumber: 4)
     }
-    if self.showBadge != false {
-      try visitor.visitSingularBoolField(value: self.showBadge, fieldNumber: 5)
+    if self.pushEnabled != false {
+      try visitor.visitSingularBoolField(value: self.pushEnabled, fieldNumber: 6)
+    }
+    if self.developerRepliesEnabled != false {
+      try visitor.visitSingularBoolField(value: self.developerRepliesEnabled, fieldNumber: 7)
+    }
+    if self.foldingEnabled != false {
+      try visitor.visitSingularBoolField(value: self.foldingEnabled, fieldNumber: 8)
+    }
+    if self.appearanceEnabled != false {
+      try visitor.visitSingularBoolField(value: self.appearanceEnabled, fieldNumber: 9)
+    }
+    if self.planningEnabled != false {
+      try visitor.visitSingularBoolField(value: self.planningEnabled, fieldNumber: 10)
+    }
+    if self.traitRankingEnabled != false {
+      try visitor.visitSingularBoolField(value: self.traitRankingEnabled, fieldNumber: 11)
+    }
+    if self.badgeRemoved != false {
+      try visitor.visitSingularBoolField(value: self.badgeRemoved, fieldNumber: 12)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -1553,7 +1600,13 @@ extension DRAppConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     if lhs.roadmapEnabled != rhs.roadmapEnabled {return false}
     if lhs.changelogEnabled != rhs.changelogEnabled {return false}
     if lhs.commentsEnabled != rhs.commentsEnabled {return false}
-    if lhs.showBadge != rhs.showBadge {return false}
+    if lhs.pushEnabled != rhs.pushEnabled {return false}
+    if lhs.developerRepliesEnabled != rhs.developerRepliesEnabled {return false}
+    if lhs.foldingEnabled != rhs.foldingEnabled {return false}
+    if lhs.appearanceEnabled != rhs.appearanceEnabled {return false}
+    if lhs.planningEnabled != rhs.planningEnabled {return false}
+    if lhs.traitRankingEnabled != rhs.traitRankingEnabled {return false}
+    if lhs.badgeRemoved != rhs.badgeRemoved {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

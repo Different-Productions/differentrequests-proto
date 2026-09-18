@@ -163,8 +163,34 @@ message AppConfig {
   // off when the tenant has chosen not to moderate a discussion.
   bool comments_enabled = 4 [(gates) = PLAN_SURFACE_COMMENTS];
 
-  // Whether the SDK renders "Powered by DifferentRequests". True on Free.
-  bool show_badge = 5;
+  // Whether the server sends this app's people push notifications. A device
+  // registers either way, so an app that gains the surface reaches phones that
+  // are already registered.
+  bool push_enabled = 6 [(gates) = PLAN_SURFACE_PUSH];
+
+  // Whether the developer can answer in a request's thread. Replies already
+  // written stay in their threads either way.
+  bool developer_replies_enabled = 7 [(gates) = PLAN_SURFACE_DEVELOPER_REPLIES];
+
+  // Whether the developer can fold several requests into one.
+  bool folding_enabled = 8 [(gates) = PLAN_SURFACE_FOLDING];
+
+  // Whether the SDK draws the board in the host app's accent color and font.
+  // Absent, it draws its own, whatever appearance the host app passes.
+  bool appearance_enabled = 9 [(gates) = PLAN_SURFACE_APPEARANCE];
+
+  // Whether the developer can file a request of their own.
+  bool planning_enabled = 10 [(gates) = PLAN_SURFACE_PLANNING];
+
+  // Whether requests can be ranked by a trait the people asking carry.
+  bool trait_ranking_enabled = 11 [(gates) = PLAN_SURFACE_TRAIT_RANKING];
+
+  // Whether the SDK draws the board without "Powered by Different Requests".
+  // Absent on Free, so a Free app carries the badge.
+  bool badge_removed = 12 [(gates) = PLAN_SURFACE_BADGE_REMOVAL];
+
+  reserved 5;
+  reserved "show_badge";
 }
 
 message GetConfigRequest {}

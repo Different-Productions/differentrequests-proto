@@ -24,10 +24,10 @@ option swift_prefix = "DR";
 // generated type at all.
 // A surface a tenant's plan may or may not include.
 //
-// Named on the rpc it gates rather than checked inside the handler that serves it.
-// A guard written in a handler is a fact about the product kept in the one place
-// nothing else looks: an rpc added to a paid surface without one answers for every
-// tenant, and nothing says so until somebody notices they are getting it free.
+// Every surface a plan decides is named here, and this list is what Pro is. An
+// rpc serving one declares it as `(plan_gate)`; anything else serving one — a
+// console screen, a push sent from the server — asks `AppConfig.includes(_:)`
+// for the same surface before it does anything.
 //
 // There is no value for a surface every plan includes. An rpc that names no gate
 // is not gated, which is the same statement made by saying nothing.
@@ -42,6 +42,28 @@ enum PlanSurface {
   // runs — and a second mechanism for "this app does not have that" would be a
   // second place to forget one.
   PLAN_SURFACE_COMMENTS = 3;
+
+  // A push notification reaching a person's phone. Devices register on every
+  // plan; what the plan decides is whether the server sends to them.
+  PLAN_SURFACE_PUSH = 4;
+
+  // The developer answering in a request's own thread, marked as theirs.
+  PLAN_SURFACE_DEVELOPER_REPLIES = 5;
+
+  // Several requests for one thing folded into one, their votes moved across.
+  PLAN_SURFACE_FOLDING = 6;
+
+  // The board drawn in the host app's accent color and font.
+  PLAN_SURFACE_APPEARANCE = 7;
+
+  // The developer filing a request of their own, public or private.
+  PLAN_SURFACE_PLANNING = 8;
+
+  // Requests ranked by a trait the people asking carry, not only by count.
+  PLAN_SURFACE_TRAIT_RANKING = 9;
+
+  // The board drawn without "Powered by Different Requests".
+  PLAN_SURFACE_BADGE_REMOVAL = 10;
 }
 
 extend google.protobuf.MethodOptions {

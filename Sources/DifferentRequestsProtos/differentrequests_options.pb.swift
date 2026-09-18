@@ -38,10 +38,10 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 /// generated type at all.
 /// A surface a tenant's plan may or may not include.
 ///
-/// Named on the rpc it gates rather than checked inside the handler that serves it.
-/// A guard written in a handler is a fact about the product kept in the one place
-/// nothing else looks: an rpc added to a paid surface without one answers for every
-/// tenant, and nothing says so until somebody notices they are getting it free.
+/// Every surface a plan decides is named here, and this list is what Pro is. An
+/// rpc serving one declares it as `(plan_gate)`; anything else serving one — a
+/// console screen, a push sent from the server — asks `AppConfig.includes(_:)`
+/// for the same surface before it does anything.
 ///
 /// There is no value for a surface every plan includes. An rpc that names no gate
 /// is not gated, which is the same statement made by saying nothing.
@@ -57,6 +57,28 @@ public enum DRPlanSurface: SwiftProtobuf.Enum, Swift.CaseIterable {
   /// runs — and a second mechanism for "this app does not have that" would be a
   /// second place to forget one.
   case comments // = 3
+
+  /// A push notification reaching a person's phone. Devices register on every
+  /// plan; what the plan decides is whether the server sends to them.
+  case push // = 4
+
+  /// The developer answering in a request's own thread, marked as theirs.
+  case developerReplies // = 5
+
+  /// Several requests for one thing folded into one, their votes moved across.
+  case folding // = 6
+
+  /// The board drawn in the host app's accent color and font.
+  case appearance // = 7
+
+  /// The developer filing a request of their own, public or private.
+  case planning // = 8
+
+  /// Requests ranked by a trait the people asking carry, not only by count.
+  case traitRanking // = 9
+
+  /// The board drawn without "Powered by Different Requests".
+  case badgeRemoval // = 10
   case UNRECOGNIZED(Int)
 
   public init() {
@@ -69,6 +91,13 @@ public enum DRPlanSurface: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 1: self = .roadmap
     case 2: self = .changelog
     case 3: self = .comments
+    case 4: self = .push
+    case 5: self = .developerReplies
+    case 6: self = .folding
+    case 7: self = .appearance
+    case 8: self = .planning
+    case 9: self = .traitRanking
+    case 10: self = .badgeRemoval
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -79,6 +108,13 @@ public enum DRPlanSurface: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .roadmap: return 1
     case .changelog: return 2
     case .comments: return 3
+    case .push: return 4
+    case .developerReplies: return 5
+    case .folding: return 6
+    case .appearance: return 7
+    case .planning: return 8
+    case .traitRanking: return 9
+    case .badgeRemoval: return 10
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -89,6 +125,13 @@ public enum DRPlanSurface: SwiftProtobuf.Enum, Swift.CaseIterable {
     .roadmap,
     .changelog,
     .comments,
+    .push,
+    .developerReplies,
+    .folding,
+    .appearance,
+    .planning,
+    .traitRanking,
+    .badgeRemoval,
   ]
 
 }
@@ -568,7 +611,7 @@ public let DRExtensions_label = SwiftProtobuf.MessageExtension<SwiftProtobuf.Opt
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 extension DRPlanSurface: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0PLAN_SURFACE_UNSPECIFIED\0\u{1}PLAN_SURFACE_ROADMAP\0\u{1}PLAN_SURFACE_CHANGELOG\0\u{1}PLAN_SURFACE_COMMENTS\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0PLAN_SURFACE_UNSPECIFIED\0\u{1}PLAN_SURFACE_ROADMAP\0\u{1}PLAN_SURFACE_CHANGELOG\0\u{1}PLAN_SURFACE_COMMENTS\0\u{1}PLAN_SURFACE_PUSH\0\u{1}PLAN_SURFACE_DEVELOPER_REPLIES\0\u{1}PLAN_SURFACE_FOLDING\0\u{1}PLAN_SURFACE_APPEARANCE\0\u{1}PLAN_SURFACE_PLANNING\0\u{1}PLAN_SURFACE_TRAIT_RANKING\0\u{1}PLAN_SURFACE_BADGE_REMOVAL\0")
 }
 
 extension DRAllowance: SwiftProtobuf._ProtoNameProviding {
