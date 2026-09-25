@@ -130,6 +130,32 @@ public enum DRRequestsServiceRPC: String, Sendable, CaseIterable {
     }
   }
 
+  /// What one call does, in words a person reads, drawn beside the rpc's name wherever a
+  /// call is listed.
+  public var label: String {
+    switch self {
+    case .getConfig: return "Read its settings"
+    case .createSession: return "Signed a person in"
+    case .listRequests: return "Loaded the board"
+    case .createRequest: return "Asked for something"
+    case .getRequest: return "Opened a request"
+    case .vote: return "Voted"
+    case .clearVote: return "Took a vote back"
+    case .follow: return "Followed a request"
+    case .unfollow: return "Stopped following a request"
+    case .listComments: return "Loaded comments"
+    case .createComment: return "Commented"
+    case .listNotifications: return "Loaded notifications"
+    case .getUnreadCount: return "Checked for new notifications"
+    case .markAllNotificationsRead: return "Marked every notification read"
+    case .markNotificationRead: return "Marked a notification read"
+    case .registerDevice: return "Turned on notifications for a phone"
+    case .unregisterDevice: return "Turned off notifications for a phone"
+    case .getRoadmap: return "Loaded the roadmap"
+    case .listChangelog: return "Loaded what's new"
+    }
+  }
+
   /// The surface a tenant's plan must include for this rpc to answer.
   ///
   /// Nil for an rpc every plan includes. Declared on the rpc rather than checked inside the

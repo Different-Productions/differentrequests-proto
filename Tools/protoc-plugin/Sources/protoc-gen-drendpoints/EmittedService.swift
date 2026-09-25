@@ -175,6 +175,20 @@ struct EmittedService {
 
     out += switchSource(
       signature: """
+          /// What one call does, in words a person reads, drawn beside the rpc's name wherever a
+          /// call is listed.
+          public var label: String
+        """,
+      body: { method in
+        let escaped = method.label
+          .replacingOccurrences(of: "\\", with: "\\\\")
+          .replacingOccurrences(of: "\"", with: "\\\"")
+        return "\"\(escaped)\""
+      }
+    )
+
+    out += switchSource(
+      signature: """
           /// The surface a tenant's plan must include for this rpc to answer.
           ///
           /// Nil for an rpc every plan includes. Declared on the rpc rather than checked inside the

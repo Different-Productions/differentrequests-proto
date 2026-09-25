@@ -11,6 +11,9 @@ struct EmittedMethod {
   let audienceCaseName: String
   let allowanceCaseName: String
 
+  /// What one call does, in words a person reads.
+  let label: String
+
   /// The generated Swift type this rpc returns.
   ///
   /// What makes the pairing of an rpc to the code answering it checkable: a handler is registered
@@ -23,7 +26,8 @@ struct EmittedMethod {
 
   /// An rpc with an incomplete route is refused rather than defaulted: one with no audience would
   /// otherwise be served to anyone holding an app key, one with no path would be served nowhere,
-  /// and one with no allowance would be answered without being counted.
+  /// one with no allowance would be answered without being counted, and one with no label would be
+  /// listed by a name only its authors can read.
   init(
     method: MethodDescriptor,
     namer: SwiftProtobufNamer,
@@ -36,7 +40,9 @@ struct EmittedMethod {
       let verb = method.options.getExtensionValue(ext: DRExtensions_route_method),
       let path = method.options.getExtensionValue(ext: DRExtensions_route_path),
       let audience = method.options.getExtensionValue(ext: DRExtensions_route_audience),
-      let allowance = method.options.getExtensionValue(ext: DRExtensions_route_allowance)
+      let allowance = method.options.getExtensionValue(ext: DRExtensions_route_allowance),
+      let label = method.options.getExtensionValue(ext: DRExtensions_route_label),
+      label.isEmpty == false
     else {
       throw EndpointTableError.incompleteRoute(
         service: method.service.name,
@@ -55,6 +61,7 @@ struct EmittedMethod {
     pathTemplate = path
     audienceCaseName = try audiences.caseName(forValue: Int32(audience.rawValue))
     allowanceCaseName = try allowances.caseName(forValue: Int32(allowance.rawValue))
+    self.label = label
     answerTypeName = namer.fullName(message: answer)
 
     if let gate = method.options.getExtensionValue(ext: DRExtensions_plan_gate) {

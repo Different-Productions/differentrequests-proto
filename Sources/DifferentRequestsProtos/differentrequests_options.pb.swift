@@ -510,6 +510,25 @@ extension SwiftProtobuf.Google_Protobuf_MethodOptions {
     clearExtensionValue(ext: DRExtensions_route_allowance)
   }
 
+  /// What one call does, in words a person reads: "Loaded the board". Drawn beside
+  /// the rpc's name wherever a call is listed, because a list of rpc names is a list
+  /// only its authors can read. Every rpc declares one, and it is prose rather than
+  /// an identifier, so it is emitted as a string and never read back.
+  public var DRrouteLabel: String {
+    get {return getExtensionValue(ext: DRExtensions_route_label) ?? String()}
+    set {setExtensionValue(ext: DRExtensions_route_label, value: newValue)}
+  }
+  /// Returns true if extension `DRExtensions_route_label`
+  /// has been explicitly set.
+  public var hasDRrouteLabel: Bool {
+    return hasExtensionValue(ext: DRExtensions_route_label)
+  }
+  /// Clears the value of extension `DRExtensions_route_label`.
+  /// Subsequent reads from it will return its default value.
+  public mutating func clearDRrouteLabel() {
+    clearExtensionValue(ext: DRExtensions_route_label)
+  }
+
 }
 
 // MARK: - File's ExtensionMap: DRDifferentrequestsOptions_Extensions
@@ -524,6 +543,7 @@ public let DRDifferentrequestsOptions_Extensions: SwiftProtobuf.SimpleExtensionM
   DRExtensions_route_audience,
   DRExtensions_plan_gate,
   DRExtensions_route_allowance,
+  DRExtensions_route_label,
   DRExtensions_gates,
   DRExtensions_max_characters,
   DRExtensions_url_token,
@@ -566,6 +586,15 @@ public let DRExtensions_plan_gate = SwiftProtobuf.MessageExtension<SwiftProtobuf
 public let DRExtensions_route_allowance = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalEnumExtensionField<DRAllowance>, SwiftProtobuf.Google_Protobuf_MethodOptions>(
   _protobuf_fieldNumber: 51251,
   fieldName: "differentrequests.v1.route_allowance"
+)
+
+/// What one call does, in words a person reads: "Loaded the board". Drawn beside
+/// the rpc's name wherever a call is listed, because a list of rpc names is a list
+/// only its authors can read. Every rpc declares one, and it is prose rather than
+/// an identifier, so it is emitted as a string and never read back.
+public let DRExtensions_route_label = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalExtensionField<SwiftProtobuf.ProtobufString>, SwiftProtobuf.Google_Protobuf_MethodOptions>(
+  _protobuf_fieldNumber: 51252,
+  fieldName: "differentrequests.v1.route_label"
 )
 
 public let DRExtensions_gates = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalEnumExtensionField<DRPlanSurface>, SwiftProtobuf.Google_Protobuf_FieldOptions>(

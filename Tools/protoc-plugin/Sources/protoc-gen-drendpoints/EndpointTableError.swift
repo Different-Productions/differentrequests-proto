@@ -12,9 +12,10 @@ enum EndpointTableError: Error, CustomStringConvertible {
     case .incompleteRoute(let service, let method):
       return """
         \(service).\(method) has no complete route — needs (route_method), (route_path), \
-        (route_audience) and (route_allowance). Fatal rather than defaulted: an rpc with no \
-        audience would be served to anyone holding an app key, one with no path would be served \
-        nowhere, and one with no allowance would be answered without being counted.
+        (route_audience), (route_allowance) and a non-empty (route_label). Fatal rather than \
+        defaulted: an rpc with no audience would be served to anyone holding an app key, one with \
+        no path would be served nowhere, one with no allowance would be answered without being \
+        counted, and one with no label would be listed by a name only its authors can read.
         """
     case .answerlessRPC(let service, let method):
       return """

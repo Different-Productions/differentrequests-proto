@@ -498,6 +498,7 @@ service RequestsService {
     option (route_path) = "/config";
     option (route_audience) = AUDIENCE_APP_KEY;
     option (route_allowance) = ALLOWANCE_UNCOUNTED;
+    option (route_label) = "Read its settings";
   }
 
   rpc CreateSession(CreateSessionRequest) returns (CreateSessionResponse) {
@@ -505,6 +506,7 @@ service RequestsService {
     option (route_path) = "/sessions";
     option (route_audience) = AUDIENCE_APP_KEY;
     option (route_allowance) = ALLOWANCE_SIGN_IN;
+    option (route_label) = "Signed a person in";
   }
 
   rpc ListRequests(ListRequestsRequest) returns (ListRequestsResponse) {
@@ -512,6 +514,7 @@ service RequestsService {
     option (route_path) = "/requests";
     option (route_audience) = AUDIENCE_APP_KEY;
     option (route_allowance) = ALLOWANCE_UNCOUNTED;
+    option (route_label) = "Loaded the board";
   }
 
   rpc CreateRequest(CreateRequestRequest) returns (CreateRequestResponse) {
@@ -519,6 +522,7 @@ service RequestsService {
     option (route_path) = "/requests";
     option (route_audience) = AUDIENCE_END_USER;
     option (route_allowance) = ALLOWANCE_WRITE;
+    option (route_label) = "Asked for something";
   }
 
   rpc GetRequest(GetRequestRequest) returns (GetRequestResponse) {
@@ -526,6 +530,7 @@ service RequestsService {
     option (route_path) = "/requests/{requestId}";
     option (route_audience) = AUDIENCE_APP_KEY;
     option (route_allowance) = ALLOWANCE_UNCOUNTED;
+    option (route_label) = "Opened a request";
   }
 
   rpc Vote(VoteRequest) returns (VoteResponse) {
@@ -533,6 +538,7 @@ service RequestsService {
     option (route_path) = "/requests/{requestId}/vote";
     option (route_audience) = AUDIENCE_END_USER;
     option (route_allowance) = ALLOWANCE_WRITE;
+    option (route_label) = "Voted";
   }
 
   rpc ClearVote(ClearVoteRequest) returns (ClearVoteResponse) {
@@ -540,6 +546,7 @@ service RequestsService {
     option (route_path) = "/requests/{requestId}/vote";
     option (route_audience) = AUDIENCE_END_USER;
     option (route_allowance) = ALLOWANCE_WRITE;
+    option (route_label) = "Took a vote back";
   }
 
   rpc Follow(FollowRequest) returns (FollowResponse) {
@@ -547,6 +554,7 @@ service RequestsService {
     option (route_path) = "/requests/{requestId}/follow";
     option (route_audience) = AUDIENCE_END_USER;
     option (route_allowance) = ALLOWANCE_WRITE;
+    option (route_label) = "Followed a request";
   }
 
   rpc Unfollow(UnfollowRequest) returns (UnfollowResponse) {
@@ -554,6 +562,7 @@ service RequestsService {
     option (route_path) = "/requests/{requestId}/follow";
     option (route_audience) = AUDIENCE_END_USER;
     option (route_allowance) = ALLOWANCE_WRITE;
+    option (route_label) = "Stopped following a request";
   }
 
   rpc ListComments(ListCommentsRequest) returns (ListCommentsResponse) {
@@ -561,6 +570,7 @@ service RequestsService {
     option (route_path) = "/requests/{requestId}/comments";
     option (route_audience) = AUDIENCE_APP_KEY;
     option (route_allowance) = ALLOWANCE_UNCOUNTED;
+    option (route_label) = "Loaded comments";
   }
 
   rpc CreateComment(CreateCommentRequest) returns (CreateCommentResponse) {
@@ -568,6 +578,7 @@ service RequestsService {
     option (route_path) = "/requests/{requestId}/comments";
     option (route_audience) = AUDIENCE_END_USER;
     option (route_allowance) = ALLOWANCE_WRITE;
+    option (route_label) = "Commented";
     option (plan_gate) = PLAN_SURFACE_COMMENTS;
   }
 
@@ -576,6 +587,7 @@ service RequestsService {
     option (route_path) = "/notifications";
     option (route_audience) = AUDIENCE_END_USER;
     option (route_allowance) = ALLOWANCE_UNCOUNTED;
+    option (route_label) = "Loaded notifications";
   }
 
   // The literal segment is declared before the `{notificationId}` template below it. A
@@ -586,6 +598,7 @@ service RequestsService {
     option (route_path) = "/notifications/unread-count";
     option (route_audience) = AUDIENCE_END_USER;
     option (route_allowance) = ALLOWANCE_UNCOUNTED;
+    option (route_label) = "Checked for new notifications";
   }
 
   rpc MarkAllNotificationsRead(MarkAllNotificationsReadRequest) returns (MarkAllNotificationsReadResponse) {
@@ -593,6 +606,7 @@ service RequestsService {
     option (route_path) = "/notifications/read-all";
     option (route_audience) = AUDIENCE_END_USER;
     option (route_allowance) = ALLOWANCE_WRITE;
+    option (route_label) = "Marked every notification read";
   }
 
   rpc MarkNotificationRead(MarkNotificationReadRequest) returns (MarkNotificationReadResponse) {
@@ -600,6 +614,7 @@ service RequestsService {
     option (route_path) = "/notifications/{notificationId}/read";
     option (route_audience) = AUDIENCE_END_USER;
     option (route_allowance) = ALLOWANCE_WRITE;
+    option (route_label) = "Marked a notification read";
   }
 
   rpc RegisterDevice(RegisterDeviceRequest) returns (RegisterDeviceResponse) {
@@ -607,6 +622,7 @@ service RequestsService {
     option (route_path) = "/devices";
     option (route_audience) = AUDIENCE_END_USER;
     option (route_allowance) = ALLOWANCE_WRITE;
+    option (route_label) = "Turned on notifications for a phone";
   }
 
   rpc UnregisterDevice(UnregisterDeviceRequest) returns (UnregisterDeviceResponse) {
@@ -614,6 +630,7 @@ service RequestsService {
     option (route_path) = "/devices/{deviceId}";
     option (route_audience) = AUDIENCE_END_USER;
     option (route_allowance) = ALLOWANCE_WRITE;
+    option (route_label) = "Turned off notifications for a phone";
   }
 
   rpc GetRoadmap(GetRoadmapRequest) returns (GetRoadmapResponse) {
@@ -621,6 +638,7 @@ service RequestsService {
     option (route_path) = "/roadmap";
     option (route_audience) = AUDIENCE_APP_KEY;
     option (route_allowance) = ALLOWANCE_UNCOUNTED;
+    option (route_label) = "Loaded the roadmap";
     option (plan_gate) = PLAN_SURFACE_ROADMAP;
   }
 
@@ -629,6 +647,7 @@ service RequestsService {
     option (route_path) = "/changelog";
     option (route_audience) = AUDIENCE_APP_KEY;
     option (route_allowance) = ALLOWANCE_UNCOUNTED;
+    option (route_label) = "Loaded what's new";
     option (plan_gate) = PLAN_SURFACE_CHANGELOG;
   }
 }
