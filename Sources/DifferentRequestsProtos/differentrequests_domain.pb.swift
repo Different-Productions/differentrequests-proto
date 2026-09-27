@@ -366,11 +366,6 @@ public struct DREndUser: Sendable {
 
   public var displayName: String = String()
 
-  /// Arbitrary host-app attributes (plan, cohort, install date) carried so a
-  /// triager can see who is asking. Untrusted, unindexed, and never used for
-  /// authorization.
-  public var traits: Dictionary<String,String> = [:]
-
   public var createdAt: SwiftProtobuf.Google_Protobuf_Timestamp {
     get {return _createdAt ?? SwiftProtobuf.Google_Protobuf_Timestamp()}
     set {_createdAt = newValue}
@@ -1179,7 +1174,7 @@ extension DRApp: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase
 
 extension DREndUser: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".EndUser"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}external_id\0\u{1}email\0\u{3}display_name\0\u{1}traits\0\u{3}created_at\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}external_id\0\u{1}email\0\u{3}display_name\0\u{4}\u{2}created_at\0\u{b}traits\0\u{c}\u{5}\u{1}")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1191,7 +1186,6 @@ extension DREndUser: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
       case 2: try { try decoder.decodeSingularStringField(value: &self.externalID) }()
       case 3: try { try decoder.decodeSingularStringField(value: &self.email) }()
       case 4: try { try decoder.decodeSingularStringField(value: &self.displayName) }()
-      case 5: try { try decoder.decodeMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: &self.traits) }()
       case 6: try { try decoder.decodeSingularMessageField(value: &self._createdAt) }()
       default: break
       }
@@ -1215,9 +1209,6 @@ extension DREndUser: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     if !self.displayName.isEmpty {
       try visitor.visitSingularStringField(value: self.displayName, fieldNumber: 4)
     }
-    if !self.traits.isEmpty {
-      try visitor.visitMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: self.traits, fieldNumber: 5)
-    }
     try { if let v = self._createdAt {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
     } }()
@@ -1229,7 +1220,6 @@ extension DREndUser: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     if lhs.externalID != rhs.externalID {return false}
     if lhs.email != rhs.email {return false}
     if lhs.displayName != rhs.displayName {return false}
-    if lhs.traits != rhs.traits {return false}
     if lhs._createdAt != rhs._createdAt {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true

@@ -387,9 +387,6 @@ public struct DRAppConfig: Sendable {
   /// Whether the developer can file a request of their own.
   public var planningEnabled: Bool = false
 
-  /// Whether requests can be ranked by a trait the people asking carry.
-  public var traitRankingEnabled: Bool = false
-
   /// Whether the SDK draws the board without "Powered by Different Requests".
   /// Absent on Free, so a Free app carries the badge.
   public var badgeRemoved: Bool = false
@@ -434,9 +431,9 @@ public struct DRGetConfigResponse: Sendable {
 
 /// Exchange the host app's identifier for a session.
 ///
-/// Upsert semantics: the same external_id returns the same user, with email,
-/// display name, and traits refreshed from whatever the host app now knows. That
-/// is what lets someone reinstall and still hold their votes.
+/// Upsert semantics: the same external_id returns the same user, with email and
+/// display name refreshed from whatever the host app now knows. That is what lets
+/// someone reinstall and still hold their votes.
 ///
 /// **An app key does not say who a person is.** It ships inside the host app's
 /// binary and anybody who installs that app can read it, so a call carrying only
@@ -457,8 +454,6 @@ public struct DRCreateSessionRequest: Sendable {
   public var email: String = String()
 
   public var displayName: String = String()
-
-  public var traits: Dictionary<String,String> = [:]
 
   /// The host developer's backend vouching for this person, when their app has a
   /// signing secret. Absent from an app that has none, which is every app until
@@ -1530,7 +1525,7 @@ extension DRApiError: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
 
 extension DRAppConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".AppConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}app\0\u{3}roadmap_enabled\0\u{3}changelog_enabled\0\u{3}comments_enabled\0\u{4}\u{2}push_enabled\0\u{3}developer_replies_enabled\0\u{3}folding_enabled\0\u{3}appearance_enabled\0\u{3}planning_enabled\0\u{3}trait_ranking_enabled\0\u{3}badge_removed\0\u{b}show_badge\0\u{c}\u{5}\u{1}")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}app\0\u{3}roadmap_enabled\0\u{3}changelog_enabled\0\u{3}comments_enabled\0\u{4}\u{2}push_enabled\0\u{3}developer_replies_enabled\0\u{3}folding_enabled\0\u{3}appearance_enabled\0\u{3}planning_enabled\0\u{4}\u{2}badge_removed\0\u{b}show_badge\0\u{b}trait_ranking_enabled\0\u{c}\u{5}\u{1}\u{c}\u{b}\u{1}")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1547,7 +1542,6 @@ extension DRAppConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       case 8: try { try decoder.decodeSingularBoolField(value: &self.foldingEnabled) }()
       case 9: try { try decoder.decodeSingularBoolField(value: &self.appearanceEnabled) }()
       case 10: try { try decoder.decodeSingularBoolField(value: &self.planningEnabled) }()
-      case 11: try { try decoder.decodeSingularBoolField(value: &self.traitRankingEnabled) }()
       case 12: try { try decoder.decodeSingularBoolField(value: &self.badgeRemoved) }()
       default: break
       }
@@ -1586,9 +1580,6 @@ extension DRAppConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     if self.planningEnabled != false {
       try visitor.visitSingularBoolField(value: self.planningEnabled, fieldNumber: 10)
     }
-    if self.traitRankingEnabled != false {
-      try visitor.visitSingularBoolField(value: self.traitRankingEnabled, fieldNumber: 11)
-    }
     if self.badgeRemoved != false {
       try visitor.visitSingularBoolField(value: self.badgeRemoved, fieldNumber: 12)
     }
@@ -1605,7 +1596,6 @@ extension DRAppConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     if lhs.foldingEnabled != rhs.foldingEnabled {return false}
     if lhs.appearanceEnabled != rhs.appearanceEnabled {return false}
     if lhs.planningEnabled != rhs.planningEnabled {return false}
-    if lhs.traitRankingEnabled != rhs.traitRankingEnabled {return false}
     if lhs.badgeRemoved != rhs.badgeRemoved {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
@@ -1667,7 +1657,7 @@ extension DRGetConfigResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
 
 extension DRCreateSessionRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".CreateSessionRequest"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}external_id\0\u{1}email\0\u{3}display_name\0\u{1}traits\0\u{1}proof\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}external_id\0\u{1}email\0\u{3}display_name\0\u{2}\u{2}proof\0\u{b}traits\0\u{c}\u{4}\u{1}")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1678,7 +1668,6 @@ extension DRCreateSessionRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageI
       case 1: try { try decoder.decodeSingularStringField(value: &self.externalID) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self.email) }()
       case 3: try { try decoder.decodeSingularStringField(value: &self.displayName) }()
-      case 4: try { try decoder.decodeMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: &self.traits) }()
       case 5: try { try decoder.decodeSingularMessageField(value: &self._proof) }()
       default: break
       }
@@ -1699,9 +1688,6 @@ extension DRCreateSessionRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageI
     if !self.displayName.isEmpty {
       try visitor.visitSingularStringField(value: self.displayName, fieldNumber: 3)
     }
-    if !self.traits.isEmpty {
-      try visitor.visitMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: self.traits, fieldNumber: 4)
-    }
     try { if let v = self._proof {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
     } }()
@@ -1712,7 +1698,6 @@ extension DRCreateSessionRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageI
     if lhs.externalID != rhs.externalID {return false}
     if lhs.email != rhs.email {return false}
     if lhs.displayName != rhs.displayName {return false}
-    if lhs.traits != rhs.traits {return false}
     if lhs._proof != rhs._proof {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true

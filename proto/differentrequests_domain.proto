@@ -96,12 +96,11 @@ message EndUser {
   string email = 3;
   string display_name = 4;
 
-  // Arbitrary host-app attributes (plan, cohort, install date) carried so a
-  // triager can see who is asking. Untrusted, unindexed, and never used for
-  // authorization.
-  map<string, string> traits = 5;
-
   google.protobuf.Timestamp created_at = 6;
+
+  // Nothing about a person's standing in the host app is held here.
+  reserved 5;
+  reserved "traits";
 }
 
 // The author of a request or comment, denormalized onto what embeds it.

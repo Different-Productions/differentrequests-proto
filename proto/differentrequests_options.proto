@@ -59,11 +59,11 @@ enum PlanSurface {
   // The developer filing a request of their own, public or private.
   PLAN_SURFACE_PLANNING = 8;
 
-  // Requests ranked by a trait the people asking carry, not only by count.
-  PLAN_SURFACE_TRAIT_RANKING = 9;
-
   // The board drawn without "Powered by Different Requests".
   PLAN_SURFACE_BADGE_REMOVAL = 10;
+
+  reserved 9;
+  reserved "PLAN_SURFACE_TRAIT_RANKING";
 }
 
 extend google.protobuf.MethodOptions {

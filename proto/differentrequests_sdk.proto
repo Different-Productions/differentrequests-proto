@@ -182,15 +182,12 @@ message AppConfig {
   // Whether the developer can file a request of their own.
   bool planning_enabled = 10 [(gates) = PLAN_SURFACE_PLANNING];
 
-  // Whether requests can be ranked by a trait the people asking carry.
-  bool trait_ranking_enabled = 11 [(gates) = PLAN_SURFACE_TRAIT_RANKING];
-
   // Whether the SDK draws the board without "Powered by Different Requests".
   // Absent on Free, so a Free app carries the badge.
   bool badge_removed = 12 [(gates) = PLAN_SURFACE_BADGE_REMOVAL];
 
-  reserved 5;
-  reserved "show_badge";
+  reserved 5, 11;
+  reserved "show_badge", "trait_ranking_enabled";
 }
 
 message GetConfigRequest {}
@@ -201,9 +198,9 @@ message GetConfigResponse {
 
 // Exchange the host app's identifier for a session.
 //
-// Upsert semantics: the same external_id returns the same user, with email,
-// display name, and traits refreshed from whatever the host app now knows. That
-// is what lets someone reinstall and still hold their votes.
+// Upsert semantics: the same external_id returns the same user, with email and
+// display name refreshed from whatever the host app now knows. That is what lets
+// someone reinstall and still hold their votes.
 //
 // **An app key does not say who a person is.** It ships inside the host app's
 // binary and anybody who installs that app can read it, so a call carrying only
@@ -219,12 +216,14 @@ message CreateSessionRequest {
   // The address limit is the RFC's, not ours to shorten.
   string email = 2 [(max_characters) = 320];
   string display_name = 3 [(max_characters) = 200];
-  map<string, string> traits = 4;
 
   // The host developer's backend vouching for this person, when their app has a
   // signing secret. Absent from an app that has none, which is every app until
   // its developer asks for one.
   IdentityProof proof = 5;
+
+  reserved 4;
+  reserved "traits";
 }
 
 // A host developer's own backend saying that this person is who the app claims.

@@ -22,7 +22,6 @@ extension DREndUser {
     public static let externalId = "external_id"
     public static let email = "email"
     public static let displayName = "display_name"
-    public static let traits = "traits"
     public static let createdAt = "created_at"
   }
 }

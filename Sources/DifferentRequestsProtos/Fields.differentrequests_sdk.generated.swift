@@ -70,7 +70,6 @@ extension DRAppConfig {
     public static let foldingEnabled = "folding_enabled"
     public static let appearanceEnabled = "appearance_enabled"
     public static let planningEnabled = "planning_enabled"
-    public static let traitRankingEnabled = "trait_ranking_enabled"
     public static let badgeRemoved = "badge_removed"
   }
 }
@@ -94,7 +93,6 @@ extension DRAppConfig {
     case .folding: return foldingEnabled
     case .appearance: return appearanceEnabled
     case .planning: return planningEnabled
-    case .traitRanking: return traitRankingEnabled
     case .badgeRemoval: return badgeRemoved
     case .unspecified, .UNRECOGNIZED: return false
     }
@@ -116,7 +114,6 @@ extension DRCreateSessionRequest {
     public static let externalId = "external_id"
     public static let email = "email"
     public static let displayName = "display_name"
-    public static let traits = "traits"
     public static let proof = "proof"
   }
 }

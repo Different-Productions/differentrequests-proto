@@ -74,9 +74,6 @@ public enum DRPlanSurface: SwiftProtobuf.Enum, Swift.CaseIterable {
   /// The developer filing a request of their own, public or private.
   case planning // = 8
 
-  /// Requests ranked by a trait the people asking carry, not only by count.
-  case traitRanking // = 9
-
   /// The board drawn without "Powered by Different Requests".
   case badgeRemoval // = 10
   case UNRECOGNIZED(Int)
@@ -96,7 +93,6 @@ public enum DRPlanSurface: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 6: self = .folding
     case 7: self = .appearance
     case 8: self = .planning
-    case 9: self = .traitRanking
     case 10: self = .badgeRemoval
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -113,7 +109,6 @@ public enum DRPlanSurface: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .folding: return 6
     case .appearance: return 7
     case .planning: return 8
-    case .traitRanking: return 9
     case .badgeRemoval: return 10
     case .UNRECOGNIZED(let i): return i
     }
@@ -130,7 +125,6 @@ public enum DRPlanSurface: SwiftProtobuf.Enum, Swift.CaseIterable {
     .folding,
     .appearance,
     .planning,
-    .traitRanking,
     .badgeRemoval,
   ]
 
@@ -640,7 +634,7 @@ public let DRExtensions_label = SwiftProtobuf.MessageExtension<SwiftProtobuf.Opt
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 extension DRPlanSurface: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0PLAN_SURFACE_UNSPECIFIED\0\u{1}PLAN_SURFACE_ROADMAP\0\u{1}PLAN_SURFACE_CHANGELOG\0\u{1}PLAN_SURFACE_COMMENTS\0\u{1}PLAN_SURFACE_PUSH\0\u{1}PLAN_SURFACE_DEVELOPER_REPLIES\0\u{1}PLAN_SURFACE_FOLDING\0\u{1}PLAN_SURFACE_APPEARANCE\0\u{1}PLAN_SURFACE_PLANNING\0\u{1}PLAN_SURFACE_TRAIT_RANKING\0\u{1}PLAN_SURFACE_BADGE_REMOVAL\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0PLAN_SURFACE_UNSPECIFIED\0\u{1}PLAN_SURFACE_ROADMAP\0\u{1}PLAN_SURFACE_CHANGELOG\0\u{1}PLAN_SURFACE_COMMENTS\0\u{1}PLAN_SURFACE_PUSH\0\u{1}PLAN_SURFACE_DEVELOPER_REPLIES\0\u{1}PLAN_SURFACE_FOLDING\0\u{1}PLAN_SURFACE_APPEARANCE\0\u{1}PLAN_SURFACE_PLANNING\0\u{2}\u{2}PLAN_SURFACE_BADGE_REMOVAL\0")
 }
 
 extension DRAllowance: SwiftProtobuf._ProtoNameProviding {

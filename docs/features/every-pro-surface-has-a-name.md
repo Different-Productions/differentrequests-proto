@@ -16,8 +16,11 @@ carries one flag per surface, each declaring `(gates)`, and the generated
 | `PLAN_SURFACE_FOLDING` | `folding_enabled` | Several requests folded into one |
 | `PLAN_SURFACE_APPEARANCE` | `appearance_enabled` | The board in the host app's accent color and font |
 | `PLAN_SURFACE_PLANNING` | `planning_enabled` | The developer filing a request of their own |
-| `PLAN_SURFACE_TRAIT_RANKING` | `trait_ranking_enabled` | Ranking by a trait the people asking carry |
 | `PLAN_SURFACE_BADGE_REMOVAL` | `badge_removed` | The board without "Powered by Different Requests" |
+
+`PLAN_SURFACE_TRAIT_RANKING` (9) and `trait_ranking_enabled` (field 11) are gone and reserved, with
+`EndUser.traits` (5) and `CreateSessionRequest.traits` (4): nothing about a person's standing in the
+host app is held or ranked on.
 
 `show_badge` (field 5) is gone and reserved. A Free app's `badge_removed` is false, so the badge is
 drawn; `show_badge` said the same thing the other way round, and was the one flag no surface named.
