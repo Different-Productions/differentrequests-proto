@@ -81,9 +81,9 @@ extension DRRequestStatus {
   public var label: String {
     switch self {
     case .unspecified: return "Unknown"
-    case .`open`: return "Open"
+    case .`open`: return "Waiting"
     case .planned: return "Planned"
-    case .inProgress: return "In Progress"
+    case .inProgress: return "In progress"
     case .shipped: return "Shipped"
     case .declined: return "Declined"
     case .duplicate: return "Duplicate"
@@ -99,11 +99,11 @@ extension DRNotificationHeadline {
   /// no caller has to invent a word.
   public var label: String {
     switch self {
-    case .unspecified: return "Updated"
+    case .unspecified: return "Something changed"
     case .statusChanged: return "Now"
     case .commentAdded: return "New comment"
-    case .requestDuplicated: return "Already on the board"
-    case .UNRECOGNIZED: return "Updated"
+    case .requestDuplicated: return "Already asked for"
+    case .UNRECOGNIZED: return "Something changed"
     }
   }
 }

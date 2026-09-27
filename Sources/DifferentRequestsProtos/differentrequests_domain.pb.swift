@@ -212,7 +212,7 @@ public enum DRCommentAuthorRole: SwiftProtobuf.Enum, Swift.CaseIterable {
 /// them one way.
 ///
 /// STATUS_CHANGED is the word the headline *opens* with, and the status's own label
-/// follows it: "Now Planned". The other three are whole headlines.
+/// follows it in lower case: "Now planned". The other three are whole headlines.
 public enum DRNotificationHeadline: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
@@ -562,7 +562,8 @@ public struct DRFeatureRequest: @unchecked Sendable {
   }
 
   /// Absent when the author has been deleted, or when the request was created in
-  /// the console rather than by a user. A request with no author is normal.
+  /// the console rather than by a user. A request with no author is normal;
+  /// `author_deleted` says which of the two it is.
   public var author: DRUserRef {
     get {return _storage._author ?? DRUserRef()}
     set {_uniqueStorage()._author = newValue}
@@ -571,6 +572,13 @@ public struct DRFeatureRequest: @unchecked Sendable {
   public var hasAuthor: Bool {return _storage._author != nil}
   /// Clears the value of `author`. Subsequent reads from it will return its default value.
   public mutating func clearAuthor() {_uniqueStorage()._author = nil}
+
+  /// The person who asked was deleted. Their request stays, and a reader shows
+  /// "Deleted user" where their name was. False for a request the team filed.
+  public var authorDeleted: Bool {
+    get {return _storage._authorDeleted}
+    set {_uniqueStorage()._authorDeleted = newValue}
+  }
 
   public var title: String {
     get {return _storage._title}
@@ -775,6 +783,10 @@ public struct DRComment: Sendable {
   public mutating func clearAuthor() {self._author = nil}
 
   public var authorRole: DRCommentAuthorRole = .unspecified
+
+  /// The person who wrote it was deleted. The comment stays, and a reader shows
+  /// "Deleted user" where their name was.
+  public var authorDeleted: Bool = false
 
   public var createdAt: SwiftProtobuf.Google_Protobuf_Timestamp {
     get {return _createdAt ?? SwiftProtobuf.Google_Protobuf_Timestamp()}
@@ -1029,12 +1041,36 @@ public struct DRChangelogEntry: Sendable {
   /// Clears the value of `createdAt`. Subsequent reads from it will return its default value.
   public mutating func clearCreatedAt() {self._createdAt = nil}
 
+  /// The requests in request_ids that a reader of this app can see, each named,
+  /// so What's New lists what an update answers without a read per request. A
+  /// request kept private or taken down since is left out; request_ids still
+  /// holds every id, for telling the people who asked.
+  public var answers: [DRChangelogAnswer] = []
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _publishedAt: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
   fileprivate var _createdAt: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
+}
+
+/// One request an update answers, as What's New lists it.
+public struct DRChangelogAnswer: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var requestID: String = String()
+
+  public var title: String = String()
+
+  /// Its demand now, as the board counts it.
+  public var voteCount: Int32 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
 }
 
 /// One column of the public roadmap.
@@ -1467,12 +1503,13 @@ extension DRViewerState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
 
 extension DRFeatureRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".FeatureRequest"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}app_id\0\u{1}author\0\u{1}title\0\u{1}body\0\u{4}\u{4}vote_count\0\u{3}comment_count\0\u{1}viewer\0\u{3}created_at\0\u{3}updated_at\0\u{2}\u{2}open\0\u{1}planned\0\u{3}in_progress\0\u{1}shipped\0\u{1}declined\0\u{1}duplicate\0\u{3}entered_state_at\0\u{3}duplicate_count\0\u{b}status\0\u{b}decline\0\u{b}merged_into_request_id\0\u{b}status_changed_at\0\u{c}\u{6}\u{1}\u{c}\u{7}\u{1}\u{c}\u{8}\u{1}\u{c}\u{e}\u{1}")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}app_id\0\u{1}author\0\u{1}title\0\u{1}body\0\u{4}\u{4}vote_count\0\u{3}comment_count\0\u{1}viewer\0\u{3}created_at\0\u{3}updated_at\0\u{2}\u{2}open\0\u{1}planned\0\u{3}in_progress\0\u{1}shipped\0\u{1}declined\0\u{1}duplicate\0\u{3}entered_state_at\0\u{3}duplicate_count\0\u{3}author_deleted\0\u{b}status\0\u{b}decline\0\u{b}merged_into_request_id\0\u{b}status_changed_at\0\u{c}\u{6}\u{1}\u{c}\u{7}\u{1}\u{c}\u{8}\u{1}\u{c}\u{e}\u{1}")
 
   fileprivate class _StorageClass {
     var _id: String = String()
     var _appID: String = String()
     var _author: DRUserRef? = nil
+    var _authorDeleted: Bool = false
     var _title: String = String()
     var _body: String = String()
     var _voteCount: Int32 = 0
@@ -1496,6 +1533,7 @@ extension DRFeatureRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
       _id = source._id
       _appID = source._appID
       _author = source._author
+      _authorDeleted = source._authorDeleted
       _title = source._title
       _body = source._body
       _voteCount = source._voteCount
@@ -1614,6 +1652,7 @@ extension DRFeatureRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
         }()
         case 21: try { try decoder.decodeSingularMessageField(value: &_storage._enteredStateAt) }()
         case 22: try { try decoder.decodeSingularInt32Field(value: &_storage._duplicateCount) }()
+        case 23: try { try decoder.decodeSingularBoolField(value: &_storage._authorDeleted) }()
         default: break
         }
       }
@@ -1689,6 +1728,9 @@ extension DRFeatureRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
       if _storage._duplicateCount != 0 {
         try visitor.visitSingularInt32Field(value: _storage._duplicateCount, fieldNumber: 22)
       }
+      if _storage._authorDeleted != false {
+        try visitor.visitSingularBoolField(value: _storage._authorDeleted, fieldNumber: 23)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -1701,6 +1743,7 @@ extension DRFeatureRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
         if _storage._id != rhs_storage._id {return false}
         if _storage._appID != rhs_storage._appID {return false}
         if _storage._author != rhs_storage._author {return false}
+        if _storage._authorDeleted != rhs_storage._authorDeleted {return false}
         if _storage._title != rhs_storage._title {return false}
         if _storage._body != rhs_storage._body {return false}
         if _storage._voteCount != rhs_storage._voteCount {return false}
@@ -1756,7 +1799,7 @@ extension DRCommentHidden: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
 
 extension DRComment: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Comment"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}request_id\0\u{1}author\0\u{3}author_role\0\u{4}\u{3}created_at\0\u{1}body\0\u{1}hidden\0\u{b}is_hidden\0\u{c}\u{5}\u{1}\u{c}\u{6}\u{1}")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}request_id\0\u{1}author\0\u{3}author_role\0\u{4}\u{3}created_at\0\u{1}body\0\u{1}hidden\0\u{3}author_deleted\0\u{b}is_hidden\0\u{c}\u{5}\u{1}\u{c}\u{6}\u{1}")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -1790,6 +1833,7 @@ extension DRComment: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
           self.content = .hidden(v)
         }
       }()
+      case 10: try { try decoder.decodeSingularBoolField(value: &self.authorDeleted) }()
       default: break
       }
     }
@@ -1826,6 +1870,9 @@ extension DRComment: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     }()
     case nil: break
     }
+    if self.authorDeleted != false {
+      try visitor.visitSingularBoolField(value: self.authorDeleted, fieldNumber: 10)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1834,6 +1881,7 @@ extension DRComment: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
     if lhs.requestID != rhs.requestID {return false}
     if lhs._author != rhs._author {return false}
     if lhs.authorRole != rhs.authorRole {return false}
+    if lhs.authorDeleted != rhs.authorDeleted {return false}
     if lhs._createdAt != rhs._createdAt {return false}
     if lhs.content != rhs.content {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
@@ -2085,7 +2133,7 @@ extension DRDeviceRegistration: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
 
 extension DRChangelogEntry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ChangelogEntry"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}app_id\0\u{1}title\0\u{1}body\0\u{1}version\0\u{3}request_ids\0\u{3}published_at\0\u{3}created_at\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}app_id\0\u{1}title\0\u{1}body\0\u{1}version\0\u{3}request_ids\0\u{3}published_at\0\u{3}created_at\0\u{1}answers\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -2101,6 +2149,7 @@ extension DRChangelogEntry: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
       case 6: try { try decoder.decodeRepeatedStringField(value: &self.requestIds) }()
       case 7: try { try decoder.decodeSingularMessageField(value: &self._publishedAt) }()
       case 8: try { try decoder.decodeSingularMessageField(value: &self._createdAt) }()
+      case 9: try { try decoder.decodeRepeatedMessageField(value: &self.answers) }()
       default: break
       }
     }
@@ -2135,6 +2184,9 @@ extension DRChangelogEntry: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
     try { if let v = self._createdAt {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
     } }()
+    if !self.answers.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.answers, fieldNumber: 9)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -2147,6 +2199,47 @@ extension DRChangelogEntry: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
     if lhs.requestIds != rhs.requestIds {return false}
     if lhs._publishedAt != rhs._publishedAt {return false}
     if lhs._createdAt != rhs._createdAt {return false}
+    if lhs.answers != rhs.answers {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension DRChangelogAnswer: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".ChangelogAnswer"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}request_id\0\u{1}title\0\u{3}vote_count\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.requestID) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.title) }()
+      case 3: try { try decoder.decodeSingularInt32Field(value: &self.voteCount) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.requestID.isEmpty {
+      try visitor.visitSingularStringField(value: self.requestID, fieldNumber: 1)
+    }
+    if !self.title.isEmpty {
+      try visitor.visitSingularStringField(value: self.title, fieldNumber: 2)
+    }
+    if self.voteCount != 0 {
+      try visitor.visitSingularInt32Field(value: self.voteCount, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DRChangelogAnswer, rhs: DRChangelogAnswer) -> Bool {
+    if lhs.requestID != rhs.requestID {return false}
+    if lhs.title != rhs.title {return false}
+    if lhs.voteCount != rhs.voteCount {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

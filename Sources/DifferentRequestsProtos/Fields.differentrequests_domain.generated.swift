@@ -81,6 +81,7 @@ extension DRFeatureRequest {
     public static let id = "id"
     public static let appId = "app_id"
     public static let author = "author"
+    public static let authorDeleted = "author_deleted"
     public static let title = "title"
     public static let body = "body"
     public static let voteCount = "vote_count"
@@ -132,6 +133,7 @@ extension DRComment {
     public static let requestId = "request_id"
     public static let author = "author"
     public static let authorRole = "author_role"
+    public static let authorDeleted = "author_deleted"
     public static let createdAt = "created_at"
     public static let body = "body"
     public static let hidden = "hidden"
@@ -220,6 +222,17 @@ extension DRChangelogEntry {
     public static let requestIds = "request_ids"
     public static let publishedAt = "published_at"
     public static let createdAt = "created_at"
+    public static let answers = "answers"
+  }
+}
+
+extension DRChangelogAnswer {
+  /// This message's field names, as the schema spells them. What a query key or a form field
+  /// has to be called.
+  public enum Field {
+    public static let requestId = "request_id"
+    public static let title = "title"
+    public static let voteCount = "vote_count"
   }
 }
 

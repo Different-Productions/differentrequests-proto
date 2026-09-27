@@ -510,7 +510,7 @@ extension SwiftProtobuf.Google_Protobuf_MethodOptions {
     clearExtensionValue(ext: DRExtensions_route_allowance)
   }
 
-  /// What one call does, in words a person reads: "Loaded the board". Drawn beside
+  /// What one call does, in words a person reads: "Loaded the requests". Drawn beside
   /// the rpc's name wherever a call is listed, because a list of rpc names is a list
   /// only its authors can read. Every rpc declares one, and it is prose rather than
   /// an identifier, so it is emitted as a string and never read back.
@@ -588,7 +588,7 @@ public let DRExtensions_route_allowance = SwiftProtobuf.MessageExtension<SwiftPr
   fieldName: "differentrequests.v1.route_allowance"
 )
 
-/// What one call does, in words a person reads: "Loaded the board". Drawn beside
+/// What one call does, in words a person reads: "Loaded the requests". Drawn beside
 /// the rpc's name wherever a call is listed, because a list of rpc names is a list
 /// only its authors can read. Every rpc declares one, and it is prose rather than
 /// an identifier, so it is emitted as a string and never read back.

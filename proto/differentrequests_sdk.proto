@@ -514,7 +514,7 @@ service RequestsService {
     option (route_path) = "/requests";
     option (route_audience) = AUDIENCE_APP_KEY;
     option (route_allowance) = ALLOWANCE_UNCOUNTED;
-    option (route_label) = "Loaded the board";
+    option (route_label) = "Loaded the requests";
   }
 
   rpc CreateRequest(CreateRequestRequest) returns (CreateRequestResponse) {

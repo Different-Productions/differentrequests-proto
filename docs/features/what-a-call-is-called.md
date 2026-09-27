@@ -3,7 +3,7 @@
 ## What it is
 
 Every rpc declares, as `(route_label)`, what one call to it does in words a person reads:
-"Loaded the board", "Voted", "Signed a person in". A list of calls is drawn in two consoles — a
+"Loaded the requests", "Voted", "Signed a person in". A list of calls is drawn in two consoles — a
 developer's Calls page and the platform console's Recent calls — and a list of rpc names
 (`ListRequests`, `GetUnreadCount`) is a list only the people who wrote the contract can read.
 
@@ -15,7 +15,7 @@ case.
 |---|---|
 | GetConfig | Read its settings |
 | CreateSession | Signed a person in |
-| ListRequests | Loaded the board |
+| ListRequests | Loaded the requests |
 | CreateRequest | Asked for something |
 | GetRequest | Opened a request |
 | Vote | Voted |
@@ -54,7 +54,7 @@ rpc ListRequests(ListRequestsRequest) returns (ListRequestsResponse) {
   option (route_path) = "/requests";
   option (route_audience) = AUDIENCE_APP_KEY;
   option (route_allowance) = ALLOWANCE_UNCOUNTED;
-  option (route_label) = "Loaded the board";
+  option (route_label) = "Loaded the requests";
 }
 ```
 

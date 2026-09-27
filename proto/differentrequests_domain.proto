@@ -134,7 +134,7 @@ enum RequestStatus {
   // triager works through.
   REQUEST_STATUS_OPEN = 1 [
     (url_token) = "open",
-    (label) = "Open",
+    (label) = "Waiting",
     (shown_on_a_board) = true
   ];
 
@@ -147,7 +147,7 @@ enum RequestStatus {
 
   REQUEST_STATUS_IN_PROGRESS = 3 [
     (url_token) = "in-progress",
-    (label) = "In Progress",
+    (label) = "In progress",
     (shown_on_a_board) = true
   ];
 
@@ -264,8 +264,13 @@ message FeatureRequest {
   string app_id = 2;
 
   // Absent when the author has been deleted, or when the request was created in
-  // the console rather than by a user. A request with no author is normal.
+  // the console rather than by a user. A request with no author is normal;
+  // `author_deleted` says which of the two it is.
   UserRef author = 3;
+
+  // The person who asked was deleted. Their request stays, and a reader shows
+  // "Deleted user" where their name was. False for a request the team filed.
+  bool author_deleted = 23;
 
   string title = 4;
   string body = 5;
@@ -358,6 +363,10 @@ message Comment {
   UserRef author = 3;
   CommentAuthorRole author_role = 4;
 
+  // The person who wrote it was deleted. The comment stays, and a reader shows
+  // "Deleted user" where their name was.
+  bool author_deleted = 10;
+
   // A body beside a flag saying the body is not there. The flag could not empty
   // the field; only a reader could, and only if it remembered to.
   //
@@ -420,16 +429,16 @@ message RequestDuplicateNews {
 // them one way.
 //
 // STATUS_CHANGED is the word the headline *opens* with, and the status's own label
-// follows it: "Now Planned". The other three are whole headlines.
+// follows it in lower case: "Now planned". The other three are whole headlines.
 enum NotificationHeadline {
   // News from a server newer than the reader. It still happened and the request
   // title still says what it happened to, so the row says that much rather than
   // nothing.
-  NOTIFICATION_HEADLINE_UNSPECIFIED = 0 [(label) = "Updated"];
+  NOTIFICATION_HEADLINE_UNSPECIFIED = 0 [(label) = "Something changed"];
 
   NOTIFICATION_HEADLINE_STATUS_CHANGED = 1 [(label) = "Now"];
   NOTIFICATION_HEADLINE_COMMENT_ADDED = 2 [(label) = "New comment"];
-  NOTIFICATION_HEADLINE_REQUEST_DUPLICATED = 3 [(label) = "Already on the board"];
+  NOTIFICATION_HEADLINE_REQUEST_DUPLICATED = 3 [(label) = "Already asked for"];
 }
 
 // One item in an end user's inbox.
@@ -515,6 +524,21 @@ message ChangelogEntry {
   // it answers shipped. Always present, unlike published_at, so an entry can
   // be ordered and addressed before anybody has published it.
   google.protobuf.Timestamp created_at = 8;
+
+  // The requests in request_ids that a reader of this app can see, each named,
+  // so What's New lists what an update answers without a read per request. A
+  // request kept private or taken down since is left out; request_ids still
+  // holds every id, for telling the people who asked.
+  repeated ChangelogAnswer answers = 9;
+}
+
+// One request an update answers, as What's New lists it.
+message ChangelogAnswer {
+  string request_id = 1;
+  string title = 2;
+
+  // Its demand now, as the board counts it.
+  int32 vote_count = 3;
 }
 
 // One column of the public roadmap.

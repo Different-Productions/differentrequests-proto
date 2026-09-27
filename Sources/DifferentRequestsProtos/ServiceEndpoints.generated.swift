@@ -136,7 +136,7 @@ public enum DRRequestsServiceRPC: String, Sendable, CaseIterable {
     switch self {
     case .getConfig: return "Read its settings"
     case .createSession: return "Signed a person in"
-    case .listRequests: return "Loaded the board"
+    case .listRequests: return "Loaded the requests"
     case .createRequest: return "Asked for something"
     case .getRequest: return "Opened a request"
     case .vote: return "Voted"

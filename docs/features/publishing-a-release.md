@@ -63,7 +63,7 @@ unchecked. It builds the same commit and prints it; nothing is pushed.
 | Any tag published before 2026-09-11 | resolved again | The same commit as before the repositories moved; no fingerprint error |
 | The public copy after a release | its tree is read | Exactly the tag's tracked files minus `.github` |
 | The first release after the move | published | It also deletes `.github/workflows/regenerate-and-diff.yml`, the last workflow file on the public copy |
-| A pull request or push to `master` here | Regenerate and diff runs | It runs on `[self-hosted, macOS, ARM64]`, one run at a time, and passes when the committed Swift matches a fresh `Scripts/generate.sh` |
+| A pull request or push to `master` here | Regenerate and diff runs | It runs on `[self-hosted, macOS, ARM64, run-<run id>]`, one run at a time, and passes when the committed Swift matches a fresh `Scripts/generate.sh` |
 
 **Negative**
 
@@ -82,17 +82,17 @@ unchecked. It builds the same commit and prints it; nothing is pushed.
 ## The path
 
 ```
-git push origin X.Y.Z                          (this private repository)
+git push origin X.Y.Z                          (differentrequests-proto-private)
         │
         ▼
-.github/workflows/publish-release-copy.yml      on: push tags [0-9]+.[0-9]+.[0-9]+
-        │  runs-on [self-hosted, macOS, ARM64], concurrency contract-release-copy
+differentrequests-proto-private: workflow "Publish release copy"   on: push tags [0-9]+.[0-9]+.[0-9]+
+        │  runs-on [self-hosted, macOS, ARM64, run-<run id>], concurrency contract-release-copy
         │  checkout, fetch-depth 0
         ▼
-DifferentRequestsSDK-private/.github/actions/publish-release-copy/action.yml   @master
+DifferentRequestsSDK-private: action publish-release-copy   @master
         │  public-copy differentrequests-proto
         ▼
-publish-release-copy.sh
+the action's shell script (in DifferentRequestsSDK-private)
         │
         ├── VERSION, PUBLIC_COPY or PUBLISH empty ► error, exit 1
         ├── VERSION not N.N.N ───────────────► error, exit 1
@@ -143,7 +143,7 @@ There is no app screen. What a person sees is the Actions run and the public cop
 
  Run log, rehearsal                  (real output; tag 9.9.9 existed only in a local rehearsal)
    Release 9.9.9 of differentrequests-proto: e6a17e67015c… on top of c7e3af0720ea… (master)
-    1 file changed, 85 deletions(-)          ← the old .github/workflows/regenerate-and-diff.yml going away
+    1 file changed, 85 deletions(-)          ← git diff --stat of the release against the previous public commit
    Rehearsal: nothing was pushed.
 
  Run log, refused                    (real output, read from GitHub)
