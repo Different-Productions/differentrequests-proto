@@ -81,7 +81,7 @@ extension DRRequestStatus {
   public var label: String {
     switch self {
     case .unspecified: return "Unknown"
-    case .`open`: return "Waiting"
+    case .`open`: return "Open"
     case .planned: return "Planned"
     case .inProgress: return "In progress"
     case .shipped: return "Shipped"
@@ -102,7 +102,7 @@ extension DRNotificationHeadline {
     case .unspecified: return "Something changed"
     case .statusChanged: return "Now"
     case .commentAdded: return "New comment"
-    case .requestDuplicated: return "Already asked for"
+    case .requestDuplicated: return "Merged into an earlier request"
     case .UNRECOGNIZED: return "Something changed"
     }
   }

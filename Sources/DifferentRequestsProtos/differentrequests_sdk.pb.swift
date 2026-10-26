@@ -340,19 +340,19 @@ public struct DRApiError: Sendable {
 /// Fetched once per launch. Everything here is a property of the tenant's plan
 /// and settings, so a client that hides a tab on its own guess will show the
 /// wrong thing the moment a tenant upgrades.
-public struct DRAppConfig: Sendable {
+public struct DRAppConfig: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   public var app: DRApp {
-    get {return _app ?? DRApp()}
-    set {_app = newValue}
+    get {return _storage._app ?? DRApp()}
+    set {_uniqueStorage()._app = newValue}
   }
   /// Returns true if `app` has been explicitly set.
-  public var hasApp: Bool {return self._app != nil}
+  public var hasApp: Bool {return _storage._app != nil}
   /// Clears the value of `app`. Subsequent reads from it will return its default value.
-  public mutating func clearApp() {self._app = nil}
+  public mutating func clearApp() {_uniqueStorage()._app = nil}
 
   /// Whether the roadmap and changelog surfaces are enabled for this app. Both
   /// are Pro anchors, so both are absent on Free — and the SDK hides the tab
@@ -360,42 +360,82 @@ public struct DRAppConfig: Sendable {
   ///
   /// These are the flags the rpcs declaring `(plan_gate)` are answered against, so
   /// what this advertises and what those rpcs do cannot disagree.
-  public var roadmapEnabled: Bool = false
+  public var roadmapEnabled: Bool {
+    get {return _storage._roadmapEnabled}
+    set {_uniqueStorage()._roadmapEnabled = newValue}
+  }
 
-  public var changelogEnabled: Bool = false
+  public var changelogEnabled: Bool {
+    get {return _storage._changelogEnabled}
+    set {_uniqueStorage()._changelogEnabled = newValue}
+  }
 
   /// Whether comments are accepted on this app's requests. Free on every plan;
   /// off when the tenant has chosen not to moderate a discussion.
-  public var commentsEnabled: Bool = false
+  public var commentsEnabled: Bool {
+    get {return _storage._commentsEnabled}
+    set {_uniqueStorage()._commentsEnabled = newValue}
+  }
 
   /// Whether the server sends this app's people push notifications. A device
   /// registers either way, so an app that gains the surface reaches phones that
   /// are already registered.
-  public var pushEnabled: Bool = false
+  public var pushEnabled: Bool {
+    get {return _storage._pushEnabled}
+    set {_uniqueStorage()._pushEnabled = newValue}
+  }
 
   /// Whether the developer can answer in a request's thread. Replies already
   /// written stay in their threads either way.
-  public var developerRepliesEnabled: Bool = false
+  public var developerRepliesEnabled: Bool {
+    get {return _storage._developerRepliesEnabled}
+    set {_uniqueStorage()._developerRepliesEnabled = newValue}
+  }
 
   /// Whether the developer can fold several requests into one.
-  public var foldingEnabled: Bool = false
+  public var foldingEnabled: Bool {
+    get {return _storage._foldingEnabled}
+    set {_uniqueStorage()._foldingEnabled = newValue}
+  }
 
-  /// Whether the SDK draws the board in the host app's accent color and font.
-  /// Absent, it draws its own, whatever appearance the host app passes.
-  public var appearanceEnabled: Bool = false
+  /// Whether the SDK draws the board in the host app's accent color and font, or
+  /// in the `tint` below. Absent, it draws its own, whatever appearance the host
+  /// app passes.
+  public var appearanceEnabled: Bool {
+    get {return _storage._appearanceEnabled}
+    set {_uniqueStorage()._appearanceEnabled = newValue}
+  }
 
   /// Whether the developer can file a request of their own.
-  public var planningEnabled: Bool = false
+  public var planningEnabled: Bool {
+    get {return _storage._planningEnabled}
+    set {_uniqueStorage()._planningEnabled = newValue}
+  }
 
   /// Whether the SDK draws the board without "Powered by Different Requests".
   /// Absent on Free, so a Free app carries the badge.
-  public var badgeRemoved: Bool = false
+  public var badgeRemoved: Bool {
+    get {return _storage._badgeRemoved}
+    set {_uniqueStorage()._badgeRemoved = newValue}
+  }
+
+  /// The tint the developer chose in the dashboard, which wins over the color the
+  /// host app passes in code. Absent when they chose none, and absent on an app
+  /// whose plan leaves out PLAN_SURFACE_APPEARANCE, so a Free app is never sent one.
+  public var tint: DRTint {
+    get {return _storage._tint ?? DRTint()}
+    set {_uniqueStorage()._tint = newValue}
+  }
+  /// Returns true if `tint` has been explicitly set.
+  public var hasTint: Bool {return _storage._tint != nil}
+  /// Clears the value of `tint`. Subsequent reads from it will return its default value.
+  public mutating func clearTint() {_uniqueStorage()._tint = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
-  fileprivate var _app: DRApp? = nil
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 public struct DRGetConfigRequest: Sendable {
@@ -1525,78 +1565,139 @@ extension DRApiError: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
 
 extension DRAppConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".AppConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}app\0\u{3}roadmap_enabled\0\u{3}changelog_enabled\0\u{3}comments_enabled\0\u{4}\u{2}push_enabled\0\u{3}developer_replies_enabled\0\u{3}folding_enabled\0\u{3}appearance_enabled\0\u{3}planning_enabled\0\u{4}\u{2}badge_removed\0\u{b}show_badge\0\u{b}trait_ranking_enabled\0\u{c}\u{5}\u{1}\u{c}\u{b}\u{1}")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}app\0\u{3}roadmap_enabled\0\u{3}changelog_enabled\0\u{3}comments_enabled\0\u{4}\u{2}push_enabled\0\u{3}developer_replies_enabled\0\u{3}folding_enabled\0\u{3}appearance_enabled\0\u{3}planning_enabled\0\u{4}\u{2}badge_removed\0\u{1}tint\0\u{b}show_badge\0\u{b}trait_ranking_enabled\0\u{c}\u{5}\u{1}\u{c}\u{b}\u{1}")
+
+  fileprivate class _StorageClass {
+    var _app: DRApp? = nil
+    var _roadmapEnabled: Bool = false
+    var _changelogEnabled: Bool = false
+    var _commentsEnabled: Bool = false
+    var _pushEnabled: Bool = false
+    var _developerRepliesEnabled: Bool = false
+    var _foldingEnabled: Bool = false
+    var _appearanceEnabled: Bool = false
+    var _planningEnabled: Bool = false
+    var _badgeRemoved: Bool = false
+    var _tint: DRTint? = nil
+
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _app = source._app
+      _roadmapEnabled = source._roadmapEnabled
+      _changelogEnabled = source._changelogEnabled
+      _commentsEnabled = source._commentsEnabled
+      _pushEnabled = source._pushEnabled
+      _developerRepliesEnabled = source._developerRepliesEnabled
+      _foldingEnabled = source._foldingEnabled
+      _appearanceEnabled = source._appearanceEnabled
+      _planningEnabled = source._planningEnabled
+      _badgeRemoved = source._badgeRemoved
+      _tint = source._tint
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularMessageField(value: &self._app) }()
-      case 2: try { try decoder.decodeSingularBoolField(value: &self.roadmapEnabled) }()
-      case 3: try { try decoder.decodeSingularBoolField(value: &self.changelogEnabled) }()
-      case 4: try { try decoder.decodeSingularBoolField(value: &self.commentsEnabled) }()
-      case 6: try { try decoder.decodeSingularBoolField(value: &self.pushEnabled) }()
-      case 7: try { try decoder.decodeSingularBoolField(value: &self.developerRepliesEnabled) }()
-      case 8: try { try decoder.decodeSingularBoolField(value: &self.foldingEnabled) }()
-      case 9: try { try decoder.decodeSingularBoolField(value: &self.appearanceEnabled) }()
-      case 10: try { try decoder.decodeSingularBoolField(value: &self.planningEnabled) }()
-      case 12: try { try decoder.decodeSingularBoolField(value: &self.badgeRemoved) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularMessageField(value: &_storage._app) }()
+        case 2: try { try decoder.decodeSingularBoolField(value: &_storage._roadmapEnabled) }()
+        case 3: try { try decoder.decodeSingularBoolField(value: &_storage._changelogEnabled) }()
+        case 4: try { try decoder.decodeSingularBoolField(value: &_storage._commentsEnabled) }()
+        case 6: try { try decoder.decodeSingularBoolField(value: &_storage._pushEnabled) }()
+        case 7: try { try decoder.decodeSingularBoolField(value: &_storage._developerRepliesEnabled) }()
+        case 8: try { try decoder.decodeSingularBoolField(value: &_storage._foldingEnabled) }()
+        case 9: try { try decoder.decodeSingularBoolField(value: &_storage._appearanceEnabled) }()
+        case 10: try { try decoder.decodeSingularBoolField(value: &_storage._planningEnabled) }()
+        case 12: try { try decoder.decodeSingularBoolField(value: &_storage._badgeRemoved) }()
+        case 13: try { try decoder.decodeSingularMessageField(value: &_storage._tint) }()
+        default: break
+        }
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    try { if let v = self._app {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-    } }()
-    if self.roadmapEnabled != false {
-      try visitor.visitSingularBoolField(value: self.roadmapEnabled, fieldNumber: 2)
-    }
-    if self.changelogEnabled != false {
-      try visitor.visitSingularBoolField(value: self.changelogEnabled, fieldNumber: 3)
-    }
-    if self.commentsEnabled != false {
-      try visitor.visitSingularBoolField(value: self.commentsEnabled, fieldNumber: 4)
-    }
-    if self.pushEnabled != false {
-      try visitor.visitSingularBoolField(value: self.pushEnabled, fieldNumber: 6)
-    }
-    if self.developerRepliesEnabled != false {
-      try visitor.visitSingularBoolField(value: self.developerRepliesEnabled, fieldNumber: 7)
-    }
-    if self.foldingEnabled != false {
-      try visitor.visitSingularBoolField(value: self.foldingEnabled, fieldNumber: 8)
-    }
-    if self.appearanceEnabled != false {
-      try visitor.visitSingularBoolField(value: self.appearanceEnabled, fieldNumber: 9)
-    }
-    if self.planningEnabled != false {
-      try visitor.visitSingularBoolField(value: self.planningEnabled, fieldNumber: 10)
-    }
-    if self.badgeRemoved != false {
-      try visitor.visitSingularBoolField(value: self.badgeRemoved, fieldNumber: 12)
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      try { if let v = _storage._app {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+      } }()
+      if _storage._roadmapEnabled != false {
+        try visitor.visitSingularBoolField(value: _storage._roadmapEnabled, fieldNumber: 2)
+      }
+      if _storage._changelogEnabled != false {
+        try visitor.visitSingularBoolField(value: _storage._changelogEnabled, fieldNumber: 3)
+      }
+      if _storage._commentsEnabled != false {
+        try visitor.visitSingularBoolField(value: _storage._commentsEnabled, fieldNumber: 4)
+      }
+      if _storage._pushEnabled != false {
+        try visitor.visitSingularBoolField(value: _storage._pushEnabled, fieldNumber: 6)
+      }
+      if _storage._developerRepliesEnabled != false {
+        try visitor.visitSingularBoolField(value: _storage._developerRepliesEnabled, fieldNumber: 7)
+      }
+      if _storage._foldingEnabled != false {
+        try visitor.visitSingularBoolField(value: _storage._foldingEnabled, fieldNumber: 8)
+      }
+      if _storage._appearanceEnabled != false {
+        try visitor.visitSingularBoolField(value: _storage._appearanceEnabled, fieldNumber: 9)
+      }
+      if _storage._planningEnabled != false {
+        try visitor.visitSingularBoolField(value: _storage._planningEnabled, fieldNumber: 10)
+      }
+      if _storage._badgeRemoved != false {
+        try visitor.visitSingularBoolField(value: _storage._badgeRemoved, fieldNumber: 12)
+      }
+      try { if let v = _storage._tint {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 13)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: DRAppConfig, rhs: DRAppConfig) -> Bool {
-    if lhs._app != rhs._app {return false}
-    if lhs.roadmapEnabled != rhs.roadmapEnabled {return false}
-    if lhs.changelogEnabled != rhs.changelogEnabled {return false}
-    if lhs.commentsEnabled != rhs.commentsEnabled {return false}
-    if lhs.pushEnabled != rhs.pushEnabled {return false}
-    if lhs.developerRepliesEnabled != rhs.developerRepliesEnabled {return false}
-    if lhs.foldingEnabled != rhs.foldingEnabled {return false}
-    if lhs.appearanceEnabled != rhs.appearanceEnabled {return false}
-    if lhs.planningEnabled != rhs.planningEnabled {return false}
-    if lhs.badgeRemoved != rhs.badgeRemoved {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._app != rhs_storage._app {return false}
+        if _storage._roadmapEnabled != rhs_storage._roadmapEnabled {return false}
+        if _storage._changelogEnabled != rhs_storage._changelogEnabled {return false}
+        if _storage._commentsEnabled != rhs_storage._commentsEnabled {return false}
+        if _storage._pushEnabled != rhs_storage._pushEnabled {return false}
+        if _storage._developerRepliesEnabled != rhs_storage._developerRepliesEnabled {return false}
+        if _storage._foldingEnabled != rhs_storage._foldingEnabled {return false}
+        if _storage._appearanceEnabled != rhs_storage._appearanceEnabled {return false}
+        if _storage._planningEnabled != rhs_storage._planningEnabled {return false}
+        if _storage._badgeRemoved != rhs_storage._badgeRemoved {return false}
+        if _storage._tint != rhs_storage._tint {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

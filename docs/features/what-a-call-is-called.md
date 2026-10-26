@@ -3,7 +3,7 @@
 ## What it is
 
 Every rpc declares, as `(route_label)`, what one call to it does in words a person reads:
-"Loaded the requests", "Voted", "Signed a person in". A list of calls is drawn in two consoles — a
+"Loaded the requests", "Voted", "Signed in a user". A list of calls is drawn in two consoles — a
 developer's Calls page and the platform console's Recent calls — and a list of rpc names
 (`ListRequests`, `GetUnreadCount`) is a list only the people who wrote the contract can read.
 
@@ -13,25 +13,25 @@ case.
 
 | Rpc | Label |
 |---|---|
-| GetConfig | Read its settings |
-| CreateSession | Signed a person in |
+| GetConfig | Loaded app settings |
+| CreateSession | Signed in a user |
 | ListRequests | Loaded the requests |
-| CreateRequest | Asked for something |
+| CreateRequest | Created a request |
 | GetRequest | Opened a request |
 | Vote | Voted |
-| ClearVote | Took a vote back |
+| ClearVote | Removed a vote |
 | Follow | Followed a request |
-| Unfollow | Stopped following a request |
+| Unfollow | Unfollowed a request |
 | ListComments | Loaded comments |
 | CreateComment | Commented |
 | ListNotifications | Loaded notifications |
 | GetUnreadCount | Checked for new notifications |
 | MarkAllNotificationsRead | Marked every notification read |
 | MarkNotificationRead | Marked a notification read |
-| RegisterDevice | Turned on notifications for a phone |
-| UnregisterDevice | Turned off notifications for a phone |
+| RegisterDevice | Registered a device for push notifications |
+| UnregisterDevice | Unregistered a device for push notifications |
 | GetRoadmap | Loaded the roadmap |
-| ListChangelog | Loaded what's new |
+| ListChangelog | Loaded the changelog |
 
 Past tense, because every place that draws one lists a call that already happened.
 

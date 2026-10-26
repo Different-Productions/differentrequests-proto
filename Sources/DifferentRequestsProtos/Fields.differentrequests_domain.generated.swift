@@ -14,6 +14,25 @@ extension DRApp {
   }
 }
 
+extension DRColor {
+  /// This message's field names, as the schema spells them. What a query key or a form field
+  /// has to be called.
+  public enum Field {
+    public static let red = "red"
+    public static let green = "green"
+    public static let blue = "blue"
+  }
+}
+
+extension DRTint {
+  /// This message's field names, as the schema spells them. What a query key or a form field
+  /// has to be called.
+  public enum Field {
+    public static let light = "light"
+    public static let dark = "dark"
+  }
+}
+
 extension DREndUser {
   /// This message's field names, as the schema spells them. What a query key or a form field
   /// has to be called.

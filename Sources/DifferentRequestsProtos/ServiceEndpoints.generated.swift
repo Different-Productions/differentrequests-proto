@@ -134,25 +134,25 @@ public enum DRRequestsServiceRPC: String, Sendable, CaseIterable {
   /// call is listed.
   public var label: String {
     switch self {
-    case .getConfig: return "Read its settings"
-    case .createSession: return "Signed a person in"
+    case .getConfig: return "Loaded app settings"
+    case .createSession: return "Signed in a user"
     case .listRequests: return "Loaded the requests"
-    case .createRequest: return "Asked for something"
+    case .createRequest: return "Created a request"
     case .getRequest: return "Opened a request"
     case .vote: return "Voted"
-    case .clearVote: return "Took a vote back"
+    case .clearVote: return "Removed a vote"
     case .follow: return "Followed a request"
-    case .unfollow: return "Stopped following a request"
+    case .unfollow: return "Unfollowed a request"
     case .listComments: return "Loaded comments"
     case .createComment: return "Commented"
     case .listNotifications: return "Loaded notifications"
     case .getUnreadCount: return "Checked for new notifications"
     case .markAllNotificationsRead: return "Marked every notification read"
     case .markNotificationRead: return "Marked a notification read"
-    case .registerDevice: return "Turned on notifications for a phone"
-    case .unregisterDevice: return "Turned off notifications for a phone"
+    case .registerDevice: return "Registered a device for push notifications"
+    case .unregisterDevice: return "Unregistered a device for push notifications"
     case .getRoadmap: return "Loaded the roadmap"
-    case .listChangelog: return "Loaded what's new"
+    case .listChangelog: return "Loaded the changelog"
     }
   }
 

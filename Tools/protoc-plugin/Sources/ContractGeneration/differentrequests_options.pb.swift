@@ -68,7 +68,8 @@ public enum DRPlanSurface: SwiftProtobuf.Enum, Swift.CaseIterable {
   /// Several requests for one thing folded into one, their votes moved across.
   case folding // = 6
 
-  /// The board drawn in the host app's accent color and font.
+  /// The board drawn in the host app's accent color and font, or in the tint its
+  /// developer chose in the dashboard.
   case appearance // = 7
 
   /// The developer filing a request of their own, public or private.

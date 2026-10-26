@@ -339,6 +339,69 @@ public struct DRApp: Sendable {
   fileprivate var _createdAt: SwiftProtobuf.Google_Protobuf_Timestamp? = nil
 }
 
+/// One color, as its red, green and blue components in sRGB.
+///
+/// Three numbers and never text. A hex code is how a person types a color into the
+/// dashboard; it is read once there, and what is stored, sent and drawn is this.
+///
+/// Each component is a whole number from 0 to 255, which is exactly what six hex
+/// digits say. A component over 255 is not a color, and a reader treats a message
+/// holding one as absent.
+public struct DRColor: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var red: UInt32 = 0
+
+  public var green: UInt32 = 0
+
+  public var blue: UInt32 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// The tint an app's developer chose in the dashboard: the color the SDK draws a
+/// vote, Follow and every main button in.
+///
+/// Two colors because a color that reads well on a white background is often too
+/// dark on a black one. Both are present on a tint the dashboard wrote; a reader
+/// treats a tint holding only one as absent, never as half an answer.
+public struct DRTint: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Drawn in light mode.
+  public var light: DRColor {
+    get {return _light ?? DRColor()}
+    set {_light = newValue}
+  }
+  /// Returns true if `light` has been explicitly set.
+  public var hasLight: Bool {return self._light != nil}
+  /// Clears the value of `light`. Subsequent reads from it will return its default value.
+  public mutating func clearLight() {self._light = nil}
+
+  /// Drawn in dark mode.
+  public var dark: DRColor {
+    get {return _dark ?? DRColor()}
+    set {_dark = newValue}
+  }
+  /// Returns true if `dark` has been explicitly set.
+  public var hasDark: Bool {return self._dark != nil}
+  /// Clears the value of `dark`. Subsequent reads from it will return its default value.
+  public mutating func clearDark() {self._dark = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _light: DRColor? = nil
+  fileprivate var _dark: DRColor? = nil
+}
+
 /// A person inside a host app, identified without ever signing up.
 ///
 /// The host app already knows who its users are; making them create a second
@@ -1167,6 +1230,85 @@ extension DRApp: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase
     if lhs.name != rhs.name {return false}
     if lhs._createdAt != rhs._createdAt {return false}
     if lhs.plan != rhs.plan {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension DRColor: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".Color"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}red\0\u{1}green\0\u{1}blue\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.red) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.green) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.blue) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.red != 0 {
+      try visitor.visitSingularUInt32Field(value: self.red, fieldNumber: 1)
+    }
+    if self.green != 0 {
+      try visitor.visitSingularUInt32Field(value: self.green, fieldNumber: 2)
+    }
+    if self.blue != 0 {
+      try visitor.visitSingularUInt32Field(value: self.blue, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DRColor, rhs: DRColor) -> Bool {
+    if lhs.red != rhs.red {return false}
+    if lhs.green != rhs.green {return false}
+    if lhs.blue != rhs.blue {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension DRTint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".Tint"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}light\0\u{1}dark\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._light) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._dark) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._light {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._dark {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DRTint, rhs: DRTint) -> Bool {
+    if lhs._light != rhs._light {return false}
+    if lhs._dark != rhs._dark {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

@@ -175,8 +175,9 @@ message AppConfig {
   // Whether the developer can fold several requests into one.
   bool folding_enabled = 8 [(gates) = PLAN_SURFACE_FOLDING];
 
-  // Whether the SDK draws the board in the host app's accent color and font.
-  // Absent, it draws its own, whatever appearance the host app passes.
+  // Whether the SDK draws the board in the host app's accent color and font, or
+  // in the `tint` below. Absent, it draws its own, whatever appearance the host
+  // app passes.
   bool appearance_enabled = 9 [(gates) = PLAN_SURFACE_APPEARANCE];
 
   // Whether the developer can file a request of their own.
@@ -185,6 +186,11 @@ message AppConfig {
   // Whether the SDK draws the board without "Powered by Different Requests".
   // Absent on Free, so a Free app carries the badge.
   bool badge_removed = 12 [(gates) = PLAN_SURFACE_BADGE_REMOVAL];
+
+  // The tint the developer chose in the dashboard, which wins over the color the
+  // host app passes in code. Absent when they chose none, and absent on an app
+  // whose plan leaves out PLAN_SURFACE_APPEARANCE, so a Free app is never sent one.
+  Tint tint = 13;
 
   reserved 5, 11;
   reserved "show_badge", "trait_ranking_enabled";
@@ -497,7 +503,7 @@ service RequestsService {
     option (route_path) = "/config";
     option (route_audience) = AUDIENCE_APP_KEY;
     option (route_allowance) = ALLOWANCE_UNCOUNTED;
-    option (route_label) = "Read its settings";
+    option (route_label) = "Loaded app settings";
   }
 
   rpc CreateSession(CreateSessionRequest) returns (CreateSessionResponse) {
@@ -505,7 +511,7 @@ service RequestsService {
     option (route_path) = "/sessions";
     option (route_audience) = AUDIENCE_APP_KEY;
     option (route_allowance) = ALLOWANCE_SIGN_IN;
-    option (route_label) = "Signed a person in";
+    option (route_label) = "Signed in a user";
   }
 
   rpc ListRequests(ListRequestsRequest) returns (ListRequestsResponse) {
@@ -521,7 +527,7 @@ service RequestsService {
     option (route_path) = "/requests";
     option (route_audience) = AUDIENCE_END_USER;
     option (route_allowance) = ALLOWANCE_WRITE;
-    option (route_label) = "Asked for something";
+    option (route_label) = "Created a request";
   }
 
   rpc GetRequest(GetRequestRequest) returns (GetRequestResponse) {
@@ -545,7 +551,7 @@ service RequestsService {
     option (route_path) = "/requests/{requestId}/vote";
     option (route_audience) = AUDIENCE_END_USER;
     option (route_allowance) = ALLOWANCE_WRITE;
-    option (route_label) = "Took a vote back";
+    option (route_label) = "Removed a vote";
   }
 
   rpc Follow(FollowRequest) returns (FollowResponse) {
@@ -561,7 +567,7 @@ service RequestsService {
     option (route_path) = "/requests/{requestId}/follow";
     option (route_audience) = AUDIENCE_END_USER;
     option (route_allowance) = ALLOWANCE_WRITE;
-    option (route_label) = "Stopped following a request";
+    option (route_label) = "Unfollowed a request";
   }
 
   rpc ListComments(ListCommentsRequest) returns (ListCommentsResponse) {
@@ -621,7 +627,7 @@ service RequestsService {
     option (route_path) = "/devices";
     option (route_audience) = AUDIENCE_END_USER;
     option (route_allowance) = ALLOWANCE_WRITE;
-    option (route_label) = "Turned on notifications for a phone";
+    option (route_label) = "Registered a device for push notifications";
   }
 
   rpc UnregisterDevice(UnregisterDeviceRequest) returns (UnregisterDeviceResponse) {
@@ -629,7 +635,7 @@ service RequestsService {
     option (route_path) = "/devices/{deviceId}";
     option (route_audience) = AUDIENCE_END_USER;
     option (route_allowance) = ALLOWANCE_WRITE;
-    option (route_label) = "Turned off notifications for a phone";
+    option (route_label) = "Unregistered a device for push notifications";
   }
 
   rpc GetRoadmap(GetRoadmapRequest) returns (GetRoadmapResponse) {
@@ -646,7 +652,7 @@ service RequestsService {
     option (route_path) = "/changelog";
     option (route_audience) = AUDIENCE_APP_KEY;
     option (route_allowance) = ALLOWANCE_UNCOUNTED;
-    option (route_label) = "Loaded what's new";
+    option (route_label) = "Loaded the changelog";
     option (plan_gate) = PLAN_SURFACE_CHANGELOG;
   }
 }

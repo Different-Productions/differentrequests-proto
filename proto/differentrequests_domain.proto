@@ -74,6 +74,34 @@ message App {
   Plan plan = 5;
 }
 
+// One color, as its red, green and blue components in sRGB.
+//
+// Three numbers and never text. A hex code is how a person types a color into the
+// dashboard; it is read once there, and what is stored, sent and drawn is this.
+//
+// Each component is a whole number from 0 to 255, which is exactly what six hex
+// digits say. A component over 255 is not a color, and a reader treats a message
+// holding one as absent.
+message Color {
+  uint32 red = 1;
+  uint32 green = 2;
+  uint32 blue = 3;
+}
+
+// The tint an app's developer chose in the dashboard: the color the SDK draws a
+// vote, Follow and every main button in.
+//
+// Two colors because a color that reads well on a white background is often too
+// dark on a black one. Both are present on a tint the dashboard wrote; a reader
+// treats a tint holding only one as absent, never as half an answer.
+message Tint {
+  // Drawn in light mode.
+  Color light = 1;
+
+  // Drawn in dark mode.
+  Color dark = 2;
+}
+
 // A person inside a host app, identified without ever signing up.
 //
 // The host app already knows who its users are; making them create a second
@@ -133,7 +161,7 @@ enum RequestStatus {
   // triager works through.
   REQUEST_STATUS_OPEN = 1 [
     (url_token) = "open",
-    (label) = "Waiting",
+    (label) = "Open",
     (shown_on_a_board) = true
   ];
 
@@ -437,7 +465,7 @@ enum NotificationHeadline {
 
   NOTIFICATION_HEADLINE_STATUS_CHANGED = 1 [(label) = "Now"];
   NOTIFICATION_HEADLINE_COMMENT_ADDED = 2 [(label) = "New comment"];
-  NOTIFICATION_HEADLINE_REQUEST_DUPLICATED = 3 [(label) = "Already asked for"];
+  NOTIFICATION_HEADLINE_REQUEST_DUPLICATED = 3 [(label) = "Merged into an earlier request"];
 }
 
 // One item in an end user's inbox.

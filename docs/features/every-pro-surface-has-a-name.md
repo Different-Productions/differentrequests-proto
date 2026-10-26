@@ -14,7 +14,7 @@ carries one flag per surface, each declaring `(gates)`, and the generated
 | `PLAN_SURFACE_PUSH` | `push_enabled` | The server sending push notifications |
 | `PLAN_SURFACE_DEVELOPER_REPLIES` | `developer_replies_enabled` | The developer answering in a request's thread |
 | `PLAN_SURFACE_FOLDING` | `folding_enabled` | Several requests folded into one |
-| `PLAN_SURFACE_APPEARANCE` | `appearance_enabled` | The board in the host app's accent color and font |
+| `PLAN_SURFACE_APPEARANCE` | `appearance_enabled` | The board in the host app's accent color and font, or in the tint chosen in the dashboard (`a-tint-set-in-the-dashboard.md`) |
 | `PLAN_SURFACE_PLANNING` | `planning_enabled` | The developer filing a request of their own |
 | `PLAN_SURFACE_BADGE_REMOVAL` | `badge_removed` | The board without "Powered by Different Requests" |
 
