@@ -72,6 +72,7 @@ extension DRAppConfig {
     public static let planningEnabled = "planning_enabled"
     public static let badgeRemoved = "badge_removed"
     public static let tint = "tint"
+    public static let fontFamily = "font_family"
   }
 }
 

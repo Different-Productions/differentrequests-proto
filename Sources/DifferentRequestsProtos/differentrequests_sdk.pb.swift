@@ -398,9 +398,8 @@ public struct DRAppConfig: @unchecked Sendable {
     set {_uniqueStorage()._foldingEnabled = newValue}
   }
 
-  /// Whether the SDK draws the board in the host app's accent color and font, or
-  /// in the `tint` below. Absent, it draws its own, whatever appearance the host
-  /// app passes.
+  /// Whether the SDK draws the board in the `tint` and `font_family` below.
+  /// Absent, it draws its own.
   public var appearanceEnabled: Bool {
     get {return _storage._appearanceEnabled}
     set {_uniqueStorage()._appearanceEnabled = newValue}
@@ -419,9 +418,9 @@ public struct DRAppConfig: @unchecked Sendable {
     set {_uniqueStorage()._badgeRemoved = newValue}
   }
 
-  /// The tint the developer chose in the dashboard, which wins over the color the
-  /// host app passes in code. Absent when they chose none, and absent on an app
-  /// whose plan leaves out PLAN_SURFACE_APPEARANCE, so a Free app is never sent one.
+  /// The tint the developer chose in the dashboard; the host app sets no color in
+  /// code. Absent when they chose none, and absent on an app whose plan leaves out
+  /// PLAN_SURFACE_APPEARANCE, so a Free app is never sent one.
   public var tint: DRTint {
     get {return _storage._tint ?? DRTint()}
     set {_uniqueStorage()._tint = newValue}
@@ -430,6 +429,14 @@ public struct DRAppConfig: @unchecked Sendable {
   public var hasTint: Bool {return _storage._tint != nil}
   /// Clears the value of `tint`. Subsequent reads from it will return its default value.
   public mutating func clearTint() {_uniqueStorage()._tint = nil}
+
+  /// The font family the developer chose in the dashboard; the host app sets no
+  /// font in code. FONT_FAMILY_UNSPECIFIED when they chose none, and on an app
+  /// whose plan leaves out PLAN_SURFACE_APPEARANCE, so a Free app is never sent one.
+  public var fontFamily: DRFontFamily {
+    get {return _storage._fontFamily}
+    set {_uniqueStorage()._fontFamily = newValue}
+  }
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -1565,7 +1572,7 @@ extension DRApiError: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
 
 extension DRAppConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".AppConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}app\0\u{3}roadmap_enabled\0\u{3}changelog_enabled\0\u{3}comments_enabled\0\u{4}\u{2}push_enabled\0\u{3}developer_replies_enabled\0\u{3}folding_enabled\0\u{3}appearance_enabled\0\u{3}planning_enabled\0\u{4}\u{2}badge_removed\0\u{1}tint\0\u{b}show_badge\0\u{b}trait_ranking_enabled\0\u{c}\u{5}\u{1}\u{c}\u{b}\u{1}")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}app\0\u{3}roadmap_enabled\0\u{3}changelog_enabled\0\u{3}comments_enabled\0\u{4}\u{2}push_enabled\0\u{3}developer_replies_enabled\0\u{3}folding_enabled\0\u{3}appearance_enabled\0\u{3}planning_enabled\0\u{4}\u{2}badge_removed\0\u{1}tint\0\u{3}font_family\0\u{b}show_badge\0\u{b}trait_ranking_enabled\0\u{c}\u{5}\u{1}\u{c}\u{b}\u{1}")
 
   fileprivate class _StorageClass {
     var _app: DRApp? = nil
@@ -1579,6 +1586,7 @@ extension DRAppConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     var _planningEnabled: Bool = false
     var _badgeRemoved: Bool = false
     var _tint: DRTint? = nil
+    var _fontFamily: DRFontFamily = .unspecified
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -1600,6 +1608,7 @@ extension DRAppConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       _planningEnabled = source._planningEnabled
       _badgeRemoved = source._badgeRemoved
       _tint = source._tint
+      _fontFamily = source._fontFamily
     }
   }
 
@@ -1629,6 +1638,7 @@ extension DRAppConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
         case 10: try { try decoder.decodeSingularBoolField(value: &_storage._planningEnabled) }()
         case 12: try { try decoder.decodeSingularBoolField(value: &_storage._badgeRemoved) }()
         case 13: try { try decoder.decodeSingularMessageField(value: &_storage._tint) }()
+        case 14: try { try decoder.decodeSingularEnumField(value: &_storage._fontFamily) }()
         default: break
         }
       }
@@ -1674,6 +1684,9 @@ extension DRAppConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       try { if let v = _storage._tint {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 13)
       } }()
+      if _storage._fontFamily != .unspecified {
+        try visitor.visitSingularEnumField(value: _storage._fontFamily, fieldNumber: 14)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -1694,6 +1707,7 @@ extension DRAppConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
         if _storage._planningEnabled != rhs_storage._planningEnabled {return false}
         if _storage._badgeRemoved != rhs_storage._badgeRemoved {return false}
         if _storage._tint != rhs_storage._tint {return false}
+        if _storage._fontFamily != rhs_storage._fontFamily {return false}
         return true
       }
       if !storagesAreEqual {return false}

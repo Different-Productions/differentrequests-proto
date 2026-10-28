@@ -25,12 +25,12 @@ SDK.
 | When it works | What the reader gets |
 |---|---|
 | A Pro app whose developer saved a light and a dark color | `tint` is present, and `light` and `dark` are both present |
-| A Pro app whose developer chose the app's own color | `tint` is absent; the SDK draws the color passed in code, or the system tint |
+| A Pro app whose developer chose the app's own color | `tint` is absent; the SDK draws the system tint |
 | A Free app | `tint` is absent, whatever was saved while it was on Pro |
 
 | When it fails | What happens |
 |---|---|
-| A server on an older contract | `tint` is absent; the SDK draws the color passed in code |
+| A server on an older contract | `tint` is absent; the SDK draws the system tint |
 | An SDK on an older contract | It skips field 13 and draws the color passed in code |
 | A component over 255, or a `tint` holding one color of the two | Not a color the dashboard can write. The SDK reads it as no tint |
 

@@ -175,9 +175,8 @@ message AppConfig {
   // Whether the developer can fold several requests into one.
   bool folding_enabled = 8 [(gates) = PLAN_SURFACE_FOLDING];
 
-  // Whether the SDK draws the board in the host app's accent color and font, or
-  // in the `tint` below. Absent, it draws its own, whatever appearance the host
-  // app passes.
+  // Whether the SDK draws the board in the `tint` and `font_family` below.
+  // Absent, it draws its own.
   bool appearance_enabled = 9 [(gates) = PLAN_SURFACE_APPEARANCE];
 
   // Whether the developer can file a request of their own.
@@ -187,10 +186,15 @@ message AppConfig {
   // Absent on Free, so a Free app carries the badge.
   bool badge_removed = 12 [(gates) = PLAN_SURFACE_BADGE_REMOVAL];
 
-  // The tint the developer chose in the dashboard, which wins over the color the
-  // host app passes in code. Absent when they chose none, and absent on an app
-  // whose plan leaves out PLAN_SURFACE_APPEARANCE, so a Free app is never sent one.
+  // The tint the developer chose in the dashboard; the host app sets no color in
+  // code. Absent when they chose none, and absent on an app whose plan leaves out
+  // PLAN_SURFACE_APPEARANCE, so a Free app is never sent one.
   Tint tint = 13;
+
+  // The font family the developer chose in the dashboard; the host app sets no
+  // font in code. FONT_FAMILY_UNSPECIFIED when they chose none, and on an app
+  // whose plan leaves out PLAN_SURFACE_APPEARANCE, so a Free app is never sent one.
+  FontFamily font_family = 14;
 
   reserved 5, 11;
   reserved "show_badge", "trait_ranking_enabled";

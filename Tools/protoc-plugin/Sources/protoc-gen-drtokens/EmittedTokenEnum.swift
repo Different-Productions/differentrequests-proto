@@ -19,11 +19,7 @@ struct EmittedTokenEnum {
   init?(enumDescriptor: EnumDescriptor, namer: SwiftProtobufNamer) {
     var found: [EmittedSpelling] = []
 
-    let inURLs = Self.cases(
-      of: enumDescriptor,
-      spelledBy: DRExtensions_url_token,
-      namer: namer
-    )
+    let inURLs = Self.cases(of: enumDescriptor, spelledBy: DRExtensions_url_token, namer: namer)
     if inURLs.isEmpty == false {
       found.append(
         EmittedSpelling(
@@ -35,11 +31,7 @@ struct EmittedTokenEnum {
       )
     }
 
-    let onTheWire = Self.cases(
-      of: enumDescriptor,
-      spelledBy: DRExtensions_token,
-      namer: namer
-    )
+    let onTheWire = Self.cases(of: enumDescriptor, spelledBy: DRExtensions_token, namer: namer)
     if onTheWire.isEmpty == false {
       found.append(
         EmittedSpelling(
@@ -51,11 +43,7 @@ struct EmittedTokenEnum {
       )
     }
 
-    let shownToPeople = Self.cases(
-      of: enumDescriptor,
-      spelledBy: DRExtensions_label,
-      namer: namer
-    )
+    let shownToPeople = Self.cases(of: enumDescriptor, spelledBy: DRExtensions_label, namer: namer)
     if let unknown = Self.labelOfZeroValue(in: enumDescriptor) {
       found.append(
         EmittedSpelling(

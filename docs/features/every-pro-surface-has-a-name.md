@@ -14,7 +14,7 @@ carries one flag per surface, each declaring `(gates)`, and the generated
 | `PLAN_SURFACE_PUSH` | `push_enabled` | The server sending push notifications |
 | `PLAN_SURFACE_DEVELOPER_REPLIES` | `developer_replies_enabled` | The developer answering in a request's thread |
 | `PLAN_SURFACE_FOLDING` | `folding_enabled` | Several requests folded into one |
-| `PLAN_SURFACE_APPEARANCE` | `appearance_enabled` | The board in the host app's accent color and font, or in the tint chosen in the dashboard (`a-tint-set-in-the-dashboard.md`) |
+| `PLAN_SURFACE_APPEARANCE` | `appearance_enabled` | The board in the tint and font family chosen in the dashboard (`a-tint-set-in-the-dashboard.md`, `a-font-family-set-in-the-dashboard.md`) |
 | `PLAN_SURFACE_PLANNING` | `planning_enabled` | The developer filing a request of their own |
 | `PLAN_SURFACE_BADGE_REMOVAL` | `badge_removed` | The board without "Powered by Different Requests" |
 
@@ -34,7 +34,7 @@ Which plan includes which surface is the server's entitlement, not the contract'
 | The contract (`differentrequests_options.proto`, `differentrequests_sdk.proto`) | **Yes** — seven `PlanSurface` values, seven flags, field 5 reserved |
 | The generator (`Tools/protoc-plugin`) | **none** — `protoc-gen-drfields` already emits `includes(_:)` from every field declaring `(gates)` |
 | The server | **Reads it** — sets every flag from the plan, and asks `includes(_:)` before serving a surface (DifferentRequests-Server#251) |
-| The SDK | **Reads it** — `badge_removed` for the badge, `appearance_enabled` for the host app's look (DifferentRequests-Server#251) |
+| The SDK | **Reads it** — `badge_removed` for the badge, `appearance_enabled` for the look chosen in the dashboard (DifferentRequests-Server#251) |
 
 ## How to find it, trigger it, and what happens
 

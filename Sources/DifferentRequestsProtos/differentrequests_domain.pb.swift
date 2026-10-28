@@ -68,6 +68,56 @@ public enum DRPlan: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 }
 
+/// The system font family an app's developer chose in the dashboard for the
+/// board's text, one value per SwiftUI `Font.Design`.
+public enum DRFontFamily: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public typealias RawValue = Int
+
+  /// Nothing chosen. The SDK draws the system's default family.
+  case unspecified // = 0
+  case `default` // = 1
+  case rounded // = 2
+  case serif // = 3
+  case monospaced // = 4
+  case UNRECOGNIZED(Int)
+
+  public init() {
+    self = .unspecified
+  }
+
+  public init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .unspecified
+    case 1: self = .default
+    case 2: self = .rounded
+    case 3: self = .serif
+    case 4: self = .monospaced
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  public var rawValue: Int {
+    switch self {
+    case .unspecified: return 0
+    case .default: return 1
+    case .rounded: return 2
+    case .serif: return 3
+    case .monospaced: return 4
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  public static let allCases: [DRFontFamily] = [
+    .unspecified,
+    .default,
+    .rounded,
+    .serif,
+    .monospaced,
+  ]
+
+}
+
 /// Which kind of state a request is in, as a tag with nothing attached.
 ///
 /// This is what a caller *filters* by and what a roadmap groups by:
@@ -1163,6 +1213,10 @@ fileprivate let _protobuf_package = "differentrequests.v1"
 
 extension DRPlan: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0PLAN_UNSPECIFIED\0\u{1}PLAN_FREE\0\u{1}PLAN_PRO\0")
+}
+
+extension DRFontFamily: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0FONT_FAMILY_UNSPECIFIED\0\u{1}FONT_FAMILY_DEFAULT\0\u{1}FONT_FAMILY_ROUNDED\0\u{1}FONT_FAMILY_SERIF\0\u{1}FONT_FAMILY_MONOSPACED\0")
 }
 
 extension DRRequestStatus: SwiftProtobuf._ProtoNameProviding {
