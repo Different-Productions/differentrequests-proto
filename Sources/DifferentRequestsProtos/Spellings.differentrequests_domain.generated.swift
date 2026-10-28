@@ -41,6 +41,36 @@ extension DRPlan {
   }
 }
 
+extension DRFontFamily {
+  /// The exact string this value becomes when it leaves Swift.
+  ///
+  /// Absent for a value with no declared spelling, which is what makes an unspellable value
+  /// impossible to send rather than merely discouraged.
+  public var token: String? {
+    switch self {
+    case .`default`: return "default"
+    case .rounded: return "rounded"
+    case .serif: return "serif"
+    case .monospaced: return "monospaced"
+    default: return nil
+    }
+  }
+
+  /// Reads a value back from the string it becomes.
+  ///
+  /// Nil for anything not in the contract, so an unrecognized spelling is rejected by the
+  /// caller rather than silently becoming a default.
+  public init?(token: String) {
+    switch token {
+    case "default": self = .`default`
+    case "rounded": self = .rounded
+    case "serif": self = .serif
+    case "monospaced": self = .monospaced
+    default: return nil
+    }
+  }
+}
+
 extension DRRequestStatus {
   /// How this value is spelled in a URL.
   ///

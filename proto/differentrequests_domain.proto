@@ -108,10 +108,10 @@ enum FontFamily {
   // Nothing chosen. The SDK draws the system's default family.
   FONT_FAMILY_UNSPECIFIED = 0;
 
-  FONT_FAMILY_DEFAULT = 1;
-  FONT_FAMILY_ROUNDED = 2;
-  FONT_FAMILY_SERIF = 3;
-  FONT_FAMILY_MONOSPACED = 4;
+  FONT_FAMILY_DEFAULT = 1 [(token) = "default"];
+  FONT_FAMILY_ROUNDED = 2 [(token) = "rounded"];
+  FONT_FAMILY_SERIF = 3 [(token) = "serif"];
+  FONT_FAMILY_MONOSPACED = 4 [(token) = "monospaced"];
 }
 
 // A person inside a host app, identified without ever signing up.
