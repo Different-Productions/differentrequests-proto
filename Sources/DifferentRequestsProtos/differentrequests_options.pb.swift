@@ -47,6 +47,9 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 /// is not gated, which is the same statement made by saying nothing.
 public enum DRPlanSurface: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
+
+  /// Labeled, because a build that meets a surface newer than itself still lists
+  /// it on a price.
   case unspecified // = 0
   case roadmap // = 1
   case changelog // = 2
@@ -376,6 +379,36 @@ extension SwiftProtobuf.Google_Protobuf_EnumValueOptions {
   public mutating func clearDRlabel() {
     clearExtensionValue(ext: DRExtensions_label)
   }
+
+  public var DRpitch: String {
+    get {return getExtensionValue(ext: DRExtensions_pitch) ?? String()}
+    set {setExtensionValue(ext: DRExtensions_pitch, value: newValue)}
+  }
+  /// Returns true if extension `DRExtensions_pitch`
+  /// has been explicitly set.
+  public var hasDRpitch: Bool {
+    return hasExtensionValue(ext: DRExtensions_pitch)
+  }
+  /// Clears the value of extension `DRExtensions_pitch`.
+  /// Subsequent reads from it will return its default value.
+  public mutating func clearDRpitch() {
+    clearExtensionValue(ext: DRExtensions_pitch)
+  }
+
+  public var DRpicture: String {
+    get {return getExtensionValue(ext: DRExtensions_picture) ?? String()}
+    set {setExtensionValue(ext: DRExtensions_picture, value: newValue)}
+  }
+  /// Returns true if extension `DRExtensions_picture`
+  /// has been explicitly set.
+  public var hasDRpicture: Bool {
+    return hasExtensionValue(ext: DRExtensions_picture)
+  }
+  /// Clears the value of extension `DRExtensions_picture`.
+  /// Subsequent reads from it will return its default value.
+  public mutating func clearDRpicture() {
+    clearExtensionValue(ext: DRExtensions_picture)
+  }
 }
 
 extension SwiftProtobuf.Google_Protobuf_FieldOptions {
@@ -544,7 +577,9 @@ public let DRDifferentrequestsOptions_Extensions: SwiftProtobuf.SimpleExtensionM
   DRExtensions_url_token,
   DRExtensions_shown_on_a_board,
   DRExtensions_token,
-  DRExtensions_label
+  DRExtensions_label,
+  DRExtensions_pitch,
+  DRExtensions_picture
 ]
 
 // Extension Objects - The only reason these might be needed is when manually
@@ -630,6 +665,16 @@ public let DRExtensions_token = SwiftProtobuf.MessageExtension<SwiftProtobuf.Opt
 public let DRExtensions_label = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalExtensionField<SwiftProtobuf.ProtobufString>, SwiftProtobuf.Google_Protobuf_EnumValueOptions>(
   _protobuf_fieldNumber: 51248,
   fieldName: "differentrequests.v1.label"
+)
+
+public let DRExtensions_pitch = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalExtensionField<SwiftProtobuf.ProtobufString>, SwiftProtobuf.Google_Protobuf_EnumValueOptions>(
+  _protobuf_fieldNumber: 51253,
+  fieldName: "differentrequests.v1.pitch"
+)
+
+public let DRExtensions_picture = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalExtensionField<SwiftProtobuf.ProtobufString>, SwiftProtobuf.Google_Protobuf_EnumValueOptions>(
+  _protobuf_fieldNumber: 51254,
+  fieldName: "differentrequests.v1.picture"
 )
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.

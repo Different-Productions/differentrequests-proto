@@ -32,36 +32,84 @@ option swift_prefix = "DR";
 // There is no value for a surface every plan includes. An rpc that names no gate
 // is not gated, which is the same statement made by saying nothing.
 enum PlanSurface {
-  PLAN_SURFACE_UNSPECIFIED = 0;
-  PLAN_SURFACE_ROADMAP = 1;
-  PLAN_SURFACE_CHANGELOG = 2;
+  // Labeled, because a build that meets a surface newer than itself still lists
+  // it on a price.
+  PLAN_SURFACE_UNSPECIFIED = 0 [
+    (label) = "A feature this version doesn't know",
+    (pitch) = "",
+    (picture) = ""
+  ];
+
+  PLAN_SURFACE_ROADMAP = 1 [
+    (label) = "Roadmap",
+    (pitch) = "Show your users what's planned and what's being built.",
+    (picture) = "M5 21V4 M5 4h12l-2.5 4L17 12H5"
+  ];
+
+  PLAN_SURFACE_CHANGELOG = 2 [
+    (label) = "Changelog",
+    (pitch) = "Mark a request shipped and release notes are started for you. Publish when ready.",
+    (picture) =
+        "M7 3h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z M9 8h6 M9 12h6 M9 16h3"
+  ];
 
   // Not a paid anchor: comments are free on every plan and absent when the tenant
   // has chosen not to moderate a discussion. It is here because the gate is the
   // same gate — an AppConfig flag the server answers against before a handler
   // runs — and a second mechanism for "this app does not have that" would be a
   // second place to forget one.
-  PLAN_SURFACE_COMMENTS = 3;
+  PLAN_SURFACE_COMMENTS = 3 [
+    (label) = "Comments",
+    (pitch) = "Users can comment on each request.",
+    (picture) = "M4 5h16v11H10l-5 4v-4H4z"
+  ];
 
   // A push notification reaching a person's phone. Devices register on every
   // plan; what the plan decides is whether the server sends to them.
-  PLAN_SURFACE_PUSH = 4;
+  PLAN_SURFACE_PUSH = 4 [
+    (label) = "Push notifications",
+    (pitch) = "Users get a push notification when a request they follow ships.",
+    (picture) = "M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z M10 21a2 2 0 0 0 4 0"
+  ];
 
   // The developer answering in a request's own thread, marked as theirs.
-  PLAN_SURFACE_DEVELOPER_REPLIES = 5;
+  PLAN_SURFACE_DEVELOPER_REPLIES = 5 [
+    (label) = "Replies from your team",
+    (pitch) = "Reply right on the request, marked as your team.",
+    (picture) = "M4 5h16v11H10l-5 4v-4H4z M8 10h8"
+  ];
 
   // Several requests for one thing folded into one, their votes moved across.
-  PLAN_SURFACE_FOLDING = 6;
+  PLAN_SURFACE_FOLDING = 6 [
+    (label) = "Merging duplicates",
+    (pitch) = "Merge duplicate requests into one. Votes combine, and each user counts once.",
+    (picture) =
+        "M4 5a2 2 0 1 0 4 0a2 2 0 1 0-4 0 M16 5a2 2 0 1 0 4 0a2 2 0 1 0-4 0 "
+        "M10 19a2 2 0 1 0 4 0a2 2 0 1 0-4 0 M6 7c0 5 6 4 6 10 M18 7c0 5-6 4-6 10"
+  ];
 
   // The board drawn in the tint and font family its developer chose in the
   // dashboard.
-  PLAN_SURFACE_APPEARANCE = 7;
+  PLAN_SURFACE_APPEARANCE = 7 [
+    (label) = "Your colors and font",
+    (pitch) = "The requests screen uses your app's accent color and font.",
+    (picture) = "M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z"
+  ];
 
   // The developer filing a request of their own, public or private.
-  PLAN_SURFACE_PLANNING = 8;
+  PLAN_SURFACE_PLANNING = 8 [
+    (label) = "Your own roadmap items",
+    (pitch) = "Add things nobody asked for, or keep them private until you're ready.",
+    (picture) =
+        "M7 11h10a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z M8 11V8a4 4 0 0 1 8 0v3"
+  ];
 
   // The board drawn without "Powered by Different Requests".
-  PLAN_SURFACE_BADGE_REMOVAL = 10;
+  PLAN_SURFACE_BADGE_REMOVAL = 10 [
+    (label) = "No Powered by badge",
+    (pitch) = "Removes the Powered by Different Requests badge from the requests screen.",
+    (picture) = "M7 8h10a4 4 0 0 1 0 8H7a4 4 0 0 1 0-8z M4 4l16 16"
+  ];
 
   reserved 9;
   reserved "PLAN_SURFACE_TRAIT_RANKING";
@@ -193,6 +241,22 @@ extend google.protobuf.EnumValueOptions {
 // forgetting one fails the build rather than drawing a blank.
 extend google.protobuf.EnumValueOptions {
   string label = 51248;
+}
+
+// One sentence on what this value does for the developer who has it, in US English.
+//
+// Prose like `label`, and declared the same way: every value of an enum that has
+// one declares one, the zero value included.
+extend google.protobuf.EnumValueOptions {
+  string pitch = 51253;
+}
+
+// The outline drawn beside this value, as one SVG path on a 24-point grid.
+//
+// Stroked, never filled, so every picture reads as one set. Every value of an
+// enum that has one declares one, the zero value included.
+extend google.protobuf.EnumValueOptions {
+  string picture = 51254;
 }
 
 // The *minimum* credential a caller must present. Every rpc names exactly one;

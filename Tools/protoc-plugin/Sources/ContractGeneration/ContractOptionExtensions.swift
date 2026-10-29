@@ -12,6 +12,8 @@ public let contractOptionExtensions: [any AnyMessageExtension] = [
   DRExtensions_url_token,
   DRExtensions_token,
   DRExtensions_label,
+  DRExtensions_pitch,
+  DRExtensions_picture,
   DRExtensions_route_method,
   DRExtensions_route_path,
   DRExtensions_route_audience,

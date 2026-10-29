@@ -517,9 +517,9 @@ message Notification {
 // Which APNs environment a device token was minted in. A sandbox token pushed to
 // production fails per-token with no useful error, so the client states it.
 enum PushEnvironment {
-  PUSH_ENVIRONMENT_UNSPECIFIED = 0;
-  PUSH_ENVIRONMENT_SANDBOX = 1;
-  PUSH_ENVIRONMENT_PRODUCTION = 2;
+  PUSH_ENVIRONMENT_UNSPECIFIED = 0 [(label) = "Unknown"];
+  PUSH_ENVIRONMENT_SANDBOX = 1 [(label) = "Development (Xcode)"];
+  PUSH_ENVIRONMENT_PRODUCTION = 2 [(label) = "Production (App Store or TestFlight)"];
 }
 
 message DeviceRegistration {

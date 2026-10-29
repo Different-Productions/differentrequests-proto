@@ -124,7 +124,8 @@ Five generators run, all of them in `Tools/protoc-plugin`, and each emits someth
 - `protoc-gen-drtokens` — the strings an enum value spells. `(url_token)` and `(token)` are
   identifiers something outside Swift matches on, so each is emitted optional with an
   initializer that reads one back, and a value with no declared spelling cannot be sent.
-  `(label)` is prose a person reads, so it is emitted total with no initializer: every value
+  `(label)`, `(pitch)` and `(picture)` are prose a person reads (a name, a sentence on what
+  the value does, an SVG outline), so each is emitted total with no initializer: every value
   of a labeled enum declares one, and forgetting a value's label is a missing arm in an
   exhaustive switch rather than a blank on somebody's screen.
 - `protoc-gen-drfields` — each message's field names as the schema spells them, so a query

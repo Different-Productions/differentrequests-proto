@@ -5,11 +5,12 @@ import SwiftProtobufPluginLibrary
 
 /// One enum's spellings, ready to be written as a Swift extension.
 ///
-/// Three options declare a spelling and they mean different things. `(url_token)` is how a value is
+/// Five options declare a spelling and they mean different things. `(url_token)` is how a value is
 /// written inside a URL this API already serves — a query parameter's value. `(token)` is the exact
 /// string a value becomes when it leaves Swift for anything else: a verb on the wire, a header
-/// name. `(label)` is the word a person is shown. An enum may declare any of them, and each becomes
-/// its own property.
+/// name. `(label)` is the word a person is shown, `(pitch)` the sentence on what it does, and
+/// `(picture)` the outline drawn beside it. An enum may declare any of them, and each becomes its
+/// own property.
 struct EmittedTokenEnum {
   let typeName: String
   let spellings: [EmittedSpelling]
@@ -43,16 +44,26 @@ struct EmittedTokenEnum {
       )
     }
 
-    let shownToPeople = Self.cases(of: enumDescriptor, spelledBy: DRExtensions_label, namer: namer)
-    if let unknown = Self.labelOfZeroValue(in: enumDescriptor) {
-      found.append(
-        EmittedSpelling(
-          propertyName: "label",
-          documentation: "What a person is shown for this value.",
-          kind: .prose(whenUnrecognized: unknown),
-          cases: shownToPeople
-        )
-      )
+    let prose: [(option: ProseOption, propertyName: String, documentation: String)] = [
+      (DRExtensions_label, "label", "What a person is shown for this value."),
+      (DRExtensions_pitch, "pitch", "One sentence on what this value does for the developer who has it."),
+      (DRExtensions_picture, "picture", "The outline drawn beside this value: one stroked SVG path on a 24-point grid.")
+    ]
+    // The zero value's spelling is what makes an enum one that has the option, and it is also what
+    // a value this build has never heard of is drawn as.
+    for (option, propertyName, documentation) in prose {
+      for zeroValue in enumDescriptor.values where zeroValue.number == 0 {
+        if let unknown = zeroValue.options.getExtensionValue(ext: option) {
+          found.append(
+            EmittedSpelling(
+              propertyName: propertyName,
+              documentation: documentation,
+              kind: .prose(whenUnrecognized: unknown),
+              cases: Self.cases(of: enumDescriptor, spelledBy: option, namer: namer)
+            )
+          )
+        }
+      }
     }
 
     if found.isEmpty {
@@ -62,16 +73,10 @@ struct EmittedTokenEnum {
     spellings = found
   }
 
-  /// The word the zero value is drawn as, which is what an enum declares to be a labeled one.
-  ///
-  /// It is also the word a value this build has never heard of is drawn as: a status from a newer
-  /// server is, to this build, exactly the unspecified one.
-  private static func labelOfZeroValue(in enumDescriptor: EnumDescriptor) -> String? {
-    for value in enumDescriptor.values where value.number == 0 {
-      return value.options.getExtensionValue(ext: DRExtensions_label)
-    }
-    return nil
-  }
+  private typealias ProseOption = MessageExtension<
+    OptionalExtensionField<ProtobufString>,
+    Google_Protobuf_EnumValueOptions
+  >
 
   private static func cases(
     of enumDescriptor: EnumDescriptor,

@@ -138,6 +138,21 @@ extension DRNotificationHeadline {
   }
 }
 
+extension DRPushEnvironment {
+  /// What a person is shown for this value.
+  ///
+  /// Total: every value of this enum declares one, so there is nothing to fall back to and
+  /// no caller has to invent a word.
+  public var label: String {
+    switch self {
+    case .unspecified: return "Unknown"
+    case .sandbox: return "Development (Xcode)"
+    case .production: return "Production (App Store or TestFlight)"
+    case .UNRECOGNIZED: return "Unknown"
+    }
+  }
+}
+
 extension DRRequestStatus {
   /// Whether a board can show requests in this state.
   ///
